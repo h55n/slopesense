@@ -21,19 +21,7 @@ India loses ~800 lives per year to landslides. On July 30, 2024, Wayanad saw 420
 - Publishes a **CAP v1.2 XML feed** compatible with NDMA's Sachet app
 - Maintains a public **retrospective audit trail** for every alert issued
 
----
 
-## Scores (FAR AWAY 2026)
-
-| Criterion | Score |
-|-----------|-------|
-| Impact (IMP) | 9/10 |
-| Novelty (NOV) | 8/10 |
-| Feasibility (FEA) | 8/10 |
-| Business Viability | 7/10 |
-| **Composite** | **8/10** |
-
----
 
 ## Architecture
 
