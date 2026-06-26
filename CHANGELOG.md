@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Registration Portal (`/register`)**: Created a polished contact registration form allowing DDMA officers, Gram Pradhans, and Aapda Mitra to subscribe to tier-specific WhatsApp alerts.
 - **API Documentation (`/api-docs`)**: Integrated interactive Swagger UI documentation for all endpoints.
 - **Navigation Components**: Deployed a persistent, responsive, blurred navigation header (`Navigation.tsx`).
+- **Frontend Resilience**: Enabled graceful degradation on the `/districts` data table to show local cached fallbacks rather than infinite loading skeletons when the API is unreachable.
 
 **⚙️ Backend & API Architecture**
 - **12 Fully-Featured REST Endpoints**: Developed and completed all essential endpoints via FastAPI (health, alerts, risk point-checks, retrospective datasets, historical geojson, and CAP feed).
@@ -30,10 +31,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Enterprise Security**: Added rate limiting (100/hr public bounds), HMAC signature verification for webhooks, CORS setups, API key authentication, and security header middlewares.
 - **Test Suite Completion**: Wrote and passed 68 `pytest` cases covering data integrity, algorithmic constraints, API routes, security middleware, and integration endpoints.
 
+**🏗️ DevOps & Repository Maintenance**
+- **Industry Standard Organization**: Restructured repository to unify duplicate folders (`data/`, `scripts/`) into single sources of truth.
+- **CI/CD Integration**: Added GitHub Actions workflow (`ci.yml`) to validate PRs via `pytest` and `npm run lint`.
+- **System Architecture Docs**: Added a comprehensive `ARCHITECTURE.md` explaining the FPI calculation, satellite data ingestion workflows, and alert dispatch systems.
+- **Contributor Guidelines**: Wrote `CONTRIBUTING.md` emphasizing typing standards, pull request policies, and branching formats.
+- **Secure GitHub Integration**: Connected the local codebase with a private GitHub remote and securely pushed the first stable commit (`v1.0`).
+
 ### Fixed
 - **API Serializations**: Resolved a `ValueError` in the retrospective summary endpoint caused by FastAPI attempting to encode `NaN` float values into standard JSON.
 - **Frontend Syntax Issues**: Patched lingering mismatched `</motion.div>` tags and duplicate JSX return statements introduced during the massive UI refactoring phase.
 - **Type Checking**: Rectified TypeScript (`npx tsc --noEmit`) compilation warnings in layout and alert detailing scripts.
+- **Map Blankness**: Fixed a critical MapLibre rendering issue by enforcing a 100% container height and adding `demotiles.maplibre.org` as a fallback map tile vector.
+- **Data Pipeline Consistency**: Restored missing `UPSERT` logic within `run_pipeline.py` to ensure block-level FPI calculations are correctly written to the SQLite backend and dynamically reflected in the dashboard, resolving a bug where every block was statically pegged at 98% risk.
 
 ### Removed
 - **Legacy Components**: Removed old static, un-animated fallback shells from the primary Next.js pages.
