@@ -1,0 +1,1 @@
+export { FPIPanel } from './index';

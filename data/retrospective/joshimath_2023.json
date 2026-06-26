@@ -1,0 +1,22 @@
+{
+  "event_id": "joshimath_2023",
+  "event_name": "Joshimath Subsidence",
+  "event_date": "2023-01-15T00:00:00+05:30",
+  "district": "Chamoli",
+  "state": "Uttarakhand",
+  "deaths": 0,
+  "fpi_t24": 0.7372,
+  "fpi_t12": 0.7239,
+  "fpi_t6": 0.7378,
+  "fpi_at_event": 0.6919,
+  "dominant_signal_t24": "geological_susceptibility",
+  "rainfall_3d_at_t24_mm": 154.7,
+  "soil_moisture_pct_at_t24": 94.5,
+  "target_fpi": 0.4,
+  "flagged_at_t24": true,
+  "flagged_at_t12": true,
+  "lead_time_hours": 72.0,
+  "data_source": "synthetic",
+  "notes": "Slow-onset urban land subsidence. Not a rapid trigger event. Tests deformation-mode detection via NDVI and DEM anomalies.",
+  "validated_at": "2026-06-25T15:18:46.474206+00:00Z"
+}

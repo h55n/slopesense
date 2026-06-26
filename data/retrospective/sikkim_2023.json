@@ -1,0 +1,22 @@
+{
+  "event_id": "sikkim_2023",
+  "event_name": "Sikkim GLOF Cascade",
+  "event_date": "2023-10-04T01:30:00+05:30",
+  "district": "Mangan",
+  "state": "Sikkim",
+  "deaths": 40,
+  "fpi_t24": 0.621,
+  "fpi_t12": 0.6416,
+  "fpi_t6": 0.6619,
+  "fpi_at_event": 0.7154,
+  "dominant_signal_t24": "geological_susceptibility",
+  "rainfall_3d_at_t24_mm": 145.4,
+  "soil_moisture_pct_at_t24": 60.9,
+  "target_fpi": 0.5,
+  "flagged_at_t24": true,
+  "flagged_at_t12": true,
+  "lead_time_hours": 72.0,
+  "data_source": "synthetic",
+  "notes": "Glacial Lake Outburst Flood \u2014 South Lhonak Lake. Triggered cascading debris flows. GLOF-specific signal; rainfall secondary.",
+  "validated_at": "2026-06-25T15:18:32.143409+00:00Z"
+}

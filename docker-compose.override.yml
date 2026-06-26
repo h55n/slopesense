@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  api:
+    volumes:
+      - ./backend:/app/backend
+    command: uvicorn backend.api.main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      ENVIRONMENT: development
+  frontend:
+    environment:
+      NODE_ENV: development

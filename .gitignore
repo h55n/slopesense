@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+coverage_html/
+.coverage
+
+# Node / Next.js
+node_modules/
+.next/
+*.log
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Large satellite data files
+data/gpm/*.nc
+data/gpm/*.h5
+data/gfs/*.grib2
+data/smap/*.h5
+data/sentinel2/*.tif
+data/dem/*.tif
+data/dem/*.nc
+
+# Keep placeholders
+!data/**/.gitkeep
+
+# Logs
+logs/*.log
+
+# IDE
+.idea/
+.vscode/
+.DS_Store
+
+# ML model binaries
+data/model/*.pkl
+data/model/*.joblib
+
+# Terraform
+*.tfstate
+.terraform/
+*.db  

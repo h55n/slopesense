@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.env
+data/gpm/
+data/gfs/
+data/smap/
+data/sentinel2/
+coverage_html/
+*.pkl
+*.h5

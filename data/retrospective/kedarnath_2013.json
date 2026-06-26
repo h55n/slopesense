@@ -1,0 +1,22 @@
+{
+  "event_id": "kedarnath_2013",
+  "event_name": "Kedarnath Flash Flood",
+  "event_date": "2013-06-16T20:00:00+05:30",
+  "district": "Rudraprayag",
+  "state": "Uttarakhand",
+  "deaths": 5700,
+  "fpi_t24": 0.5571,
+  "fpi_t12": 0.5053,
+  "fpi_t6": 0.565,
+  "fpi_at_event": 0.5136,
+  "dominant_signal_t24": "geological_susceptibility",
+  "rainfall_3d_at_t24_mm": 165.6,
+  "soil_moisture_pct_at_t24": 50.1,
+  "target_fpi": 0.65,
+  "flagged_at_t24": false,
+  "flagged_at_t12": false,
+  "lead_time_hours": null,
+  "data_source": "synthetic",
+  "notes": "Multi-day extreme rainfall (375mm in 3 days) caused catastrophic flash floods and debris flows. India's worst modern natural disaster.",
+  "validated_at": "2026-06-25T15:19:30.152445+00:00Z"
+}

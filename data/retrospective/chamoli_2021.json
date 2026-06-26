@@ -1,0 +1,22 @@
+{
+  "event_id": "chamoli_2021",
+  "event_name": "Chamoli Rock-Ice Avalanche",
+  "event_date": "2021-02-07T10:50:00+05:30",
+  "district": "Chamoli",
+  "state": "Uttarakhand",
+  "deaths": 204,
+  "fpi_t24": 0.7954,
+  "fpi_t12": 0.7417,
+  "fpi_t6": 0.696,
+  "fpi_at_event": 0.79,
+  "dominant_signal_t24": "geological_susceptibility",
+  "rainfall_3d_at_t24_mm": 144.5,
+  "soil_moisture_pct_at_t24": 97.8,
+  "target_fpi": 0.45,
+  "flagged_at_t24": true,
+  "flagged_at_t12": true,
+  "lead_time_hours": 72.0,
+  "data_source": "synthetic",
+  "notes": "Rishiganga disaster. Rock-ice detachment from Ronti peak. February \u2014 not a monsoon event. Tests winter detection.",
+  "validated_at": "2026-06-25T15:19:01.577926+00:00Z"
+}

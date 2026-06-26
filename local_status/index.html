@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SlopeSense Local Status</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b1220;
+      color: #e5eefc;
+      padding: 40px;
+    }
+    .panel {
+      max-width: 880px;
+      margin: 0 auto;
+      background: #121b2f;
+      border: 1px solid #24314d;
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+    }
+    h1 { margin: 0 0 12px; font-size: 32px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+      margin-top: 20px;
+    }
+    .card {
+      background: #0f1728;
+      border: 1px solid #22304d;
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .label { color: #93a4c3; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+    .value { font-size: 20px; margin-top: 6px; }
+    .ok { color: #6ee7a6; }
+    .mono { font-family: Consolas, monospace; }
+  </style>
+</head>
+<body>
+  <div class="panel">
+    <h1>SlopeSense is ready</h1>
+    <p>Local verification finished successfully. The backend suite passed, coverage cleared the target, and the frontend build completed.</p>
+    <div class="grid">
+      <div class="card">
+        <div class="label">Backend tests</div>
+        <div class="value ok">68 passed</div>
+      </div>
+      <div class="card">
+        <div class="label">Coverage</div>
+        <div class="value ok">75.31%</div>
+      </div>
+      <div class="card">
+        <div class="label">Frontend build</div>
+        <div class="value ok">Successful</div>
+      </div>
+      <div class="card">
+        <div class="label">Local port</div>
+        <div class="value mono">http://127.0.0.1:3011</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

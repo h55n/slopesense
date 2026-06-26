@@ -1,0 +1,22 @@
+{
+  "event_id": "malin_2014",
+  "event_name": "Malin Village Landslide",
+  "event_date": "2014-07-30T06:30:00+05:30",
+  "district": "Pune",
+  "state": "Maharashtra",
+  "deaths": 151,
+  "fpi_t24": 0.5219,
+  "fpi_t12": 0.5879,
+  "fpi_t6": 0.6051,
+  "fpi_at_event": 0.5507,
+  "dominant_signal_t24": "geological_susceptibility",
+  "rainfall_3d_at_t24_mm": 131.9,
+  "soil_moisture_pct_at_t24": 48.6,
+  "target_fpi": 0.65,
+  "flagged_at_t24": false,
+  "flagged_at_t12": false,
+  "lead_time_hours": null,
+  "data_source": "synthetic",
+  "notes": "Heavy monsoon rainfall (350mm in 3 days) on unstable deforested slope. Classic rainfall-triggered event.",
+  "validated_at": "2026-06-25T15:19:15.734238+00:00Z"
+}

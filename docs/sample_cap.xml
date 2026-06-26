@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<alert xmlns="urn:oasis:names:tc:emergency:cap:1.2">
+  <identifier>KL_WYD_MEP_1722232800</identifier>
+  <sender>SlopeSense-v0.1@slopesense.in</sender>
+  <sent>2024-07-29T06:00:00+00:00</sent>
+  <status>Actual</status>
+  <msgType>Alert</msgType>
+  <scope>Public</scope>
+  <note>SlopeSense Landslide Risk Alert - Failure Probability Index</note>
+  <info>
+    <language>en-IN</language>
+    <category>Geo</category>
+    <event>Landslide Risk - WARNING</event>
+    <urgency>Expected</urgency>
+    <severity>Moderate</severity>
+    <certainty>Likely</certainty>
+    <headline>Landslide Risk Alert: Wayanad, Kerala - FPI 73%</headline>
+    <description>SlopeSense FPI: 73% (WARNING). Block: Meppadi. 3-day rainfall: 183mm. Soil moisture: 91st pct. 24h forecast: 81%.</description>
+    <instruction>Alert SDMA + DDMA. Pre-position NDRF/SDRF. Issue advisory.</instruction>
+    <web>https://slopesense.in/dashboard?district=KL_WYD</web>
+    <parameter>
+      <valueName>FPI_Score</valueName>
+      <value>0.73</value>
+    </parameter>
+    <parameter>
+      <valueName>Rainfall_3day_mm</valueName>
+      <value>183</value>
+    </parameter>
+    <area>
+      <areaDesc>Meppadi, Wayanad, Kerala</areaDesc>
+    </area>
+  </info>
+</alert>
