@@ -216,47 +216,52 @@ class TestAlertEngine:
             setattr(stub, k, v)
         return stub
 
-    def test_warning_alert_created(self, engine):
+    @pytest.mark.asyncio
+    async def test_warning_alert_created(self, engine):
         """WARNING tier should create an alert."""
         block = self._make_block_fpi(fpi_score=0.70, alert_tier="WARNING")
-        new_alerts, expired = engine.evaluate_blocks([block])
+        new_alerts, expired = await engine.evaluate_blocks([block])
         assert len(new_alerts) == 1
         assert new_alerts[0]["tier"] == "WARNING"
 
-    def test_emergency_fires_immediately(self, engine):
+    @pytest.mark.asyncio
+    async def test_emergency_fires_immediately(self, engine):
         """EMERGENCY should fire WhatsApp immediately (no temporal persistence)."""
         block = self._make_block_fpi(fpi_score=0.85, alert_tier="EMERGENCY")
-        new_alerts, _ = engine.evaluate_blocks([block])
+        new_alerts, _ = await engine.evaluate_blocks([block])
         assert new_alerts[0]["should_notify"] is True
         assert new_alerts[0]["consecutive_cycles"] == 1
 
-    def test_warning_requires_2_cycles(self, engine):
+    @pytest.mark.asyncio
+    async def test_warning_requires_2_cycles(self, engine):
         """WARNING requires 2 consecutive cycles before WhatsApp fires."""
         block = self._make_block_fpi(fpi_score=0.70, alert_tier="WARNING")
 
         # First cycle: no notify
-        new_alerts, _ = engine.evaluate_blocks([block])
+        new_alerts, _ = await engine.evaluate_blocks([block])
         assert new_alerts[0]["should_notify"] is False
         assert new_alerts[0]["consecutive_cycles"] == 1
 
         # Second cycle: notify
         prev = {block.block_code: new_alerts[0]}
-        new_alerts2, _ = engine.evaluate_blocks([block], prev)
+        new_alerts2, _ = await engine.evaluate_blocks([block], prev)
         assert new_alerts2[0]["should_notify"] is True
         assert new_alerts2[0]["consecutive_cycles"] == 2
 
-    def test_normal_tier_no_alert(self, engine):
+    @pytest.mark.asyncio
+    async def test_normal_tier_no_alert(self, engine):
         """NORMAL tier blocks should not generate alerts."""
         block = self._make_block_fpi(fpi_score=0.20, alert_tier="NORMAL")
-        new_alerts, _ = engine.evaluate_blocks([block])
+        new_alerts, _ = await engine.evaluate_blocks([block])
         assert len(new_alerts) == 0
 
-    def test_suppressed_alert_creates_monitoring(self, engine):
+    @pytest.mark.asyncio
+    async def test_suppressed_alert_creates_monitoring(self, engine):
         """Suppressed (high uncertainty) blocks should produce MONITORING tier, not EMERGENCY."""
         block = self._make_block_fpi(
             fpi_score=0.85, alert_tier="MONITORING", is_suppressed=True
         )
-        new_alerts, _ = engine.evaluate_blocks([block])
+        new_alerts, _ = await engine.evaluate_blocks([block])
         # MONITORING tier: no alert is created (engine skips MONITORING)
         assert len(new_alerts) == 0
 

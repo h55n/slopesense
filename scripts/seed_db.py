@@ -8,8 +8,7 @@ Seeds the SQLite database with:
 4. Initial FPI scores for all districts (computed via physics engine)
    using current Open-Meteo rainfall data OR realistic monsoon-season defaults.
 
-Run from project root:
-    python -m backend.scripts.seed_db
+    python -m scripts.seed_db
 """
 
 import asyncio
