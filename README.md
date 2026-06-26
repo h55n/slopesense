@@ -1,6 +1,6 @@
 # SlopeSense 🏔️
 
-**Landslide Risk Intelligence Platform — FAR AWAY 2026 Hackathon**
+**Landslide Risk Intelligence Platform**
 
 > Pure-software. Free satellite data. Sub-district resolution. Village-level delivery. 24–48 hours ahead.
 
