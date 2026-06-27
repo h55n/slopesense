@@ -35,9 +35,18 @@ AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=F
 
 
 async def get_db() -> AsyncIterator[Optional[AsyncSession]]:
-    """Yield one async database session for a request."""
+    """Yield one async database session for a request.
+    
+    Always yields exactly once. Yields None if session creation fails,
+    allowing endpoints to degrade gracefully without DB access.
+    """
+    session: Optional[AsyncSession] = None
     try:
-        async with AsyncSessionLocal() as session:
-            yield session
-    except Exception:
-        yield None
+        session = AsyncSessionLocal()
+        yield session
+    finally:
+        if session is not None:
+            try:
+                await session.close()
+            except Exception:
+                pass

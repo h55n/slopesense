@@ -13,18 +13,35 @@
      {"block_code": "KL_IDK_MUN", "block_name": "Munnar", "lat": 10.09, "lon": 77.06},
      {"block_code": "KL_IDK_DEB", "block_name": "Devikulam", "lat": 10.03, "lon": 77.11},
      {"block_code": "KL_IDK_THA", "block_name": "Thodupuzha", "lat": 9.89, "lon": 76.72},
-     {"block_code": "KL_IDK_PEE", "block_name": "Peerumedu", "lat": 9.57, "lon": 77.00}
+     {"block_code": "KL_IDK_PEE", "block_name": "Peerumedu", "lat": 9.57, "lon": 77.00},
+     {"block_code": "KL_IDK_AZH", "block_name": "Azhutha", "lat": 9.97, "lon": 76.97},
+     {"block_code": "KL_IDK_NEP", "block_name": "Nedumkandam", "lat": 9.83, "lon": 77.17}
    ]},
   {"state_code": "KL", "state_name": "Kerala", "district_code": "KL_MLP", "district_name": "Malappuram", "centroid_lat": 11.07, "centroid_lon": 76.07, "is_high_risk": true, "susceptibility": 4, "zone": "western_ghats",
    "blocks": [
      {"block_code": "KL_MLP_NNB", "block_name": "Nilambur", "lat": 11.28, "lon": 76.22},
      {"block_code": "KL_MLP_TIR", "block_name": "Tirur", "lat": 10.91, "lon": 75.92},
-     {"block_code": "KL_MLP_MAL", "block_name": "Malappuram", "lat": 11.07, "lon": 76.07}
+     {"block_code": "KL_MLP_MAL", "block_name": "Malappuram", "lat": 11.07, "lon": 76.07},
+     {"block_code": "KL_MLP_MAN", "block_name": "Manjeri", "lat": 11.12, "lon": 76.12},
+     {"block_code": "KL_MLP_MKP", "block_name": "Mankada", "lat": 10.96, "lon": 76.20}
    ]},
   {"state_code": "KL", "state_name": "Kerala", "district_code": "KL_KZD", "district_name": "Kozhikode", "centroid_lat": 11.25, "centroid_lon": 75.78, "is_high_risk": true, "susceptibility": 4, "zone": "western_ghats",
    "blocks": [
      {"block_code": "KL_KZD_KAL", "block_name": "Kalpetta North", "lat": 11.35, "lon": 75.95},
-     {"block_code": "KL_KZD_KOZ", "block_name": "Kozhikode City", "lat": 11.25, "lon": 75.78}
+     {"block_code": "KL_KZD_KOZ", "block_name": "Kozhikode City", "lat": 11.25, "lon": 75.78},
+     {"block_code": "KL_KZD_BAL", "block_name": "Balussery", "lat": 11.36, "lon": 75.80},
+     {"block_code": "KL_KZD_THA", "block_name": "Thamarassery", "lat": 11.43, "lon": 75.95}
+   ]},
+  {"state_code": "KL", "state_name": "Kerala", "district_code": "KL_TSR", "district_name": "Thrissur", "centroid_lat": 10.52, "centroid_lon": 76.21, "is_high_risk": true, "susceptibility": 3, "zone": "western_ghats",
+   "blocks": [
+     {"block_code": "KL_TSR_VDH", "block_name": "Vadom", "lat": 10.55, "lon": 76.38},
+     {"block_code": "KL_TSR_CHL", "block_name": "Chalakudy", "lat": 10.30, "lon": 76.33}
+   ]},
+  {"state_code": "KL", "state_name": "Kerala", "district_code": "KL_PLK", "district_name": "Palakkad", "centroid_lat": 10.77, "centroid_lon": 76.65, "is_high_risk": true, "susceptibility": 3, "zone": "western_ghats",
+   "blocks": [
+     {"block_code": "KL_PLK_ATH", "block_name": "Attappadi", "lat": 10.94, "lon": 76.80},
+     {"block_code": "KL_PLK_SIL", "block_name": "Silent Valley", "lat": 11.08, "lon": 76.46},
+     {"block_code": "KL_PLK_MAN", "block_name": "Mannarkkad", "lat": 10.99, "lon": 76.43}
    ]},
 
   {"state_code": "UK", "state_name": "Uttarakhand", "district_code": "UK_CHM", "district_name": "Chamoli", "centroid_lat": 30.4, "centroid_lon": 79.33, "is_high_risk": true, "susceptibility": 5, "zone": "himalayan",
@@ -32,120 +49,216 @@
      {"block_code": "UK_CHM_JOS", "block_name": "Joshimath", "lat": 30.56, "lon": 79.57},
      {"block_code": "UK_CHM_THR", "block_name": "Tharali", "lat": 30.27, "lon": 79.05},
      {"block_code": "UK_CHM_GHT", "block_name": "Ghat", "lat": 30.19, "lon": 79.22},
-     {"block_code": "UK_CHM_NAR", "block_name": "Narayan Bagar", "lat": 30.18, "lon": 79.62}
+     {"block_code": "UK_CHM_NAR", "block_name": "Narayan Bagar", "lat": 30.18, "lon": 79.62},
+     {"block_code": "UK_CHM_DAS", "block_name": "Dasholi", "lat": 30.42, "lon": 79.52}
    ]},
   {"state_code": "UK", "state_name": "Uttarakhand", "district_code": "UK_RDP", "district_name": "Rudraprayag", "centroid_lat": 30.28, "centroid_lon": 78.98, "is_high_risk": true, "susceptibility": 5, "zone": "himalayan",
    "blocks": [
      {"block_code": "UK_RDP_KED", "block_name": "Kedarnath", "lat": 30.73, "lon": 79.07},
      {"block_code": "UK_RDP_AGS", "block_name": "Agastmuni", "lat": 30.43, "lon": 78.98},
-     {"block_code": "UK_RDP_JAK", "block_name": "Jakhi", "lat": 30.28, "lon": 79.01}
+     {"block_code": "UK_RDP_JAK", "block_name": "Jakhi", "lat": 30.28, "lon": 79.01},
+     {"block_code": "UK_RDP_OKH", "block_name": "Okhimath", "lat": 30.52, "lon": 79.03}
    ]},
   {"state_code": "UK", "state_name": "Uttarakhand", "district_code": "UK_THR", "district_name": "Tehri Garhwal", "centroid_lat": 30.39, "centroid_lon": 78.48, "is_high_risk": true, "susceptibility": 5, "zone": "himalayan",
    "blocks": [
      {"block_code": "UK_THR_NEW", "block_name": "New Tehri", "lat": 30.39, "lon": 78.43},
      {"block_code": "UK_THR_DHA", "block_name": "Dhanolti", "lat": 30.52, "lon": 78.26},
-     {"block_code": "UK_THR_KIR", "block_name": "Kirti Nagar", "lat": 30.18, "lon": 78.78}
+     {"block_code": "UK_THR_KIR", "block_name": "Kirti Nagar", "lat": 30.18, "lon": 78.78},
+     {"block_code": "UK_THR_DEV", "block_name": "Devprayag", "lat": 30.14, "lon": 78.60}
    ]},
   {"state_code": "UK", "state_name": "Uttarakhand", "district_code": "UK_UTK", "district_name": "Uttarkashi", "centroid_lat": 30.73, "centroid_lon": 78.45, "is_high_risk": true, "susceptibility": 5, "zone": "himalayan",
    "blocks": [
      {"block_code": "UK_UTK_BHA", "block_name": "Bhatwari", "lat": 30.99, "lon": 78.60},
      {"block_code": "UK_UTK_GAN", "block_name": "Gangotri", "lat": 30.99, "lon": 78.94},
-     {"block_code": "UK_UTK_CHI", "block_name": "Chiniyalisaur", "lat": 30.55, "lon": 78.22}
+     {"block_code": "UK_UTK_CHI", "block_name": "Chiniyalisaur", "lat": 30.55, "lon": 78.22},
+     {"block_code": "UK_UTK_MOT", "block_name": "Mori", "lat": 31.00, "lon": 78.26},
+     {"block_code": "UK_UTK_PUR", "block_name": "Purola", "lat": 30.83, "lon": 77.99}
    ]},
   {"state_code": "UK", "state_name": "Uttarakhand", "district_code": "UK_PAU", "district_name": "Pauri Garhwal", "centroid_lat": 30.15, "centroid_lon": 78.78, "is_high_risk": true, "susceptibility": 4, "zone": "himalayan",
    "blocks": [
      {"block_code": "UK_PAU_PAU", "block_name": "Pauri", "lat": 30.15, "lon": 78.78},
-     {"block_code": "UK_PAU_SRI", "block_name": "Srinagar", "lat": 30.22, "lon": 78.78}
+     {"block_code": "UK_PAU_SRI", "block_name": "Srinagar Garhwal", "lat": 30.22, "lon": 78.78},
+     {"block_code": "UK_PAU_KOT", "block_name": "Kotdwar", "lat": 29.74, "lon": 78.52},
+     {"block_code": "UK_PAU_THA", "block_name": "Tharali", "lat": 30.26, "lon": 79.05}
+   ]},
+  {"state_code": "UK", "state_name": "Uttarakhand", "district_code": "UK_ALM", "district_name": "Almora", "centroid_lat": 29.60, "centroid_lon": 79.66, "is_high_risk": true, "susceptibility": 4, "zone": "himalayan",
+   "blocks": [
+     {"block_code": "UK_ALM_ALM", "block_name": "Almora", "lat": 29.60, "lon": 79.66},
+     {"block_code": "UK_ALM_RAN", "block_name": "Ranikhet", "lat": 29.64, "lon": 79.43},
+     {"block_code": "UK_ALM_SOM", "block_name": "Someshwar", "lat": 29.79, "lon": 79.63},
+     {"block_code": "UK_ALM_DHA", "block_name": "Dhaula Devi", "lat": 29.94, "lon": 79.78}
+   ]},
+  {"state_code": "UK", "state_name": "Uttarakhand", "district_code": "UK_PIT", "district_name": "Pithoragarh", "centroid_lat": 29.58, "centroid_lon": 80.21, "is_high_risk": true, "susceptibility": 5, "zone": "himalayan",
+   "blocks": [
+     {"block_code": "UK_PIT_PIT", "block_name": "Pithoragarh", "lat": 29.58, "lon": 80.21},
+     {"block_code": "UK_PIT_MUN", "block_name": "Munsiyari", "lat": 30.07, "lon": 80.24},
+     {"block_code": "UK_PIT_DID", "block_name": "Didihaat", "lat": 29.80, "lon": 80.58}
    ]},
 
   {"state_code": "HP", "state_name": "Himachal Pradesh", "district_code": "HP_MND", "district_name": "Mandi", "centroid_lat": 31.71, "centroid_lon": 76.93, "is_high_risk": true, "susceptibility": 5, "zone": "himalayan",
    "blocks": [
      {"block_code": "HP_MND_MND", "block_name": "Mandi Town", "lat": 31.71, "lon": 76.93},
      {"block_code": "HP_MND_JOG", "block_name": "Jogindernagar", "lat": 31.99, "lon": 76.78},
-     {"block_code": "HP_MND_SUN", "block_name": "Sundernagar", "lat": 31.53, "lon": 76.90}
+     {"block_code": "HP_MND_SUN", "block_name": "Sundernagar", "lat": 31.53, "lon": 76.90},
+     {"block_code": "HP_MND_GOH", "block_name": "Gohar", "lat": 31.80, "lon": 77.03},
+     {"block_code": "HP_MND_PAN", "block_name": "Pangna", "lat": 31.62, "lon": 77.05}
    ]},
   {"state_code": "HP", "state_name": "Himachal Pradesh", "district_code": "HP_KUL", "district_name": "Kullu", "centroid_lat": 31.96, "centroid_lon": 77.11, "is_high_risk": true, "susceptibility": 5, "zone": "himalayan",
    "blocks": [
      {"block_code": "HP_KUL_KUL", "block_name": "Kullu", "lat": 31.96, "lon": 77.11},
      {"block_code": "HP_KUL_MAN", "block_name": "Manali", "lat": 32.25, "lon": 77.18},
-     {"block_code": "HP_KUL_ANI", "block_name": "Anni", "lat": 31.57, "lon": 77.29}
+     {"block_code": "HP_KUL_ANI", "block_name": "Anni", "lat": 31.57, "lon": 77.29},
+     {"block_code": "HP_KUL_BAJ", "block_name": "Banjar", "lat": 31.64, "lon": 77.35}
    ]},
   {"state_code": "HP", "state_name": "Himachal Pradesh", "district_code": "HP_KNG", "district_name": "Kangra", "centroid_lat": 32.1, "centroid_lon": 76.27, "is_high_risk": true, "susceptibility": 4, "zone": "himalayan",
    "blocks": [
      {"block_code": "HP_KNG_DHA", "block_name": "Dharamshala", "lat": 32.22, "lon": 76.32},
-     {"block_code": "HP_KNG_PAL", "block_name": "Palampur", "lat": 32.11, "lon": 76.54}
+     {"block_code": "HP_KNG_PAL", "block_name": "Palampur", "lat": 32.11, "lon": 76.54},
+     {"block_code": "HP_KNG_KAG", "block_name": "Kangra", "lat": 32.10, "lon": 76.27},
+     {"block_code": "HP_KNG_DDB", "block_name": "Dehra", "lat": 31.90, "lon": 76.26},
+     {"block_code": "HP_KNG_BAR", "block_name": "Baijnath", "lat": 32.05, "lon": 76.65}
    ]},
   {"state_code": "HP", "state_name": "Himachal Pradesh", "district_code": "HP_CHB", "district_name": "Chamba", "centroid_lat": 32.56, "centroid_lon": 76.13, "is_high_risk": true, "susceptibility": 4, "zone": "himalayan",
    "blocks": [
      {"block_code": "HP_CHB_CHB", "block_name": "Chamba Town", "lat": 32.56, "lon": 76.13},
-     {"block_code": "HP_CHB_CHU", "block_name": "Churah", "lat": 32.72, "lon": 76.52}
+     {"block_code": "HP_CHB_CHU", "block_name": "Churah", "lat": 32.72, "lon": 76.52},
+     {"block_code": "HP_CHB_BAH", "block_name": "Bahal", "lat": 32.36, "lon": 76.18},
+     {"block_code": "HP_CHB_SHI", "block_name": "Sihunta", "lat": 32.34, "lon": 76.44}
+   ]},
+  {"state_code": "HP", "state_name": "Himachal Pradesh", "district_code": "HP_SML", "district_name": "Shimla", "centroid_lat": 31.10, "centroid_lon": 77.17, "is_high_risk": true, "susceptibility": 4, "zone": "himalayan",
+   "blocks": [
+     {"block_code": "HP_SML_SML", "block_name": "Shimla", "lat": 31.10, "lon": 77.17},
+     {"block_code": "HP_SML_RAM", "block_name": "Rampur", "lat": 31.45, "lon": 77.63},
+     {"block_code": "HP_SML_SOL", "block_name": "Solan", "lat": 30.90, "lon": 77.10},
+     {"block_code": "HP_SML_SOL2", "block_name": "Narkanda", "lat": 31.27, "lon": 77.45}
+   ]},
+  {"state_code": "HP", "state_name": "Himachal Pradesh", "district_code": "HP_SIR", "district_name": "Sirmaur", "centroid_lat": 30.56, "centroid_lon": 77.33, "is_high_risk": true, "susceptibility": 4, "zone": "himalayan",
+   "blocks": [
+     {"block_code": "HP_SIR_NAH", "block_name": "Nahan", "lat": 30.56, "lon": 77.29},
+     {"block_code": "HP_SIR_PAO", "block_name": "Paonta Sahib", "lat": 30.44, "lon": 77.62},
+     {"block_code": "HP_SIR_RAJ", "block_name": "Rajgarh", "lat": 30.89, "lon": 77.11}
    ]},
 
   {"state_code": "MH", "state_name": "Maharashtra", "district_code": "MH_RGD", "district_name": "Raigad", "centroid_lat": 18.51, "centroid_lon": 73.18, "is_high_risk": true, "susceptibility": 4, "zone": "western_ghats",
    "blocks": [
      {"block_code": "MH_RGD_MAH", "block_name": "Mahad", "lat": 18.08, "lon": 73.42},
      {"block_code": "MH_RGD_PEN", "block_name": "Pen", "lat": 18.74, "lon": 73.09},
-     {"block_code": "MH_RGD_POL", "block_name": "Poladpur", "lat": 18.01, "lon": 73.51}
+     {"block_code": "MH_RGD_POL", "block_name": "Poladpur", "lat": 18.01, "lon": 73.51},
+     {"block_code": "MH_RGD_ROH", "block_name": "Roha", "lat": 18.44, "lon": 73.11},
+     {"block_code": "MH_RGD_MAN", "block_name": "Mangaon", "lat": 18.24, "lon": 73.26}
    ]},
   {"state_code": "MH", "state_name": "Maharashtra", "district_code": "MH_SAT", "district_name": "Satara", "centroid_lat": 17.68, "centroid_lon": 74.0, "is_high_risk": true, "susceptibility": 4, "zone": "western_ghats",
    "blocks": [
      {"block_code": "MH_SAT_MAL", "block_name": "Malin", "lat": 18.97, "lon": 73.59},
      {"block_code": "MH_SAT_JAV", "block_name": "Javali", "lat": 17.70, "lon": 73.68},
-     {"block_code": "MH_SAT_SHE", "block_name": "Shendre", "lat": 17.43, "lon": 74.24}
+     {"block_code": "MH_SAT_SHE", "block_name": "Shendre", "lat": 17.43, "lon": 74.24},
+     {"block_code": "MH_SAT_WAI", "block_name": "Wai", "lat": 17.95, "lon": 73.89},
+     {"block_code": "MH_SAT_PAT", "block_name": "Patan", "lat": 17.38, "lon": 74.04}
    ]},
   {"state_code": "MH", "state_name": "Maharashtra", "district_code": "MH_RTG", "district_name": "Ratnagiri", "centroid_lat": 17.0, "centroid_lon": 73.3, "is_high_risk": true, "susceptibility": 4, "zone": "western_ghats",
    "blocks": [
      {"block_code": "MH_RTG_RTG", "block_name": "Ratnagiri", "lat": 16.99, "lon": 73.30},
-     {"block_code": "MH_RTG_CHI", "block_name": "Chiplun", "lat": 17.53, "lon": 73.51}
+     {"block_code": "MH_RTG_CHI", "block_name": "Chiplun", "lat": 17.53, "lon": 73.51},
+     {"block_code": "MH_RTG_KHE", "block_name": "Khed", "lat": 17.72, "lon": 73.40},
+     {"block_code": "MH_RTG_SAN", "block_name": "Sangameshwar", "lat": 17.27, "lon": 73.60}
    ]},
   {"state_code": "MH", "state_name": "Maharashtra", "district_code": "MH_KLH", "district_name": "Kolhapur", "centroid_lat": 16.7, "centroid_lon": 74.24, "is_high_risk": true, "susceptibility": 3, "zone": "western_ghats",
    "blocks": [
      {"block_code": "MH_KLH_KLH", "block_name": "Kolhapur", "lat": 16.70, "lon": 74.24},
-     {"block_code": "MH_KLH_SHA", "block_name": "Shahuwadi", "lat": 16.80, "lon": 73.92}
+     {"block_code": "MH_KLH_SHA", "block_name": "Shahuwadi", "lat": 16.80, "lon": 73.92},
+     {"block_code": "MH_KLH_CHI", "block_name": "Chandgad", "lat": 15.93, "lon": 74.17}
+   ]},
+  {"state_code": "MH", "state_name": "Maharashtra", "district_code": "MH_NAS", "district_name": "Nashik", "centroid_lat": 20.01, "centroid_lon": 73.79, "is_high_risk": true, "susceptibility": 3, "zone": "western_ghats",
+   "blocks": [
+     {"block_code": "MH_NAS_TRI", "block_name": "Trimbakeshwar", "lat": 19.94, "lon": 73.53},
+     {"block_code": "MH_NAS_PEI", "block_name": "Peint", "lat": 20.38, "lon": 73.44},
+     {"block_code": "MH_NAS_IGT", "block_name": "Igatpuri", "lat": 19.70, "lon": 73.55}
+   ]},
+  {"state_code": "MH", "state_name": "Maharashtra", "district_code": "MH_PUN", "district_name": "Pune", "centroid_lat": 18.52, "centroid_lon": 73.86, "is_high_risk": true, "susceptibility": 3, "zone": "western_ghats",
+   "blocks": [
+     {"block_code": "MH_PUN_MUL", "block_name": "Mulshi", "lat": 18.53, "lon": 73.52},
+     {"block_code": "MH_PUN_VEL", "block_name": "Velhe", "lat": 18.28, "lon": 73.59},
+     {"block_code": "MH_PUN_AMB", "block_name": "Ambegaon", "lat": 19.15, "lon": 73.81}
    ]},
 
   {"state_code": "SK", "state_name": "Sikkim", "district_code": "SK_NTH", "district_name": "North Sikkim", "centroid_lat": 27.92, "centroid_lon": 88.58, "is_high_risk": true, "susceptibility": 5, "zone": "himalayan",
    "blocks": [
      {"block_code": "SK_NTH_MAN", "block_name": "Mangan", "lat": 27.51, "lon": 88.52},
-     {"block_code": "SK_NTH_CHU", "block_name": "Chungthang", "lat": 27.90, "lon": 88.64}
+     {"block_code": "SK_NTH_CHU", "block_name": "Chungthang", "lat": 27.90, "lon": 88.64},
+     {"block_code": "SK_NTH_LCH", "block_name": "Lachung", "lat": 27.69, "lon": 88.74}
    ]},
   {"state_code": "SK", "state_name": "Sikkim", "district_code": "SK_EST", "district_name": "East Sikkim", "centroid_lat": 27.33, "centroid_lon": 88.61, "is_high_risk": true, "susceptibility": 5, "zone": "himalayan",
    "blocks": [
      {"block_code": "SK_EST_GAN", "block_name": "Gangtok", "lat": 27.33, "lon": 88.62},
-     {"block_code": "SK_EST_RON", "block_name": "Rongli", "lat": 27.22, "lon": 88.88}
+     {"block_code": "SK_EST_RON", "block_name": "Rongli", "lat": 27.22, "lon": 88.88},
+     {"block_code": "SK_EST_PAK", "block_name": "Pakyong", "lat": 27.24, "lon": 88.61}
    ]},
   {"state_code": "SK", "state_name": "Sikkim", "district_code": "SK_WST", "district_name": "West Sikkim", "centroid_lat": 27.32, "centroid_lon": 88.27, "is_high_risk": true, "susceptibility": 5, "zone": "himalayan",
    "blocks": [
      {"block_code": "SK_WST_GEY", "block_name": "Geyzing", "lat": 27.30, "lon": 88.27},
-     {"block_code": "SK_WST_SOK", "block_name": "Soreng", "lat": 27.13, "lon": 88.20}
+     {"block_code": "SK_WST_SOK", "block_name": "Soreng", "lat": 27.13, "lon": 88.20},
+     {"block_code": "SK_WST_JOR", "block_name": "Jorethang", "lat": 27.11, "lon": 88.32}
    ]},
   {"state_code": "SK", "state_name": "Sikkim", "district_code": "SK_STH", "district_name": "South Sikkim", "centroid_lat": 27.16, "centroid_lon": 88.47, "is_high_risk": true, "susceptibility": 4, "zone": "himalayan",
    "blocks": [
      {"block_code": "SK_STH_NAM", "block_name": "Namchi", "lat": 27.17, "lon": 88.36},
-     {"block_code": "SK_STH_RAV", "block_name": "Ravangla", "lat": 27.30, "lon": 88.36}
+     {"block_code": "SK_STH_RAV", "block_name": "Ravangla", "lat": 27.30, "lon": 88.36},
+     {"block_code": "SK_STH_MEL", "block_name": "Melli", "lat": 27.05, "lon": 88.40}
    ]},
 
   {"state_code": "MZ", "state_name": "Mizoram", "district_code": "MZ_AIZ", "district_name": "Aizawl", "centroid_lat": 23.73, "centroid_lon": 92.72, "is_high_risk": true, "susceptibility": 5, "zone": "northeast",
    "blocks": [
      {"block_code": "MZ_AIZ_AIZ", "block_name": "Aizawl North", "lat": 23.73, "lon": 92.72},
-     {"block_code": "MZ_AIZ_DEU", "block_name": "Deurali", "lat": 23.61, "lon": 92.72}
+     {"block_code": "MZ_AIZ_DEU", "block_name": "Deurali", "lat": 23.61, "lon": 92.72},
+     {"block_code": "MZ_AIZ_LEN", "block_name": "Lengpui", "lat": 23.84, "lon": 92.62},
+     {"block_code": "MZ_AIZ_THI", "block_name": "Thingsai", "lat": 23.53, "lon": 92.80}
    ]},
   {"state_code": "MZ", "state_name": "Mizoram", "district_code": "MZ_LNG", "district_name": "Lunglei", "centroid_lat": 22.88, "centroid_lon": 92.73, "is_high_risk": true, "susceptibility": 5, "zone": "northeast",
    "blocks": [
      {"block_code": "MZ_LNG_LNG", "block_name": "Lunglei", "lat": 22.88, "lon": 92.73},
-     {"block_code": "MZ_LNG_TLN", "block_name": "Tlabung", "lat": 22.36, "lon": 92.34}
+     {"block_code": "MZ_LNG_TLN", "block_name": "Tlabung", "lat": 22.36, "lon": 92.34},
+     {"block_code": "MZ_LNG_HAH", "block_name": "Hnahthial", "lat": 23.05, "lon": 92.88}
    ]},
+  {"state_code": "MZ", "state_name": "Mizoram", "district_code": "MZ_CHM", "district_name": "Champhai", "centroid_lat": 23.46, "centroid_lon": 93.33, "is_high_risk": true, "susceptibility": 4, "zone": "northeast",
+   "blocks": [
+     {"block_code": "MZ_CHM_CHM", "block_name": "Champhai", "lat": 23.46, "lon": 93.33},
+     {"block_code": "MZ_CHM_KHW", "block_name": "Khawzawl", "lat": 23.66, "lon": 93.09}
+   ]},
+  {"state_code": "MZ", "state_name": "Mizoram", "district_code": "MZ_KOL", "district_name": "Kolasib", "centroid_lat": 24.22, "centroid_lon": 92.68, "is_high_risk": true, "susceptibility": 4, "zone": "northeast",
+   "blocks": [
+     {"block_code": "MZ_KOL_KOL", "block_name": "Kolasib", "lat": 24.22, "lon": 92.68},
+     {"block_code": "MZ_KOL_VAI", "block_name": "Vairengte", "lat": 24.40, "lon": 92.65}
+   ]},
+
   {"state_code": "ML", "state_name": "Meghalaya", "district_code": "ML_EKH", "district_name": "East Khasi Hills", "centroid_lat": 25.57, "centroid_lon": 91.88, "is_high_risk": true, "susceptibility": 5, "zone": "northeast",
    "blocks": [
      {"block_code": "ML_EKH_SHI", "block_name": "Shillong", "lat": 25.57, "lon": 91.88},
      {"block_code": "ML_EKH_CHE", "block_name": "Cherrapunji", "lat": 25.28, "lon": 91.72},
-     {"block_code": "ML_EKH_MAW", "block_name": "Mawsynram", "lat": 25.29, "lon": 91.58}
+     {"block_code": "ML_EKH_MAW", "block_name": "Mawsynram", "lat": 25.29, "lon": 91.58},
+     {"block_code": "ML_EKH_PYN", "block_name": "Pynursla", "lat": 25.22, "lon": 91.92}
    ]},
   {"state_code": "ML", "state_name": "Meghalaya", "district_code": "ML_WGH", "district_name": "West Garo Hills", "centroid_lat": 25.50, "centroid_lon": 90.23, "is_high_risk": true, "susceptibility": 4, "zone": "northeast",
    "blocks": [
      {"block_code": "ML_WGH_TUR", "block_name": "Tura", "lat": 25.52, "lon": 90.22},
-     {"block_code": "ML_WGH_PRE", "block_name": "Phulbari", "lat": 25.59, "lon": 89.90}
+     {"block_code": "ML_WGH_PRE", "block_name": "Phulbari", "lat": 25.59, "lon": 89.90},
+     {"block_code": "ML_WGH_RAN", "block_name": "Resubelpara", "lat": 25.85, "lon": 90.62}
    ]},
+  {"state_code": "ML", "state_name": "Meghalaya", "district_code": "ML_EGH", "district_name": "East Garo Hills", "centroid_lat": 25.60, "centroid_lon": 90.86, "is_high_risk": true, "susceptibility": 4, "zone": "northeast",
+   "blocks": [
+     {"block_code": "ML_EGH_WIL", "block_name": "Williamnagar", "lat": 25.60, "lon": 90.62},
+     {"block_code": "ML_EGH_KHE", "block_name": "Kherapara", "lat": 25.58, "lon": 90.80}
+   ]},
+  {"state_code": "ML", "state_name": "Meghalaya", "district_code": "ML_WKH", "district_name": "West Khasi Hills", "centroid_lat": 25.57, "centroid_lon": 91.28, "is_high_risk": true, "susceptibility": 5, "zone": "northeast",
+   "blocks": [
+     {"block_code": "ML_WKH_NON", "block_name": "Nongstoin", "lat": 25.52, "lon": 91.27},
+     {"block_code": "ML_WKH_MAW", "block_name": "Mairang", "lat": 25.57, "lon": 91.61}
+   ]},
+  {"state_code": "ML", "state_name": "Meghalaya", "district_code": "ML_JPH", "district_name": "Jaintia Hills", "centroid_lat": 25.50, "centroid_lon": 92.32, "is_high_risk": true, "susceptibility": 4, "zone": "northeast",
+   "blocks": [
+     {"block_code": "ML_JPH_JOW", "block_name": "Jowai", "lat": 25.45, "lon": 92.20},
+     {"block_code": "ML_JPH_AMO", "block_name": "Amlarem", "lat": 25.30, "lon": 92.37}
+   ]},
+
   {"state_code": "MN", "state_name": "Manipur", "district_code": "MN_IMP", "district_name": "Imphal West", "centroid_lat": 24.82, "centroid_lon": 93.94, "is_high_risk": true, "susceptibility": 4, "zone": "northeast",
    "blocks": [
      {"block_code": "MN_IMP_IMP", "block_name": "Imphal", "lat": 24.82, "lon": 93.94},
@@ -154,73 +267,161 @@
   {"state_code": "MN", "state_name": "Manipur", "district_code": "MN_SEA", "district_name": "Senapati", "centroid_lat": 25.26, "centroid_lon": 94.02, "is_high_risk": true, "susceptibility": 5, "zone": "northeast",
    "blocks": [
      {"block_code": "MN_SEA_SEA", "block_name": "Senapati", "lat": 25.26, "lon": 94.02},
-     {"block_code": "MN_SEA_PAO", "block_name": "Paomata", "lat": 25.58, "lon": 94.34}
+     {"block_code": "MN_SEA_PAO", "block_name": "Paomata", "lat": 25.58, "lon": 94.34},
+     {"block_code": "MN_SEA_PUU", "block_name": "Purul", "lat": 25.31, "lon": 94.20}
    ]},
+  {"state_code": "MN", "state_name": "Manipur", "district_code": "MN_TBL", "district_name": "Tamenglong", "centroid_lat": 24.98, "centroid_lon": 93.50, "is_high_risk": true, "susceptibility": 5, "zone": "northeast",
+   "blocks": [
+     {"block_code": "MN_TBL_TAM", "block_name": "Tamenglong", "lat": 24.98, "lon": 93.50},
+     {"block_code": "MN_TBL_NON", "block_name": "Noney", "lat": 24.75, "lon": 93.60},
+     {"block_code": "MN_TBL_HAO", "block_name": "Haochong", "lat": 25.21, "lon": 93.42}
+   ]},
+  {"state_code": "MN", "state_name": "Manipur", "district_code": "MN_CHD", "district_name": "Chandel", "centroid_lat": 24.33, "centroid_lon": 94.02, "is_high_risk": true, "susceptibility": 4, "zone": "northeast",
+   "blocks": [
+     {"block_code": "MN_CHD_CHA", "block_name": "Chandel", "lat": 24.33, "lon": 94.02},
+     {"block_code": "MN_CHD_TEN", "block_name": "Tengnoupal", "lat": 24.14, "lon": 94.07}
+   ]},
+
   {"state_code": "AS", "state_name": "Assam", "district_code": "AS_DIM", "district_name": "Dima Hasao", "centroid_lat": 25.27, "centroid_lon": 93.06, "is_high_risk": true, "susceptibility": 5, "zone": "northeast",
    "blocks": [
      {"block_code": "AS_DIM_HAF", "block_name": "Haflong", "lat": 25.17, "lon": 93.02},
-     {"block_code": "AS_DIM_MAI", "block_name": "Mahur", "lat": 25.12, "lon": 93.12}
+     {"block_code": "AS_DIM_MAI", "block_name": "Mahur", "lat": 25.12, "lon": 93.12},
+     {"block_code": "AS_DIM_UMR", "block_name": "Umrangso", "lat": 25.57, "lon": 93.12}
    ]},
   {"state_code": "AS", "state_name": "Assam", "district_code": "AS_KAM", "district_name": "Kamrup Metro", "centroid_lat": 26.18, "centroid_lon": 91.74, "is_high_risk": true, "susceptibility": 3, "zone": "northeast",
    "blocks": [
      {"block_code": "AS_KAM_GUW", "block_name": "Guwahati", "lat": 26.18, "lon": 91.74},
      {"block_code": "AS_KAM_BOR", "block_name": "Boko", "lat": 26.00, "lon": 91.07}
    ]},
+  {"state_code": "AS", "state_name": "Assam", "district_code": "AS_KAR", "district_name": "Karbi Anglong", "centroid_lat": 26.07, "centroid_lon": 93.55, "is_high_risk": true, "susceptibility": 4, "zone": "northeast",
+   "blocks": [
+     {"block_code": "AS_KAR_DIP", "block_name": "Diphu", "lat": 25.84, "lon": 93.43},
+     {"block_code": "AS_KAR_BOK", "block_name": "Bokajan", "lat": 26.20, "lon": 93.58},
+     {"block_code": "AS_KAR_SAR", "block_name": "Sarihajan", "lat": 26.35, "lon": 93.40}
+   ]},
+  {"state_code": "AS", "state_name": "Assam", "district_code": "AS_GOA", "district_name": "Goalpara", "centroid_lat": 26.17, "centroid_lon": 90.62, "is_high_risk": true, "susceptibility": 3, "zone": "northeast",
+   "blocks": [
+     {"block_code": "AS_GOA_GOA", "block_name": "Goalpara", "lat": 26.17, "lon": 90.62},
+     {"block_code": "AS_GOA_LAL", "block_name": "Lakhipur", "lat": 26.17, "lon": 89.94}
+   ]},
 
   {"state_code": "JK", "state_name": "Jammu & Kashmir", "district_code": "JK_RMB", "district_name": "Ramban", "centroid_lat": 33.24, "centroid_lon": 75.24, "is_high_risk": true, "susceptibility": 5, "zone": "himalayan",
    "blocks": [
      {"block_code": "JK_RMB_RMB", "block_name": "Ramban Town", "lat": 33.24, "lon": 75.24},
-     {"block_code": "JK_RMB_BAT", "block_name": "Banihal", "lat": 33.42, "lon": 75.18}
+     {"block_code": "JK_RMB_BAT", "block_name": "Banihal", "lat": 33.42, "lon": 75.18},
+     {"block_code": "JK_RMB_BAT2", "block_name": "Batote", "lat": 33.06, "lon": 75.22}
    ]},
   {"state_code": "JK", "state_name": "Jammu & Kashmir", "district_code": "JK_DDH", "district_name": "Doda", "centroid_lat": 33.15, "centroid_lon": 75.55, "is_high_risk": true, "susceptibility": 5, "zone": "himalayan",
    "blocks": [
      {"block_code": "JK_DDH_DOD", "block_name": "Doda Town", "lat": 33.15, "lon": 75.55},
-     {"block_code": "JK_DDH_GAD", "block_name": "Gadool", "lat": 33.34, "lon": 75.47}
+     {"block_code": "JK_DDH_GAD", "block_name": "Gadool", "lat": 33.34, "lon": 75.47},
+     {"block_code": "JK_DDH_THA", "block_name": "Thathri", "lat": 33.32, "lon": 75.73}
    ]},
   {"state_code": "JK", "state_name": "Jammu & Kashmir", "district_code": "JK_KST", "district_name": "Kishtwar", "centroid_lat": 33.31, "centroid_lon": 75.77, "is_high_risk": true, "susceptibility": 5, "zone": "himalayan",
    "blocks": [
      {"block_code": "JK_KST_KST", "block_name": "Kishtwar Town", "lat": 33.31, "lon": 75.77},
-     {"block_code": "JK_KST_CHA", "block_name": "Chatroo", "lat": 33.40, "lon": 76.05}
+     {"block_code": "JK_KST_CHA", "block_name": "Chatroo", "lat": 33.40, "lon": 76.05},
+     {"block_code": "JK_KST_PAD", "block_name": "Padder", "lat": 33.56, "lon": 75.97}
+   ]},
+  {"state_code": "JK", "state_name": "Jammu & Kashmir", "district_code": "JK_PMP", "district_name": "Poonch", "centroid_lat": 33.77, "centroid_lon": 74.09, "is_high_risk": true, "susceptibility": 4, "zone": "himalayan",
+   "blocks": [
+     {"block_code": "JK_PMP_POO", "block_name": "Poonch", "lat": 33.77, "lon": 74.09},
+     {"block_code": "JK_PMP_MAN", "block_name": "Mandi Poonch", "lat": 33.65, "lon": 74.38},
+     {"block_code": "JK_PMP_SUR", "block_name": "Surankote", "lat": 33.58, "lon": 74.27}
+   ]},
+  {"state_code": "JK", "state_name": "Jammu & Kashmir", "district_code": "JK_REA", "district_name": "Reasi", "centroid_lat": 33.08, "centroid_lon": 74.83, "is_high_risk": true, "susceptibility": 5, "zone": "himalayan",
+   "blocks": [
+     {"block_code": "JK_REA_REA", "block_name": "Reasi", "lat": 33.08, "lon": 74.83},
+     {"block_code": "JK_REA_GUL", "block_name": "Gulabgarh", "lat": 33.31, "lon": 74.93}
+   ]},
+  {"state_code": "JK", "state_name": "Jammu & Kashmir", "district_code": "JK_UDH", "district_name": "Udhampur", "centroid_lat": 32.92, "centroid_lon": 75.14, "is_high_risk": true, "susceptibility": 4, "zone": "himalayan",
+   "blocks": [
+     {"block_code": "JK_UDH_UDH", "block_name": "Udhampur", "lat": 32.92, "lon": 75.14},
+     {"block_code": "JK_UDH_RAN", "block_name": "Ramnagar", "lat": 32.80, "lon": 75.33},
+     {"block_code": "JK_UDH_KHE", "block_name": "Kheora", "lat": 33.13, "lon": 75.04}
    ]},
 
   {"state_code": "KA", "state_name": "Karnataka", "district_code": "KA_KDG", "district_name": "Kodagu", "centroid_lat": 12.34, "centroid_lon": 75.74, "is_high_risk": true, "susceptibility": 5, "zone": "western_ghats",
    "blocks": [
      {"block_code": "KA_KDG_MAD", "block_name": "Madikeri", "lat": 12.42, "lon": 75.74},
      {"block_code": "KA_KDG_VIR", "block_name": "Virajpet", "lat": 12.19, "lon": 75.82},
-     {"block_code": "KA_KDG_SOM", "block_name": "Somwarpet", "lat": 12.60, "lon": 75.85}
+     {"block_code": "KA_KDG_SOM", "block_name": "Somwarpet", "lat": 12.60, "lon": 75.85},
+     {"block_code": "KA_KDG_KUS", "block_name": "Kushalnagar", "lat": 12.46, "lon": 75.96}
    ]},
   {"state_code": "KA", "state_name": "Karnataka", "district_code": "KA_UKN", "district_name": "Uttara Kannada", "centroid_lat": 14.79, "centroid_lon": 74.69, "is_high_risk": true, "susceptibility": 4, "zone": "western_ghats",
    "blocks": [
      {"block_code": "KA_UKN_SIR", "block_name": "Sirsi", "lat": 14.62, "lon": 74.84},
-     {"block_code": "KA_UKN_KAR", "block_name": "Karwar", "lat": 14.79, "lon": 74.14}
+     {"block_code": "KA_UKN_KAR", "block_name": "Karwar", "lat": 14.79, "lon": 74.14},
+     {"block_code": "KA_UKN_YEL", "block_name": "Yellapur", "lat": 14.97, "lon": 74.72},
+     {"block_code": "KA_UKN_SIR2", "block_name": "Siddapur", "lat": 14.36, "lon": 74.89}
    ]},
   {"state_code": "KA", "state_name": "Karnataka", "district_code": "KA_DKN", "district_name": "Dakshina Kannada", "centroid_lat": 12.87, "centroid_lon": 75.31, "is_high_risk": true, "susceptibility": 4, "zone": "western_ghats",
    "blocks": [
      {"block_code": "KA_DKN_MNG", "block_name": "Mangaluru", "lat": 12.87, "lon": 74.84},
-     {"block_code": "KA_DKN_SUL", "block_name": "Sullia", "lat": 12.56, "lon": 75.38}
+     {"block_code": "KA_DKN_SUL", "block_name": "Sullia", "lat": 12.56, "lon": 75.38},
+     {"block_code": "KA_DKN_BEL", "block_name": "Belthangady", "lat": 12.98, "lon": 75.29},
+     {"block_code": "KA_DKN_PUT", "block_name": "Puttur", "lat": 12.76, "lon": 75.20}
+   ]},
+  {"state_code": "KA", "state_name": "Karnataka", "district_code": "KA_CDU", "district_name": "Chikkamagaluru", "centroid_lat": 13.32, "centroid_lon": 75.78, "is_high_risk": true, "susceptibility": 4, "zone": "western_ghats",
+   "blocks": [
+     {"block_code": "KA_CDU_CHI", "block_name": "Chikkamagaluru", "lat": 13.32, "lon": 75.78},
+     {"block_code": "KA_CDU_MUL", "block_name": "Mudigere", "lat": 13.13, "lon": 75.64},
+     {"block_code": "KA_CDU_KAL", "block_name": "Kalasa", "lat": 13.34, "lon": 75.40},
+     {"block_code": "KA_CDU_KOP", "block_name": "Koppa", "lat": 13.53, "lon": 75.37}
+   ]},
+  {"state_code": "KA", "state_name": "Karnataka", "district_code": "KA_SHI", "district_name": "Shivamogga", "centroid_lat": 13.93, "centroid_lon": 75.57, "is_high_risk": true, "susceptibility": 3, "zone": "western_ghats",
+   "blocks": [
+     {"block_code": "KA_SHI_SAK", "block_name": "Sagar", "lat": 14.17, "lon": 75.04},
+     {"block_code": "KA_SHI_TIR", "block_name": "Tirthahalli", "lat": 13.69, "lon": 75.24},
+     {"block_code": "KA_SHI_HON", "block_name": "Hosanagara", "lat": 13.90, "lon": 75.03}
    ]},
 
   {"state_code": "WB", "state_name": "West Bengal", "district_code": "WB_DRJ", "district_name": "Darjeeling", "centroid_lat": 27.03, "centroid_lon": 88.26, "is_high_risk": true, "susceptibility": 5, "zone": "himalayan",
    "blocks": [
      {"block_code": "WB_DRJ_DRJ", "block_name": "Darjeeling", "lat": 27.04, "lon": 88.26},
      {"block_code": "WB_DRJ_KUR", "block_name": "Kurseong", "lat": 26.88, "lon": 88.28},
-     {"block_code": "WB_DRJ_KAL", "block_name": "Kalimpong", "lat": 27.07, "lon": 88.47}
+     {"block_code": "WB_DRJ_KAL", "block_name": "Kalimpong", "lat": 27.07, "lon": 88.47},
+     {"block_code": "WB_DRJ_MAT", "block_name": "Matelli", "lat": 26.82, "lon": 88.76},
+     {"block_code": "WB_DRJ_MIR", "block_name": "Mirik", "lat": 26.88, "lon": 88.18}
    ]},
   {"state_code": "WB", "state_name": "West Bengal", "district_code": "WB_KAL", "district_name": "Kalimpong", "centroid_lat": 27.07, "centroid_lon": 88.47, "is_high_risk": true, "susceptibility": 5, "zone": "himalayan",
    "blocks": [
      {"block_code": "WB_KAL_KAL", "block_name": "Kalimpong Town", "lat": 27.07, "lon": 88.47},
-     {"block_code": "WB_KAL_GOR", "block_name": "Gorubathan", "lat": 26.87, "lon": 88.62}
+     {"block_code": "WB_KAL_GOR", "block_name": "Gorubathan", "lat": 26.87, "lon": 88.62},
+     {"block_code": "WB_KAL_LOM", "block_name": "Loleygaon", "lat": 26.90, "lon": 88.51}
+   ]},
+  {"state_code": "WB", "state_name": "West Bengal", "district_code": "WB_ALD", "district_name": "Alipurduar", "centroid_lat": 26.49, "centroid_lon": 89.52, "is_high_risk": true, "susceptibility": 3, "zone": "himalayan",
+   "blocks": [
+     {"block_code": "WB_ALD_ALD", "block_name": "Alipurduar", "lat": 26.49, "lon": 89.52},
+     {"block_code": "WB_ALD_JAL", "block_name": "Jalpaiguri Foothills", "lat": 26.55, "lon": 88.72}
    ]},
 
   {"state_code": "AR", "state_name": "Arunachal Pradesh", "district_code": "AR_EKS", "district_name": "East Kameng", "centroid_lat": 27.40, "centroid_lon": 92.70, "is_high_risk": true, "susceptibility": 5, "zone": "northeast",
    "blocks": [
      {"block_code": "AR_EKS_SEP", "block_name": "Seppa", "lat": 27.33, "lon": 92.90},
-     {"block_code": "AR_EKS_NAR", "block_name": "Naharlagun", "lat": 27.12, "lon": 93.70}
+     {"block_code": "AR_EKS_NAR", "block_name": "Naharlagun", "lat": 27.12, "lon": 93.70},
+     {"block_code": "AR_EKS_PAK", "block_name": "Pakke Kessang", "lat": 27.17, "lon": 93.04}
    ]},
   {"state_code": "AR", "state_name": "Arunachal Pradesh", "district_code": "AR_LWS", "district_name": "Lower Subansiri", "centroid_lat": 27.43, "centroid_lon": 93.81, "is_high_risk": true, "susceptibility": 4, "zone": "northeast",
    "blocks": [
      {"block_code": "AR_LWS_ZER", "block_name": "Ziro", "lat": 27.54, "lon": 93.83},
      {"block_code": "AR_LWS_HAP", "block_name": "Hapoli", "lat": 27.54, "lon": 93.60}
+   ]},
+  {"state_code": "AR", "state_name": "Arunachal Pradesh", "district_code": "AR_PPT", "district_name": "Papum Pare", "centroid_lat": 27.10, "centroid_lon": 93.62, "is_high_risk": true, "susceptibility": 4, "zone": "northeast",
+   "blocks": [
+     {"block_code": "AR_PPT_ITA", "block_name": "Itanagar", "lat": 27.10, "lon": 93.62},
+     {"block_code": "AR_PPT_NAH", "block_name": "Naharlagun", "lat": 27.11, "lon": 93.69},
+     {"block_code": "AR_PPT_SAG", "block_name": "Sagalee", "lat": 27.24, "lon": 93.45}
+   ]},
+  {"state_code": "AR", "state_name": "Arunachal Pradesh", "district_code": "AR_UPD", "district_name": "Upper Dibang Valley", "centroid_lat": 28.20, "centroid_lon": 95.87, "is_high_risk": true, "susceptibility": 5, "zone": "northeast",
+   "blocks": [
+     {"block_code": "AR_UPD_ANN", "block_name": "Anini", "lat": 28.78, "lon": 95.87},
+     {"block_code": "AR_UPD_ETA", "block_name": "Etalin", "lat": 28.29, "lon": 95.95}
+   ]},
+  {"state_code": "AR", "state_name": "Arunachal Pradesh", "district_code": "AR_CHN", "district_name": "Changlang", "centroid_lat": 27.14, "centroid_lon": 96.23, "is_high_risk": true, "susceptibility": 4, "zone": "northeast",
+   "blocks": [
+     {"block_code": "AR_CHN_CHN", "block_name": "Changlang", "lat": 27.14, "lon": 96.23},
+     {"block_code": "AR_CHN_NAM", "block_name": "Nampong", "lat": 27.26, "lon": 96.52}
    ]},
 
   {"state_code": "NL", "state_name": "Nagaland", "district_code": "NL_PHK", "district_name": "Phek", "centroid_lat": 25.68, "centroid_lon": 94.47, "is_high_risk": true, "susceptibility": 4, "zone": "northeast",
@@ -228,16 +429,133 @@
      {"block_code": "NL_PHK_PHK", "block_name": "Phek", "lat": 25.69, "lon": 94.47},
      {"block_code": "NL_PHK_DRI", "block_name": "Dhansiripar", "lat": 25.98, "lon": 93.78}
    ]},
+  {"state_code": "NL", "state_name": "Nagaland", "district_code": "NL_KPH", "district_name": "Kohima", "centroid_lat": 25.67, "centroid_lon": 94.12, "is_high_risk": true, "susceptibility": 4, "zone": "northeast",
+   "blocks": [
+     {"block_code": "NL_KPH_KOH", "block_name": "Kohima", "lat": 25.67, "lon": 94.12},
+     {"block_code": "NL_KPH_KEZ", "block_name": "Kezocha", "lat": 25.80, "lon": 94.02}
+   ]},
+  {"state_code": "NL", "state_name": "Nagaland", "district_code": "NL_TUE", "district_name": "Tuensang", "centroid_lat": 26.27, "centroid_lon": 94.82, "is_high_risk": true, "susceptibility": 4, "zone": "northeast",
+   "blocks": [
+     {"block_code": "NL_TUE_TUE", "block_name": "Tuensang", "lat": 26.27, "lon": 94.82},
+     {"block_code": "NL_TUE_SHA", "block_name": "Shamator", "lat": 26.55, "lon": 94.73}
+   ]},
+  {"state_code": "NL", "state_name": "Nagaland", "district_code": "NL_MOK", "district_name": "Mokokchung", "centroid_lat": 26.32, "centroid_lon": 94.52, "is_high_risk": true, "susceptibility": 3, "zone": "northeast",
+   "blocks": [
+     {"block_code": "NL_MOK_MOK", "block_name": "Mokokchung", "lat": 26.32, "lon": 94.52},
+     {"block_code": "NL_MOK_WAT", "block_name": "Watsami", "lat": 26.46, "lon": 94.42}
+   ]},
+
+  {"state_code": "TR", "state_name": "Tripura", "district_code": "TR_DHA", "district_name": "Dhalai", "centroid_lat": 23.56, "centroid_lon": 91.73, "is_high_risk": true, "susceptibility": 4, "zone": "northeast",
+   "blocks": [
+     {"block_code": "TR_DHA_AMB", "block_name": "Ambassa", "lat": 23.95, "lon": 91.85},
+     {"block_code": "TR_DHA_KAM", "block_name": "Kamalpur", "lat": 24.19, "lon": 91.83},
+     {"block_code": "TR_DHA_GAN", "block_name": "Gandachara", "lat": 23.74, "lon": 91.64}
+   ]},
+  {"state_code": "TR", "state_name": "Tripura", "district_code": "TR_GOH", "district_name": "Gomati", "centroid_lat": 23.07, "centroid_lon": 91.61, "is_high_risk": true, "susceptibility": 3, "zone": "northeast",
+   "blocks": [
+     {"block_code": "TR_GOH_UDA", "block_name": "Udaipur", "lat": 23.54, "lon": 91.49},
+     {"block_code": "TR_GOH_SAB", "block_name": "Sabroom", "lat": 22.99, "lon": 91.72}
+   ]},
+  {"state_code": "TR", "state_name": "Tripura", "district_code": "TR_UNK", "district_name": "Unakoti", "centroid_lat": 24.33, "centroid_lon": 92.02, "is_high_risk": true, "susceptibility": 4, "zone": "northeast",
+   "blocks": [
+     {"block_code": "TR_UNK_KAI", "block_name": "Kailashahar", "lat": 24.33, "lon": 92.00},
+     {"block_code": "TR_UNK_CHA", "block_name": "Chandipur", "lat": 24.45, "lon": 92.13}
+   ]},
 
   {"state_code": "TN", "state_name": "Tamil Nadu", "district_code": "TN_NIL", "district_name": "Nilgiris", "centroid_lat": 11.41, "centroid_lon": 76.73, "is_high_risk": true, "susceptibility": 4, "zone": "western_ghats",
    "blocks": [
      {"block_code": "TN_NIL_OOT", "block_name": "Ooty", "lat": 11.41, "lon": 76.70},
      {"block_code": "TN_NIL_KOT", "block_name": "Kotagiri", "lat": 11.43, "lon": 76.87},
-     {"block_code": "TN_NIL_GUI", "block_name": "Gudalur", "lat": 11.50, "lon": 76.49}
+     {"block_code": "TN_NIL_GUI", "block_name": "Gudalur", "lat": 11.50, "lon": 76.49},
+     {"block_code": "TN_NIL_CON", "block_name": "Coonoor", "lat": 11.35, "lon": 76.79},
+     {"block_code": "TN_NIL_KUN", "block_name": "Kundah", "lat": 11.35, "lon": 76.66}
    ]},
   {"state_code": "TN", "state_name": "Tamil Nadu", "district_code": "TN_THN", "district_name": "Theni", "centroid_lat": 10.01, "centroid_lon": 77.48, "is_high_risk": true, "susceptibility": 3, "zone": "western_ghats",
    "blocks": [
      {"block_code": "TN_THN_BOD", "block_name": "Bodinayakkanur", "lat": 10.01, "lon": 77.35},
-     {"block_code": "TN_THN_THE", "block_name": "Theni", "lat": 10.00, "lon": 77.48}
+     {"block_code": "TN_THN_THE", "block_name": "Theni", "lat": 10.00, "lon": 77.48},
+     {"block_code": "TN_THN_AND", "block_name": "Andipatti", "lat": 9.99, "lon": 77.63}
+   ]},
+  {"state_code": "TN", "state_name": "Tamil Nadu", "district_code": "TN_COI", "district_name": "Coimbatore", "centroid_lat": 11.00, "centroid_lon": 76.97, "is_high_risk": true, "susceptibility": 3, "zone": "western_ghats",
+   "blocks": [
+     {"block_code": "TN_COI_POL", "block_name": "Pollachi", "lat": 10.66, "lon": 77.01},
+     {"block_code": "TN_COI_ANT", "block_name": "Anaimalai", "lat": 10.60, "lon": 76.95}
+   ]},
+  {"state_code": "TN", "state_name": "Tamil Nadu", "district_code": "TN_KAN", "district_name": "Kanyakumari", "centroid_lat": 8.18, "centroid_lon": 77.41, "is_high_risk": true, "susceptibility": 3, "zone": "western_ghats",
+   "blocks": [
+     {"block_code": "TN_KAN_VIL", "block_name": "Vilavancode", "lat": 8.17, "lon": 77.28},
+     {"block_code": "TN_KAN_KAL", "block_name": "Kalkulam", "lat": 8.28, "lon": 77.27}
+   ]},
+
+  {"state_code": "OR", "state_name": "Odisha", "district_code": "OR_KDJ", "district_name": "Koraput", "centroid_lat": 18.81, "centroid_lon": 82.71, "is_high_risk": true, "susceptibility": 4, "zone": "eastern_ghats",
+   "blocks": [
+     {"block_code": "OR_KDJ_KOR", "block_name": "Koraput", "lat": 18.81, "lon": 82.71},
+     {"block_code": "OR_KDJ_JEY", "block_name": "Jeypore", "lat": 18.85, "lon": 82.57},
+     {"block_code": "OR_KDJ_LMP", "block_name": "Lamptaput", "lat": 19.03, "lon": 82.40}
+   ]},
+  {"state_code": "OR", "state_name": "Odisha", "district_code": "OR_MKG", "district_name": "Malkangiri", "centroid_lat": 18.36, "centroid_lon": 81.89, "is_high_risk": true, "susceptibility": 4, "zone": "eastern_ghats",
+   "blocks": [
+     {"block_code": "OR_MKG_MAL", "block_name": "Malkangiri", "lat": 18.36, "lon": 81.89},
+     {"block_code": "OR_MKG_MOT", "block_name": "Mottu", "lat": 18.31, "lon": 81.70}
+   ]},
+  {"state_code": "OR", "state_name": "Odisha", "district_code": "OR_KND", "district_name": "Kandhamal", "centroid_lat": 20.01, "centroid_lon": 84.04, "is_high_risk": true, "susceptibility": 4, "zone": "eastern_ghats",
+   "blocks": [
+     {"block_code": "OR_KND_PHU", "block_name": "Phulbani", "lat": 20.48, "lon": 84.23},
+     {"block_code": "OR_KND_BAL", "block_name": "Baliguda", "lat": 20.22, "lon": 83.90},
+     {"block_code": "OR_KND_G26", "block_name": "G Udayagiri", "lat": 19.96, "lon": 83.81}
+   ]},
+  {"state_code": "OR", "state_name": "Odisha", "district_code": "OR_RGD", "district_name": "Rayagada", "centroid_lat": 19.17, "centroid_lon": 83.42, "is_high_risk": true, "susceptibility": 4, "zone": "eastern_ghats",
+   "blocks": [
+     {"block_code": "OR_RGD_RGD", "block_name": "Rayagada", "lat": 19.17, "lon": 83.42},
+     {"block_code": "OR_RGD_KAL", "block_name": "Kalyanshinghpur", "lat": 19.28, "lon": 83.14}
+   ]},
+  {"state_code": "OR", "state_name": "Odisha", "district_code": "OR_NWP", "district_name": "Nabarangpur", "centroid_lat": 19.24, "centroid_lon": 82.54, "is_high_risk": true, "susceptibility": 3, "zone": "eastern_ghats",
+   "blocks": [
+     {"block_code": "OR_NWP_NAB", "block_name": "Nabarangpur", "lat": 19.24, "lon": 82.54},
+     {"block_code": "OR_NWP_UMR", "block_name": "Umerkote", "lat": 19.67, "lon": 82.20}
+   ]},
+
+  {"state_code": "AP", "state_name": "Andhra Pradesh", "district_code": "AP_VIZ", "district_name": "Visakhapatnam", "centroid_lat": 17.69, "centroid_lon": 83.21, "is_high_risk": true, "susceptibility": 3, "zone": "eastern_ghats",
+   "blocks": [
+     {"block_code": "AP_VIZ_ARK", "block_name": "Araku Valley", "lat": 18.33, "lon": 82.88},
+     {"block_code": "AP_VIZ_PAD", "block_name": "Paderu", "lat": 18.07, "lon": 82.68},
+     {"block_code": "AP_VIZ_LLU", "block_name": "Lambasingi", "lat": 17.90, "lon": 82.80}
+   ]},
+  {"state_code": "AP", "state_name": "Andhra Pradesh", "district_code": "AP_ALL", "district_name": "Alluri Sitharama Raju", "centroid_lat": 17.87, "centroid_lon": 82.10, "is_high_risk": true, "susceptibility": 4, "zone": "eastern_ghats",
+   "blocks": [
+     {"block_code": "AP_ALL_RMP", "block_name": "Rampachodavaram", "lat": 17.44, "lon": 81.78},
+     {"block_code": "AP_ALL_DEV", "block_name": "Devipatnam", "lat": 17.30, "lon": 81.71},
+     {"block_code": "AP_ALL_CHI", "block_name": "Chintapalle", "lat": 18.05, "lon": 82.35}
+   ]},
+
+  {"state_code": "TS", "state_name": "Telangana", "district_code": "TS_KHM", "district_name": "Khammam", "centroid_lat": 17.25, "centroid_lon": 80.15, "is_high_risk": true, "susceptibility": 3, "zone": "eastern_ghats",
+   "blocks": [
+     {"block_code": "TS_KHM_KHM", "block_name": "Khammam", "lat": 17.25, "lon": 80.15},
+     {"block_code": "TS_KHM_BAD", "block_name": "Bhadrachalam", "lat": 17.67, "lon": 80.89},
+     {"block_code": "TS_KHM_ASW", "block_name": "Aswaraopeta", "lat": 17.76, "lon": 81.27}
+   ]},
+  {"state_code": "TS", "state_name": "Telangana", "district_code": "TS_MHB", "district_name": "Mahbubnagar", "centroid_lat": 16.74, "centroid_lon": 77.98, "is_high_risk": true, "susceptibility": 2, "zone": "eastern_ghats",
+   "blocks": [
+     {"block_code": "TS_MHB_MHB", "block_name": "Mahbubnagar", "lat": 16.74, "lon": 77.98},
+     {"block_code": "TS_MHB_NAG", "block_name": "Nagarkurnool", "lat": 16.48, "lon": 78.32}
+   ]},
+
+  {"state_code": "GA", "state_name": "Goa", "district_code": "GA_NGA", "district_name": "North Goa", "centroid_lat": 15.49, "centroid_lon": 73.82, "is_high_risk": true, "susceptibility": 3, "zone": "western_ghats",
+   "blocks": [
+     {"block_code": "GA_NGA_BIC", "block_name": "Bicholim", "lat": 15.60, "lon": 73.97},
+     {"block_code": "GA_NGA_SAT", "block_name": "Satari", "lat": 15.63, "lon": 74.14},
+     {"block_code": "GA_NGA_PON", "block_name": "Ponda", "lat": 15.40, "lon": 74.00}
+   ]},
+  {"state_code": "GA", "state_name": "Goa", "district_code": "GA_SGA", "district_name": "South Goa", "centroid_lat": 15.17, "centroid_lon": 74.01, "is_high_risk": true, "susceptibility": 3, "zone": "western_ghats",
+   "blocks": [
+     {"block_code": "GA_SGA_SAN", "block_name": "Sanguem", "lat": 15.23, "lon": 74.13},
+     {"block_code": "GA_SGA_CAN", "block_name": "Canacona", "lat": 14.99, "lon": 74.06}
+   ]},
+
+  {"state_code": "LA", "state_name": "Ladakh", "district_code": "LA_KAR", "district_name": "Kargil", "centroid_lat": 34.56, "centroid_lon": 76.13, "is_high_risk": true, "susceptibility": 5, "zone": "himalayan",
+   "blocks": [
+     {"block_code": "LA_KAR_KAR", "block_name": "Kargil Town", "lat": 34.56, "lon": 76.13},
+     {"block_code": "LA_KAR_ZAN", "block_name": "Zanskar", "lat": 33.45, "lon": 76.80},
+     {"block_code": "LA_KAR_DRA", "block_name": "Drass", "lat": 34.43, "lon": 75.76}
    ]}
 ]

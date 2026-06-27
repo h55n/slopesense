@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { api, Alert, apiUrl, formatFPI, tierBadgeClass, fpiColor, tierColor } from '@/lib/api';
+import { api, Alert, apiUrl, formatFPI, tierBadgeClass, fpiColor, tierColor, getRiskLevel } from '@/lib/api';
 
 const STATE_NAMES: Record<string, string> = {
   KL: 'Kerala', UK: 'Uttarakhand', SK: 'Sikkim', HP: 'Himachal Pradesh',
@@ -167,6 +167,7 @@ export default function DistrictsPage() {
                     <SortIcon field="district_name" />
                   </SortTh>
                   <th className="px-5 py-4 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">State</th>
+                  <th className="px-5 py-4 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">Risk Level</th>
                   <SortTh label="Tier" field="tier" onSort={toggleSort}>
                     <SortIcon field="tier" />
                   </SortTh>
@@ -198,9 +199,18 @@ export default function DistrictsPage() {
                         <span className="text-[13px] font-medium text-white/80">{STATE_NAMES[alert.state_code] || alert.state_code}</span>
                       </td>
                       <td className="px-5 py-5">
-                        <span className={`inline-flex rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] shadow-sm ${tierBadgeClass(alert.tier)}`}>
-                          {alert.tier}
-                        </span>
+                        {(() => {
+                          const rl = getRiskLevel(alert.fpi_score ?? 0);
+                          return (
+                            <div className="flex items-center gap-2">
+                              <span className="text-base">{rl.emoji}</span>
+                              <div>
+                                <div className="text-[11px] font-bold" style={{ color: rl.color }}>{rl.label}</div>
+                                <div className="text-[9px] text-white/40 mt-0.5">{rl.short}</div>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </td>
                       <td className="px-5 py-5">
                         <div className="flex items-center gap-4">
@@ -251,14 +261,15 @@ export default function DistrictsPage() {
           </motion.div>
         )}
 
-        {/* FPI Legend */}
+        {/* Risk Level Legend */}
         <div className="mt-8 flex flex-wrap items-center gap-6 text-xs text-white/40">
-          <span>FPI Legend:</span>
+          <span>Risk Level:</span>
           {[
-            { label: 'EMERGENCY ≥80%', color: '#c5ff4a' },
-            { label: 'WARNING ≥65%', color: '#ef4444' },
-            { label: 'WATCH ≥40%', color: '#f59e0b' },
-            { label: 'NORMAL <40%', color: '#10b981' },
+            { label: '🆘 CRITICAL ≥80%', color: '#dc2626' },
+            { label: '🔴 HIGH ≥65%', color: '#ea580c' },
+            { label: '⚠️ ELEVATED ≥40%', color: '#d97706' },
+            { label: '🟡 MODERATE ≥20%', color: '#65a30d' },
+            { label: '✅ LOW <20%', color: '#16a34a' },
           ].map(l => (
             <span key={l.label} className="flex items-center gap-1.5">
               <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: l.color }} />

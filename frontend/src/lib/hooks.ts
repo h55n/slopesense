@@ -1,8 +1,9 @@
 // SlopeSense custom hooks
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { api, Alert, RetroSummary } from './api';
 
-const POLL_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const POLL_INTERVAL = 30 * 1000;  // 30 seconds (was 5 minutes but no backoff)
+const MAX_BACKOFF = 5 * 60 * 1000; // 5 min max backoff on errors
 
 export function useAlerts() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -10,6 +11,7 @@ export function useAlerts() {
   const [lastRun, setLastRun] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const backoffRef = useRef(POLL_INTERVAL);
 
   const fetchAlerts = useCallback(async () => {
     try {
@@ -23,15 +25,20 @@ export function useAlerts() {
         watch: data.alerts.filter(a => a.tier === 'WATCH').length,
       });
       setError(null);
+      backoffRef.current = POLL_INTERVAL; // reset backoff on success
     } catch (err: any) {
+      // Exponential backoff on errors to avoid hammering the API
+      backoffRef.current = Math.min(backoffRef.current * 2, MAX_BACKOFF);
       setError(err.message);
       // Load synthetic demo data on error
-      setAlerts(DEMO_ALERTS);
-      setStats({ total: DEMO_ALERTS.length, emergency: 0, warning: 2, watch: 3 });
+      if (alerts.length === 0) {
+        setAlerts(DEMO_ALERTS);
+        setStats({ total: DEMO_ALERTS.length, emergency: 1, warning: 2, watch: 2 });
+      }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetchAlerts();
@@ -41,6 +48,7 @@ export function useAlerts() {
 
   return { alerts, stats, lastRun, loading, error, refetch: fetchAlerts };
 }
+
 
 export function useRetrospective() {
   const [summary, setSummary] = useState<RetroSummary | null>(null);

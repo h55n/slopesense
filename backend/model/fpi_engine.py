@@ -51,6 +51,96 @@ RAINFALL_THRESHOLDS_MM = {
     "default":        {"watch":  90, "warning": 160, "emergency": 250},
 }
 
+# ── Human-readable Risk Labels ────────────────────────────────────────────────
+# These translate the technical FPI (0–1) into plain language for district
+# officers and Gram Pradhans who need immediate, intuitive understanding.
+
+RISK_LEVELS = [
+    {
+        "min_fpi": 0.80,
+        "label": "CRITICAL",
+        "short": "Landslide Imminent",
+        "description": "Landslide is imminent or already occurring. Immediate evacuation required. All emergency channels activated.",
+        "action": "Evacuate all households on or below slopes immediately. Do not wait.",
+        "color": "#dc2626",   # red-600
+        "bg_color": "#fef2f2",
+        "emoji": "🆘",
+    },
+    {
+        "min_fpi": 0.65,
+        "label": "HIGH",
+        "short": "Very High Risk",
+        "description": "Very high probability of landslide within 24–48 hours. Conditions are dangerous.",
+        "action": "Pre-position NDRF/SDRF. Issue public advisory. Pre-evacuate highest-risk households near slopes.",
+        "color": "#ea580c",   # orange-600
+        "bg_color": "#fff7ed",
+        "emoji": "🔴",
+    },
+    {
+        "min_fpi": 0.40,
+        "label": "ELEVATED",
+        "short": "Elevated Risk",
+        "description": "Elevated landslide risk. Soil is saturated and terrain is primed. Conditions could deteriorate rapidly.",
+        "action": "Alert DDMA. Monitor slopes closely. Warn communities on steep terrain.",
+        "color": "#d97706",   # amber-600
+        "bg_color": "#fffbeb",
+        "emoji": "⚠️",
+    },
+    {
+        "min_fpi": 0.20,
+        "label": "MODERATE",
+        "short": "Moderate Risk",
+        "description": "Some risk factors are present but conditions are not yet dangerous. Continue monitoring.",
+        "action": "Stay informed. Review evacuation routes. No immediate action needed.",
+        "color": "#65a30d",   # lime-600
+        "bg_color": "#f7fee7",
+        "emoji": "🟡",
+    },
+    {
+        "min_fpi": 0.0,
+        "label": "LOW",
+        "short": "Low Risk",
+        "description": "No significant landslide risk indicators at this time.",
+        "action": "Normal monitoring. No action required.",
+        "color": "#16a34a",   # green-600
+        "bg_color": "#f0fdf4",
+        "emoji": "✅",
+    },
+]
+
+
+def get_risk_level(fpi_score: float) -> dict:
+    """Return the full risk level dict for a given FPI score."""
+    for level in RISK_LEVELS:
+        if fpi_score >= level["min_fpi"]:
+            return level
+    return RISK_LEVELS[-1]
+
+
+def get_risk_label(fpi_score: float) -> str:
+    """Return short risk label (e.g. 'HIGH', 'ELEVATED') for an FPI score."""
+    return get_risk_level(fpi_score)["label"]
+
+
+def get_risk_description(fpi_score: float) -> str:
+    """Return plain-English description of the risk for laypersons."""
+    return get_risk_level(fpi_score)["description"]
+
+
+def get_risk_action(fpi_score: float) -> str:
+    """Return the recommended action for a given FPI score."""
+    return get_risk_level(fpi_score)["action"]
+
+
+def get_risk_color(fpi_score: float) -> str:
+    """Return semantic hex color for a given FPI score."""
+    return get_risk_level(fpi_score)["color"]
+
+
+def get_risk_short(fpi_score: float) -> str:
+    """Return short human-readable label (e.g. 'Very High Risk')."""
+    return get_risk_level(fpi_score)["short"]
+
 
 @dataclass
 class CellFPI:

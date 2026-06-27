@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Alert, formatFPI, tierBadgeClass, tierColor } from '@/lib/api';
+import { Alert, formatFPI, tierBadgeClass, tierColor, getRiskLevel, fpiBarColor } from '@/lib/api';
 import { useAlerts, useRetrospective } from '@/lib/hooks';
 import SearchMeter from '@/components/SearchMeter';
 
@@ -132,9 +132,9 @@ export default function DashboardPage() {
 
             {/* Metric cards */}
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <MetricCard label="Active alerts"  value={`${stats.total}`}     detail="Live blocks watched"            delay={0.1} />
-              <MetricCard label="Warning tier"   value={`${stats.warning}`}   detail="Blocks above 65% FPI"          delay={0.15} accent="warning" />
-              <MetricCard label="Emergency tier" value={`${stats.emergency}`} detail="Blocks above 80% FPI"          delay={0.2}  accent="emergency" />
+              <MetricCard label="Active blocks"  value={`${stats.total}`}     detail="Live high-risk zones monitored"  delay={0.1} />
+              <MetricCard label="HIGH risk"      value={`${stats.warning}`}   detail="Landslide very likely 24–48h"    delay={0.15} accent="warning" />
+              <MetricCard label="CRITICAL risk"  value={`${stats.emergency}`} detail="Landslide imminent — act now"     delay={0.2}  accent="emergency" />
               <MetricCard
                 label="Retrospective"
                 value={summary ? `${summary.flagged_at_t24}/${summary.total_events}` : '—'}
@@ -308,9 +308,27 @@ export default function DashboardPage() {
                           </div>
                         </div>
 
+                        {/* Human-readable risk banner */}
+                        {(() => {
+                          const rl = getRiskLevel(selectedAlert.fpi_score);
+                          return (
+                            <div
+                              className="rounded-xl border p-4 space-y-1"
+                              style={{ borderColor: `${rl.color}40`, backgroundColor: `${rl.color}0D` }}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg">{rl.emoji}</span>
+                                <span className="text-base font-bold" style={{ color: rl.color }}>{rl.short}</span>
+                              </div>
+                              <p className="text-[12px] leading-relaxed text-white/70">{selectedAlert.risk_description || rl.description}</p>
+                              <p className="text-[11px] font-semibold mt-2" style={{ color: rl.color }}>Action: {selectedAlert.risk_action || rl.action}</p>
+                            </div>
+                          );
+                        })()}
+
                         <div className="grid gap-3 sm:grid-cols-2">
-                          <MetricCardLight label="Current FPI"   value={formatFPI(selectedAlert.fpi_score)} highlight />
-                          <MetricCardLight label="24h forecast"  value={formatFPI(selectedAlert.fpi_24h)} />
+                          <MetricCardLight label="FPI Score"     value={formatFPI(selectedAlert.fpi_score)} highlight />
+                          <MetricCardLight label="24h Forecast"  value={formatFPI(selectedAlert.fpi_24h)} />
                           <MetricCardLight label="95% CI range"  value={`${Math.round(selectedAlert.fpi_ci_lower * 100)}–${Math.round(selectedAlert.fpi_ci_upper * 100)}%`} />
                           <MetricCardLight label="Breach fraction" value={`${Math.round(selectedAlert.breach_fraction * 100)}%`} />
                         </div>
@@ -720,6 +738,7 @@ function FeatureCard({ eyebrow, title, copy }: { eyebrow: string; title: string;
 // ── Signal card (top 3 in console) ───────────────────────────────────────────
 
 function SignalCard({ alert, active, onClick }: { alert: Alert; active: boolean; onClick: () => void }) {
+  const rl = getRiskLevel(alert.fpi_score);
   return (
     <motion.button
       whileHover={{ scale: 1.02 }}
@@ -731,12 +750,17 @@ function SignalCard({ alert, active, onClick }: { alert: Alert; active: boolean;
           : 'border-white/6 bg-white/3 hover:border-white/14'
       }`}
     >
-      {active && <div className="absolute top-0 left-0 w-0.5 h-full bg-slope-accent rounded-r-sm" />}
+      {active && <div className="absolute top-0 left-0 w-0.5 h-full rounded-r-sm" style={{ backgroundColor: rl.color }} />}
       <div className="pl-1">
-        <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/40 mb-1">{alert.tier}</div>
+        <div className="flex items-center gap-1.5 mb-1">
+          <span className="text-sm">{rl.emoji}</span>
+          <span className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: rl.color }}>{rl.label}</span>
+        </div>
         <div className="font-serif text-lg leading-tight text-white/90 truncate">{alert.block_name}</div>
-        <div className="mt-2.5 text-base font-bold" style={{ color: tierColor(alert.tier) }}>
-          {formatFPI(alert.fpi_score)}
+        <div className="text-[10px] text-white/40 truncate mt-0.5">{alert.district_name}</div>
+        <div className="mt-2.5 flex items-baseline gap-2">
+          <span className="text-base font-bold" style={{ color: rl.color }}>{formatFPI(alert.fpi_score)}</span>
+          <span className="text-[10px] text-white/35">FPI</span>
         </div>
       </div>
     </motion.button>
@@ -785,6 +809,7 @@ function Panel({ eyebrow, title, children }: { eyebrow: string; title: string; c
 // ── Alert line ────────────────────────────────────────────────────────────────
 
 function AlertLine({ alert, active, onClick }: { alert: Alert; active: boolean; onClick: () => void }) {
+  const rl = getRiskLevel(alert.fpi_score);
   return (
     <motion.button
       whileHover={{ x: 3 }}
@@ -795,7 +820,7 @@ function AlertLine({ alert, active, onClick }: { alert: Alert; active: boolean; 
           : 'border-white/5 bg-white/3 hover:border-white/12 hover:bg-white/5'
       }`}
     >
-      {active && <motion.div layoutId="alert-active" className="absolute left-0 top-0 bottom-0 w-0.5 bg-slope-accent" />}
+      {active && <motion.div layoutId="alert-active" className="absolute left-0 top-0 bottom-0 w-0.5" style={{ backgroundColor: rl.color }} />}
       <div className="flex items-center justify-between gap-3 pl-1">
         <div className="min-w-0 flex-1">
           <div className="font-serif text-lg font-medium text-white/90 truncate">{alert.block_name}</div>
@@ -804,11 +829,11 @@ function AlertLine({ alert, active, onClick }: { alert: Alert; active: boolean; 
           </div>
         </div>
         <div className="text-right shrink-0">
-          <div className="text-lg font-bold" style={{ color: tierColor(alert.tier) }}>
+          <div className="text-lg font-bold" style={{ color: rl.color }}>
             {formatFPI(alert.fpi_score)}
           </div>
-          <div className={`mt-1 inline-flex rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] ${tierBadgeClass(alert.tier)}`}>
-            {alert.tier}
+          <div className="mt-1 text-[9px] font-bold uppercase tracking-[0.1em]" style={{ color: rl.color }}>
+            {rl.emoji} {rl.label}
           </div>
         </div>
       </div>

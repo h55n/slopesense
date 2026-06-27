@@ -48,6 +48,9 @@ from backend.api.metrics import (
 from backend.api.reports import generate_district_report
 from backend.api.webhooks import router as webhooks_router
 from backend.config import settings
+from backend.model.fpi_engine import (
+    get_risk_label, get_risk_description, get_risk_color, get_risk_action, get_risk_short
+)
 from backend.models import Alert, AlertContact, AlertTier, FPIHistory
 
 logger = logging.getLogger(__name__)
@@ -336,7 +339,7 @@ async def get_active_alerts(
         query += " AND state_code = :state"
         params["state"] = state
         
-    query += " ORDER BY fpi_score DESC LIMIT 100"
+    query += " ORDER BY fpi_score DESC LIMIT 200"
     
     result = await db.execute(text(query), params)
     rows = result.fetchall()
@@ -345,7 +348,17 @@ async def get_active_alerts(
     for row in rows:
         alert_dict = dict(row._mapping)
         if isinstance(alert_dict.get("dominant_signals"), str):
-            alert_dict["dominant_signals"] = json.loads(alert_dict["dominant_signals"])
+            try:
+                alert_dict["dominant_signals"] = json.loads(alert_dict["dominant_signals"])
+            except Exception:
+                alert_dict["dominant_signals"] = []
+        # Enrich with human-readable risk fields
+        fpi = alert_dict.get("fpi_score", 0.0) or 0.0
+        alert_dict["risk_label"] = get_risk_label(fpi)
+        alert_dict["risk_short"] = get_risk_short(fpi)
+        alert_dict["risk_description"] = get_risk_description(fpi)
+        alert_dict["risk_action"] = get_risk_action(fpi)
+        alert_dict["risk_color"] = get_risk_color(fpi)
         alerts.append(alert_dict)
         
     # Get last run timestamp from DB
@@ -589,12 +602,79 @@ async def get_fpi_geojson(
             },
             "properties": {
                 "fpi": mapping["fpi_score"],
+                "fpi_pct": round(mapping["fpi_score"] * 100),
                 "fpi_24h": mapping["fpi_24h"],
                 "tier": mapping["tier"],
                 "district": mapping["district_name"],
                 "block": mapping["block_name"],
+                "block_code": mapping["block_code"],
+                "state_code": mapping["state_code"],
                 "rainfall_3d_mm": mapping["rainfall_3d_mm"],
                 "soil_moisture_pct": mapping["soil_moisture_percentile"],
+                "risk_label": get_risk_label(mapping["fpi_score"] or 0.0),
+                "risk_short": get_risk_short(mapping["fpi_score"] or 0.0),
+                "risk_color": get_risk_color(mapping["fpi_score"] or 0.0),
+                "risk_description": get_risk_description(mapping["fpi_score"] or 0.0),
+            }
+        })
+
+    return {"type": "FeatureCollection", "features": features}
+
+
+@app.get("/v1/geojson/districts", tags=["GeoJSON"])
+async def get_districts_geojson(
+    min_fpi: float = Query(0.10, description="Minimum FPI for inclusion"),
+    state: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    GeoJSON of district-level aggregated FPI for choropleth rendering.
+    Returns one feature per district with max FPI across all its blocks.
+    """
+    from sqlalchemy import text
+
+    query = """
+        SELECT district_code, district_name, state_code, state_name,
+               MAX(fpi_score) as max_fpi, MAX(fpi_24h) as max_fpi_24h,
+               AVG(centroid_lat) as lat, AVG(centroid_lon) as lon,
+               COUNT(*) as block_count
+        FROM alerts
+        WHERE is_active = 1 AND fpi_score >= :min_fpi
+    """
+    params: Dict = {"min_fpi": min_fpi}
+    if state:
+        query += " AND state_code = :state"
+        params["state"] = state
+    query += " GROUP BY district_code, district_name, state_code, state_name ORDER BY max_fpi DESC"
+
+    try:
+        result = await db.execute(text(query), params)
+        rows = result.fetchall()
+    except Exception:
+        rows = []
+
+    features = []
+    for row in rows:
+        m = dict(row._mapping)
+        if not m.get("lat") or not m.get("lon"):
+            continue
+        fpi = m["max_fpi"] or 0.0
+        features.append({
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [m["lon"], m["lat"]]},
+            "properties": {
+                "district_code": m["district_code"],
+                "district_name": m["district_name"],
+                "state_code": m["state_code"],
+                "state_name": m["state_name"],
+                "max_fpi": round(fpi, 4),
+                "max_fpi_pct": round(fpi * 100),
+                "max_fpi_24h": round(m["max_fpi_24h"] or 0.0, 4),
+                "block_count": m["block_count"],
+                "risk_label": get_risk_label(fpi),
+                "risk_short": get_risk_short(fpi),
+                "risk_color": get_risk_color(fpi),
+                "risk_description": get_risk_description(fpi),
             }
         })
 
@@ -610,10 +690,12 @@ async def get_alerts_geojson(min_fpi: float = Query(0.40), db: AsyncSession = De
             continue
         lat = alert.get("centroid_lat")
         lon = alert.get("centroid_lon")
+        fpi = alert.get("fpi_score", 0.0) or 0.0
+        props = {**alert, "risk_label": get_risk_label(fpi), "risk_color": get_risk_color(fpi)}
         features.append({
             "type": "Feature",
             "geometry": {"type": "Point", "coordinates": [lon or 76.0, lat or 11.5]},
-            "properties": alert,
+            "properties": props,
         })
     return {"type": "FeatureCollection", "features": features}
 

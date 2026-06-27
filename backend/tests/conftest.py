@@ -12,14 +12,15 @@ from pathlib import Path
 # Ensure backend is importable
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-# Use development environment for tests
-os.environ.setdefault("ENVIRONMENT", "test")
-os.environ.setdefault("DATABASE_URL", "postgresql://slopesense:slopesense@localhost:5432/slopesense_test")
-os.environ.setdefault("REDIS_URL", "redis://localhost:6379/1")
+# Force in-memory SQLite for all tests — no external DB required
+os.environ["ENVIRONMENT"] = "test"
+os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///:memory:"
+os.environ["REDIS_URL"] = "redis://localhost:6379/1"
 os.environ.setdefault("WHATSAPP_API_TOKEN", "")
 os.environ.setdefault("NASA_EARTHDATA_USERNAME", "")
 os.environ.setdefault("NASA_EARTHDATA_PASSWORD", "")
 os.environ["API_KEYS"] = ""
+
 
 
 @pytest.fixture
