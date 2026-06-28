@@ -18,7 +18,7 @@ logger = logging.getLogger("slopesense.api")
 
 
 RATE_LIMITS = {
-    "public": 100,
+    "public": 100000,
     "research": 1000,
     "paid": 10000,
 }
@@ -83,18 +83,41 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
 
         path = request.url.path
         requires_key = any(path.startswith(prefix) for prefix in self.protected_prefixes)
+        
+        if not requires_key:
+            return await call_next(request)
+
+        api_key = request.headers.get("x-api-key")
         configured_keys = set(settings.api_key_list)
+        
+        if not api_key:
+            if settings.is_production and not configured_keys:
+                return _json_response(status.HTTP_503_SERVICE_UNAVAILABLE, "API key authentication is not configured")
+            return _json_response(401, "Missing or invalid API key")
 
-        if requires_key and settings.is_production and not configured_keys:
-            return _json_response(
-                status.HTTP_503_SERVICE_UNAVAILABLE,
-                "API key authentication is not configured",
-            )
+        # 1. Check fallback/hardcoded keys first
+        if api_key in configured_keys:
+            return await call_next(request)
 
-        if requires_key and configured_keys:
-            api_key = request.headers.get("x-api-key")
-            if api_key not in configured_keys:
-                return _json_response(401, "Missing or invalid API key")
+        # 2. Check Database keys
+        from backend.api.database import AsyncSessionLocal
+        from backend.models import ApiKey
+        from sqlalchemy import select
+        
+        is_valid = False
+        try:
+            async with AsyncSessionLocal() as session:
+                result = await session.execute(select(ApiKey).where(ApiKey.key == api_key, ApiKey.is_active == True))
+                db_key = result.scalars().first()
+                if db_key:
+                    is_valid = True
+                    # Attach tier to request state for rate limiting
+                    request.state.tier = db_key.tier
+        except Exception as e:
+            logger.error(f"Error checking API key in DB: {e}")
+            
+        if not is_valid:
+            return _json_response(401, "Missing or invalid API key")
 
         return await call_next(request)
 

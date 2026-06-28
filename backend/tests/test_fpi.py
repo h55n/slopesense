@@ -205,6 +205,8 @@ class TestAlertEngine:
             "rainfall_3d_mm": 160.0,
             "soil_moisture_pct": 85.0,
             "run_timestamp": datetime.now(timezone.utc),
+            "lat": 11.5,
+            "lon": 76.1,
         }
         defaults.update(kwargs)
 

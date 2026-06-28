@@ -15,6 +15,8 @@ export interface Alert {
   district_name: string;
   block_code: string;
   block_name: string;
+  lat: number;
+  lon: number;
   fpi_score: number;
   fpi_ci_lower: number;
   fpi_ci_upper: number;

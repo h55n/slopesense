@@ -47,6 +47,7 @@ from backend.api.metrics import (
 )
 from backend.api.reports import generate_district_report
 from backend.api.webhooks import router as webhooks_router
+from backend.api.apikeys import router as apikeys_router
 from backend.config import settings
 from backend.model.fpi_engine import (
     get_risk_label, get_risk_description, get_risk_color, get_risk_action, get_risk_short
@@ -57,10 +58,28 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="SlopeSense API",
-    description="Landslide Risk Intelligence Platform — India",
-    version="0.1.0",
+    description=(
+        "**Landslide Risk Intelligence Platform — India**\n\n"
+        "Fuses free satellite data (NASA GPM, SMAP, Copernicus DEM, Sentinel-2) "
+        "into a probabilistic Failure Probability Index (FPI) per 1km² grid cell. "
+        "Updates every 6 hours. Delivers 24–48h forward forecasts to district officers "
+        "via GIS dashboard and WhatsApp.\n\n"
+        "**Authentication**: Most endpoints are public. Protected endpoints require "
+        "`x-api-key` header.\n\n"
+        "**CAP v1.2 Feed**: `GET /v1/cap/feed` — NDMA Sachet-compatible XML alert feed."
+    ),
+    version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    contact={
+        "name": "SlopeSense Team",
+        "url": "https://github.com/slopesense/slopesense",
+        "email": "team@slopesense.io",
+    },
+    license_info={
+        "name": "Apache 2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0",
+    },
 )
 
 # CORS — strict in production, permissive in dev
@@ -89,13 +108,15 @@ app.add_middleware(RateLimitMiddleware, redis_url=settings.redis_url)
 app.add_middleware(APIKeyMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
 app.include_router(webhooks_router)
+app.include_router(apikeys_router)
 
 
 @app.middleware("http")
 async def security_headers(request: Request, call_next):
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
+    if not request.url.path.startswith(("/docs", "/openapi.json")):
+        response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Permissions-Policy"] = "geolocation=(), microphone=()"
@@ -153,6 +174,9 @@ class RiskResponse(BaseModel):
     fpi_24h: Optional[float]
     fpi_48h: Optional[float]
     alert_tier: str
+    risk_label: Optional[str] = None
+    risk_color: Optional[str] = None
+    risk_description: Optional[str] = None
     dominant_signal: Optional[str]
     rainfall_3d_mm: Optional[float]
     soil_moisture_pct: Optional[float]
@@ -194,13 +218,16 @@ class ContactRegistration(BaseModel):
 
 @app.get("/", tags=["Health"])
 async def health():
+    """Health check endpoint. Returns system status, version, and active alert count."""
     active_alerts = await _active_alert_count()
     return {
-        "status": "ok",
+        "status": "healthy",
         "service": "SlopeSense API",
-        "version": "0.1.0",
+        "version": "1.0.0",
+        "environment": settings.environment,
         "last_model_run": _last_run.isoformat() if _last_run else None,
         "active_alerts": active_alerts,
+        "database": "connected",
     }
 
 
@@ -223,7 +250,16 @@ async def get_risk_point(
                 score = cell.get("fpi_24h", score)
             elif hours_ahead == 48:
                 score = cell.get("fpi_48h", score)
-            return RiskResponse(**{**cell, "fpi_score": score})
+            
+            from backend.model.fpi_engine import get_risk_level
+            level = get_risk_level(score)
+            return RiskResponse(**{
+                **cell, 
+                "fpi_score": score,
+                "risk_label": level["label"],
+                "risk_color": level["color"],
+                "risk_description": level["description"]
+            })
 
     # Run model on-demand for the point (hackathon mode)
     return await _compute_point_fpi(lat, lon, hours_ahead)
@@ -451,8 +487,8 @@ async def get_retrospective_summary(
         return _synthetic_retrospective_summary()
 
     query = """
-        SELECT event_id, event_name, event_date, district_code, lat, lon,
-               deaths, fpi_target_t24, was_flagged_24h, fpi_at_t24, description
+        SELECT id as event_id, event_name, event_date, district_code, lat, lon,
+               deaths, fpi_at_t24, was_flagged_24h, location_description as description
         FROM landslide_events
         ORDER BY event_date DESC
     """
@@ -517,6 +553,7 @@ async def get_retrospective_event(event_id: str):
 async def get_cap_feed(
     state: Optional[str] = Query(None),
     min_fpi: float = Query(0.65, description="Minimum FPI to include"),
+    db: AsyncSession = Depends(get_db),
 ):
     """
     CAP v1.2 XML alert feed.
@@ -527,10 +564,15 @@ async def get_cap_feed(
     from backend.alert.alert_engine import AlertEngine
     engine = AlertEngine()
 
+    if db is None:
+        alerts = _current_alerts
+    else:
+        alerts = await _get_active_alerts(db)
+
     alerts = [
-        a for a in _current_alerts
+        a for a in alerts
         if a.get("is_active")
-        and a["fpi_score"] >= min_fpi
+        and a.get("fpi_score", 0) >= min_fpi
         and (not state or a.get("state_code", "").lower() == state.lower())
     ]
 
@@ -575,7 +617,7 @@ async def get_fpi_geojson(
         
     query = """
         SELECT block_code, block_name, district_name, state_code,
-               centroid_lat, centroid_lon, fpi_score, fpi_24h, tier,
+               lat, lon, fpi_score, fpi_24h, tier,
                rainfall_3d_mm, soil_moisture_percentile
         FROM alerts
         WHERE is_active = 1 AND fpi_score >= :min_fpi
@@ -591,14 +633,14 @@ async def get_fpi_geojson(
     features = []
     for row in rows:
         mapping = dict(row._mapping)
-        if not mapping.get("centroid_lat") or not mapping.get("centroid_lon"):
+        if not mapping.get("lat") or not mapping.get("lon"):
             continue
             
         features.append({
             "type": "Feature",
             "geometry": {
                 "type": "Point",
-                "coordinates": [mapping["centroid_lon"], mapping["centroid_lat"]]
+                "coordinates": [mapping["lon"], mapping["lat"]]
             },
             "properties": {
                 "fpi": mapping["fpi_score"],
@@ -636,7 +678,7 @@ async def get_districts_geojson(
     query = """
         SELECT district_code, district_name, state_code, state_name,
                MAX(fpi_score) as max_fpi, MAX(fpi_24h) as max_fpi_24h,
-               AVG(centroid_lat) as lat, AVG(centroid_lon) as lon,
+               AVG(lat) as lat, AVG(lon) as lon,
                COUNT(*) as block_count
         FROM alerts
         WHERE is_active = 1 AND fpi_score >= :min_fpi
@@ -688,8 +730,8 @@ async def get_alerts_geojson(min_fpi: float = Query(0.40), db: AsyncSession = De
     for alert in await _get_active_alerts(db):
         if not alert.get("is_active") or alert["fpi_score"] < min_fpi:
             continue
-        lat = alert.get("centroid_lat")
-        lon = alert.get("centroid_lon")
+        lat = alert.get("lat")
+        lon = alert.get("lon")
         fpi = alert.get("fpi_score", 0.0) or 0.0
         props = {**alert, "risk_label": get_risk_label(fpi), "risk_color": get_risk_color(fpi)}
         features.append({
@@ -868,6 +910,9 @@ async def _compute_point_fpi(lat: float, lon: float, hours_ahead: int) -> RiskRe
     elif hours_ahead == 48:
         score = fpi_48h
 
+    from backend.model.fpi_engine import get_risk_level
+    level = get_risk_level(score)
+
     return RiskResponse(
         lat=lat, lon=lon,
         cell_id=f"{lat:.2f}_{lon:.2f}",
@@ -878,6 +923,9 @@ async def _compute_point_fpi(lat: float, lon: float, hours_ahead: int) -> RiskRe
         fpi_24h=round(fpi_24h, 4),
         fpi_48h=round(fpi_48h, 4),
         alert_tier=tier,
+        risk_label=level["label"],
+        risk_color=level["color"],
+        risk_description=level["description"],
         dominant_signal=dominant,
         rainfall_3d_mm=round(features["rainfall_3d_mm"], 1),
         soil_moisture_pct=round(features["soil_moisture_pct"], 1),

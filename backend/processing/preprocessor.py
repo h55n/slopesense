@@ -128,12 +128,21 @@ class DataPreprocessor:
             DEMProcessor, Sentinel2Ingestion,
         )
 
-        # ── 1. Rainfall (GPM) ────────────────────────────────────────────────
+        # ── 1. Rainfall (GPM / Fallback to Open-Meteo) ────────────────────────
         logger.info("Fetching GPM rainfall...")
-        gpm = GPMIngestion()
-        rainfall_3d = gpm.compute_accumulation(run_time, days=3, bbox=self.bbox)
-        rainfall_1d = gpm.compute_accumulation(run_time, days=1, bbox=self.bbox)
-        rain_synthetic = getattr(rainfall_3d.attrs, "get", lambda k, d: d)("synthetic", False)
+        try:
+            gpm = GPMIngestion()
+            rainfall_3d = gpm.compute_accumulation(run_time, days=3, bbox=self.bbox)
+            rainfall_1d = gpm.compute_accumulation(run_time, days=1, bbox=self.bbox)
+            rain_synthetic = getattr(rainfall_3d.attrs, "get", lambda k, d: d)("synthetic", False)
+        except Exception as e:
+            logger.warning(f"GPM failed ({e}). Falling back to Open-Meteo for historical rainfall...")
+            from ..ingestion.open_meteo import OpenMeteoIngestion
+            om = OpenMeteoIngestion()
+            # Open-Meteo provides 24h forecast, we will use it as a proxy or just synthetic if missing
+            rainfall_3d = om.get_24h_forecast_mm(bbox=self.bbox) * 2.5 # proxy
+            rainfall_1d = rainfall_3d / 3.0
+            rain_synthetic = True
 
         # ── 2. Forecast (GFS) ─────────────────────────────────────────────────
         logger.info("Fetching GFS forecast...")
@@ -141,12 +150,19 @@ class DataPreprocessor:
         forecast_24h = gfs.get_24h_forecast_mm(bbox=self.bbox)
         forecast_48h = gfs.get_24h_forecast_mm(bbox=self.bbox)  # in prod: use f24–f48
 
-        # ── 3. Soil Moisture (SMAP) ───────────────────────────────────────────
+        # ── 3. Soil Moisture (SMAP / Fallback to Synthetic) ───────────────────
         logger.info("Fetching SMAP soil moisture...")
-        smap = SMAPIngestion()
-        sm_3d = smap.compute_3day_average(run_time, bbox=self.bbox)
-        sm_pct = smap.compute_percentile(sm_3d, month=run_time.month)
-        smap_synthetic = sm_3d.attrs.get("synthetic", False)
+        try:
+            smap = SMAPIngestion()
+            sm_3d = smap.compute_3day_average(run_time, bbox=self.bbox)
+            sm_pct = smap.compute_percentile(sm_3d, month=run_time.month)
+            smap_synthetic = sm_3d.attrs.get("synthetic", False)
+        except Exception as e:
+            logger.warning(f"SMAP failed ({e}). Falling back to synthetic baseline...")
+            # Fall back to synthetic physics baseline logic
+            sm_3d = smap._generate_synthetic(run_time, self.bbox)
+            sm_pct = smap.compute_percentile(sm_3d, month=run_time.month)
+            smap_synthetic = True
 
         # ── 4. DEM (static) ───────────────────────────────────────────────────
         logger.info("Loading DEM slope grid...")

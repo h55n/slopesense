@@ -368,7 +368,7 @@ export function RetrospectivePanel() {
           <div>
             <h2 className="text-xl font-semibold text-white">Retrospective Validation</h2>
             <p className="text-sm text-slate-400 mt-1">
-              SlopeSense FPI model run retroactively on India's 6 worst landslide events (2013–2024)
+              SlopeSense FPI model run retroactively on India&apos;s 6 worst landslide events (2013–2024)
             </p>
           </div>
           <div className={`text-right px-4 py-2 rounded-lg ${summary.passed ? 'bg-emerald-950/50 border border-emerald-800' : 'bg-red-950/50 border border-red-800'}`}>

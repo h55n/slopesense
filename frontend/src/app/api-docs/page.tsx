@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 
-const API_BASE = 'https://api.slopesense.in';
-
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 interface EndpointParam {
   name: string;
   type: string;
@@ -36,13 +35,24 @@ export default function ApiDocsPage() {
             <span>/</span>
             <span className="text-white">API Docs</span>
           </nav>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-12">
             <div>
-              <h1 className="text-3xl font-bold">API Reference</h1>
-              <p className="mt-1 text-sm text-white/50">
-                SlopeSense REST API v0.1 · Interactive documentation
+              <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400 mb-4">
+                SlopeSense API Documentation
+              </h1>
+              <p className="text-slate-400 text-lg max-w-3xl">
+                Integrate real-time landslide risk intelligence, historical data, and CAP-compliant alerts into your own systems.
               </p>
             </div>
+            <Link
+              href="/developers"
+              className="shrink-0 bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+              Get API Key
+            </Link>
+          </div>
+          <div className="flex items-center justify-between">
             <div className="flex gap-3">
               <a
                 href={`${API_BASE}/docs`}

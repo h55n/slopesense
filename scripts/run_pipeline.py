@@ -135,6 +135,8 @@ async def run_pipeline():
             district_name=block["district_name"],
             state_code=block["state_code"],
             state_name=block["state_name"],
+            lat=float(block["centroid_lat"]),
+            lon=float(block["centroid_lon"]),
             fpi_score=float(fpi),
             fpi_ci_lower=float(ci_lo),
             fpi_ci_upper=float(ci_hi),
@@ -175,13 +177,13 @@ async def run_pipeline():
                 text("""
                     INSERT INTO alerts (
                         id, alert_code, state_code, state_name, district_code, district_name,
-                        block_code, block_name, fpi_score, fpi_ci_lower, fpi_ci_upper,
+                        block_code, block_name, lat, lon, fpi_score, fpi_ci_lower, fpi_ci_upper,
                         fpi_24h, cell_count_total, cell_count_breached, breach_fraction,
                         tier, is_active, is_suppressed, consecutive_cycles, dominant_signals,
                         rainfall_3d_mm, soil_moisture_percentile, issued_at
                     ) VALUES (
                         :id, :alert_code, :state_code, :state_name, :district_code, :district_name,
-                        :block_code, :block_name, :fpi_score, :fpi_ci_lower, :fpi_ci_upper,
+                        :block_code, :block_name, :lat, :lon, :fpi_score, :fpi_ci_lower, :fpi_ci_upper,
                         :fpi_24h, :cell_count_total, :cell_count_breached, :breach_fraction,
                         :tier, 1, :is_suppressed, :consecutive_cycles, :dominant_signals,
                         :rainfall_3d_mm, :soil_moisture_percentile, :issued_at

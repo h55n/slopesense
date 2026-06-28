@@ -93,8 +93,8 @@ def upgrade() -> None:
     sa.Column('block_code', sa.String(length=24), nullable=True),
     sa.Column('block_name', sa.String(length=64), nullable=True),
     sa.Column('geom', geoalchemy2.types.Geometry(geometry_type='MULTIPOLYGON', srid=4326, from_text='ST_GeomFromEWKT', name='geometry'), nullable=True),
-    sa.Column('centroid_lat', sa.Float(), nullable=True),
-    sa.Column('centroid_lon', sa.Float(), nullable=True),
+    sa.Column('lat', sa.Float(), nullable=True),
+    sa.Column('lon', sa.Float(), nullable=True),
     sa.Column('is_high_risk', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )

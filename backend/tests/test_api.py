@@ -17,13 +17,13 @@ def anyio_backend():
 
 @pytest.mark.asyncio
 class TestHealthEndpoint:
-    async def test_health_returns_ok(self):
+    async def test_health_returns_healthy(self):
         from backend.api.main import app
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             resp = await client.get("/")
         assert resp.status_code == 200
         data = resp.json()
-        assert data["status"] == "ok"
+        assert data["status"] == "healthy"
         assert "version" in data
 
     async def test_health_includes_alert_count(self):
@@ -48,28 +48,33 @@ class TestAlertsEndpoint:
         assert isinstance(data["alerts"], list)
 
     async def test_active_alerts_min_fpi_filter(self):
-        from backend.api.main import app, _current_alerts
-        # Inject a test alert
-        _current_alerts.clear()
-        _current_alerts.append({
-            "id": "test-1", "alert_code": "TEST", "tier": "WARNING",
-            "state_code": "KL", "state_name": "Kerala",
-            "district_code": "WYD", "district_name": "Wayanad",
-            "block_code": "MEP", "block_name": "Meppadi",
-            "fpi_score": 0.73, "fpi_ci_lower": 0.61, "fpi_ci_upper": 0.84,
-            "fpi_24h": 0.81, "is_active": True, "is_suppressed": False,
-            "consecutive_cycles": 2, "dominant_signals": [],
-            "rainfall_3d_mm": 183, "soil_moisture_percentile": 91,
-            "cell_count_total": 48, "cell_count_breached": 22,
-            "breach_fraction": 0.46, "should_notify": True,
-            "issued_at": datetime.now(timezone.utc),
-        })
+        from backend.api.main import app
+        from backend.api.database import AsyncSessionLocal
+        from backend.models import Alert
+        import uuid
+        
+        async with AsyncSessionLocal() as session:
+            alert = Alert(
+                id=uuid.uuid4(), alert_code="TEST", tier="WARNING",
+                state_code="KL", state_name="Kerala",
+                district_code="WYD", district_name="Wayanad",
+                block_code="MEP", block_name="Meppadi",
+                fpi_score=0.73, fpi_ci_lower=0.61, fpi_ci_upper=0.84,
+                fpi_24h=0.81, is_active=True, is_suppressed=False,
+                consecutive_cycles=2, dominant_signals=[],
+                rainfall_3d_mm=183, soil_moisture_percentile=91,
+                cell_count_total=48, cell_count_breached=22,
+                breach_fraction=0.46,
+                issued_at=datetime.now(timezone.utc),
+                lat=11.5, lon=76.1
+            )
+            session.add(alert)
+            await session.commit()
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             resp_high = await client.get("/v1/alerts/active?min_fpi=0.80")
             resp_low = await client.get("/v1/alerts/active?min_fpi=0.60")
         assert resp_high.json()["count"] == 0  # 0.73 < 0.80
         assert resp_low.json()["count"] == 1   # 0.73 > 0.60
-        _current_alerts.clear()
 
 
 @pytest.mark.asyncio
@@ -152,32 +157,59 @@ class TestCAPFeed:
         assert "<?xml" in resp.text
 
     async def test_cap_feed_with_injected_alert(self):
-        from backend.api.main import app, _current_alerts
-        _current_alerts.clear()
-        _current_alerts.append({
-            "id": "cap-test-1", "alert_code": "KL_CAP_TEST",
-            "tier": "WARNING", "state_code": "KL", "state_name": "Kerala",
-            "district_code": "WYD", "district_name": "Wayanad",
-            "block_code": "MEP", "block_name": "Meppadi",
-            "fpi_score": 0.73, "fpi_ci_lower": 0.61, "fpi_ci_upper": 0.84,
-            "fpi_24h": 0.81, "is_active": True, "is_suppressed": False,
-            "consecutive_cycles": 2, "dominant_signals": [],
-            "rainfall_3d_mm": 183, "soil_moisture_percentile": 91,
-            "cell_count_total": 48, "cell_count_breached": 22,
-            "breach_fraction": 0.46, "should_notify": True,
-            "issued_at": datetime.now(timezone.utc),
-        })
+        from backend.api.main import app
+        from backend.api.database import AsyncSessionLocal
+        from backend.models import Alert
+        import uuid
+        
+        async with AsyncSessionLocal() as session:
+            alert = Alert(
+                id=uuid.uuid4(), alert_code="KL_CAP_TEST",
+                tier="WARNING", state_code="KL", state_name="Kerala",
+                district_code="WYD", district_name="Wayanad",
+                block_code="MEP", block_name="Meppadi",
+                fpi_score=0.73, fpi_ci_lower=0.61, fpi_ci_upper=0.84,
+                fpi_24h=0.81, is_active=True, is_suppressed=False,
+                consecutive_cycles=2, dominant_signals=[],
+                rainfall_3d_mm=183, soil_moisture_percentile=91,
+                cell_count_total=48, cell_count_breached=22,
+                breach_fraction=0.46,
+                issued_at=datetime.now(timezone.utc),
+                lat=11.5, lon=76.1
+            )
+            session.add(alert)
+            await session.commit()
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-            resp = await client.get("/v1/cap/feed?min_fpi=0.65")
+            resp = await client.get("/v1/cap/feed?min_fpi=0.60")
         assert "Wayanad" in resp.text
         assert "WARNING" in resp.text
-        _current_alerts.clear()
-
 
 @pytest.mark.asyncio
 class TestGeoJSONEndpoint:
     async def test_geojson_fpi_structure(self):
         from backend.api.main import app
+        from backend.api.database import AsyncSessionLocal
+        from backend.models import Alert
+        import uuid
+        
+        async with AsyncSessionLocal() as session:
+            alert = Alert(
+                id=uuid.uuid4(), alert_code="GEO_TEST", tier="WARNING",
+                state_code="KL", state_name="Kerala",
+                district_code="WYD", district_name="Wayanad",
+                block_code="MEP", block_name="Meppadi",
+                fpi_score=0.73, fpi_ci_lower=0.61, fpi_ci_upper=0.84,
+                fpi_24h=0.81, is_active=True, is_suppressed=False,
+                consecutive_cycles=2, dominant_signals=[],
+                rainfall_3d_mm=183, soil_moisture_percentile=91,
+                cell_count_total=48, cell_count_breached=22,
+                breach_fraction=0.46,
+                issued_at=datetime.now(timezone.utc),
+                lat=11.5, lon=76.1
+            )
+            session.add(alert)
+            await session.commit()
+            
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             resp = await client.get("/v1/geojson/fpi")
         assert resp.status_code == 200
@@ -205,15 +237,18 @@ class TestContactRegistration:
     async def test_register_contact_success(self):
         from backend.api.main import app
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-            resp = await client.post("/v1/contacts/register", json={
-                "name": "Test Officer",
-                "role": "district_collector",
-                "whatsapp_number": "+919876543210",
-                "state_code": "KL",
-                "district_code": "KL_WYD",
-                "language": "ml",
-                "min_tier": "WARNING",
-            })
+            resp = await client.post(
+                "/v1/contacts/register",
+                headers={"x-api-key": "test-api-key"},
+                json={
+                    "name": "Test SDMA Officer",
+                    "role": "SDMA_OFFICIAL",
+                    "state_code": "KL",
+                    "whatsapp_number": "+919876543210",
+                    "min_tier": "WARNING",
+                    "language": "en"
+                }
+            )
         assert resp.status_code == 200
         data = resp.json()
         assert data["status"] == "registered"
@@ -222,8 +257,12 @@ class TestContactRegistration:
     async def test_register_contact_missing_required_fields(self):
         from backend.api.main import app
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-            resp = await client.post("/v1/contacts/register", json={
-                "name": "Test",
-                # missing required: role, whatsapp_number, state_code
-            })
+            resp = await client.post(
+                "/v1/contacts/register",
+                headers={"x-api-key": "test-api-key"},
+                json={
+                    "name": "Incomplete User"
+                    # missing required: role, whatsapp_number, state_code
+                }
+            )
         assert resp.status_code == 422

@@ -20,7 +20,7 @@ async def test_pdf_endpoint_content_type():
     from backend.api.main import app
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        resp = await client.get("/v1/districts/WYD/report.pdf")
+        resp = await client.get("/v1/districts/WYD/report.pdf", headers={"x-api-key": "test-api-key"})
 
     assert resp.status_code == 200
     assert resp.headers["content-type"] == "application/pdf"

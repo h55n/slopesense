@@ -515,7 +515,8 @@ const DEMO_ALERT: Alert = {
   id: 'demo-1', alert_code: 'KL_WYD_MEPPADI_DEMO',
   state_code: 'KL', state_name: 'Kerala',
   district_code: 'KL_WYD', district_name: 'Wayanad',
-  block_code: 'KL_WYD_MEP', block_name: 'Meppadi',
+  block_code: 'KL_WYD_MEPPADI', block_name: 'Meppadi',
+  lat: 11.55, lon: 76.10,
   fpi_score: 0.73, fpi_ci_lower: 0.61, fpi_ci_upper: 0.84, fpi_24h: 0.81,
   tier: 'WARNING', is_active: true, is_suppressed: false, consecutive_cycles: 2,
   dominant_signals: [

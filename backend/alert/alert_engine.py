@@ -129,6 +129,8 @@ class AlertEngine:
                 "district_name": block.district_name,
                 "block_code": block.block_code,
                 "block_name": block.block_name,
+                "lat": block.lat,
+                "lon": block.lon,
                 "fpi_score": block.fpi_score,
                 "fpi_ci_lower": block.fpi_ci_lower,
                 "fpi_ci_upper": block.fpi_ci_upper,

@@ -183,6 +183,8 @@ class BlockFPI:
     district_name: str
     state_code: str
     state_name: str
+    lat: float
+    lon: float
 
     fpi_score: float          # 95th percentile of cell FPIs in block
     fpi_ci_lower: float
@@ -405,6 +407,8 @@ class FPIEngine:
                 district_name=meta.get("district_name", ""),
                 state_code=meta.get("state_code", ""),
                 state_name=meta.get("state_name", ""),
+                lat=rep_cell.lat,
+                lon=rep_cell.lon,
                 fpi_score=round(fpi_block, 4),
                 fpi_ci_lower=round(ci_lower, 4),
                 fpi_ci_upper=round(ci_upper, 4),

@@ -323,6 +323,7 @@ const DEMO_DISTRICTS: Record<string, Alert[]> = {
     {
       id: 'demo-kl-1', alert_code: 'KL_WYD_DEMO', state_code: 'KL', state_name: 'Kerala',
       district_code: 'WYD', district_name: 'Wayanad', block_code: '', block_name: '',
+      lat: 11.55, lon: 76.10,
       fpi_score: 0.73, fpi_ci_lower: 0.61, fpi_ci_upper: 0.84, fpi_24h: 0.81,
       tier: 'WARNING', is_active: true, is_suppressed: false, consecutive_cycles: 2,
       dominant_signals: [{ signal: 'rainfall_accumulation', value: 0.82 }],
@@ -333,6 +334,7 @@ const DEMO_DISTRICTS: Record<string, Alert[]> = {
     {
       id: 'demo-kl-2', alert_code: 'KL_IDK_DEMO', state_code: 'KL', state_name: 'Kerala',
       district_code: 'IDK', district_name: 'Idukki', block_code: '', block_name: '',
+      lat: 9.85, lon: 76.97,
       fpi_score: 0.55, fpi_ci_lower: 0.43, fpi_ci_upper: 0.67, fpi_24h: 0.61,
       tier: 'WATCH', is_active: true, is_suppressed: false, consecutive_cycles: 1,
       dominant_signals: [{ signal: 'soil_moisture', value: 0.61 }],
@@ -343,6 +345,7 @@ const DEMO_DISTRICTS: Record<string, Alert[]> = {
     {
       id: 'demo-kl-3', alert_code: 'KL_MLP_DEMO', state_code: 'KL', state_name: 'Kerala',
       district_code: 'MLP', district_name: 'Malappuram', block_code: '', block_name: '',
+      lat: 11.07, lon: 76.07,
       fpi_score: 0.41, fpi_ci_lower: 0.29, fpi_ci_upper: 0.53, fpi_24h: 0.45,
       tier: 'WATCH', is_active: true, is_suppressed: false, consecutive_cycles: 1,
       dominant_signals: [{ signal: 'slope_angle', value: 0.55 }],

@@ -5,6 +5,10 @@ SlopeSense — pytest configuration and shared fixtures.
 import os
 import sys
 import pytest
+import pytest_asyncio
+import sqlalchemy
+from sqlalchemy import event
+
 import numpy as np
 from datetime import datetime, timezone
 from pathlib import Path
@@ -19,10 +23,35 @@ os.environ["REDIS_URL"] = "redis://localhost:6379/1"
 os.environ.setdefault("WHATSAPP_API_TOKEN", "")
 os.environ.setdefault("NASA_EARTHDATA_USERNAME", "")
 os.environ.setdefault("NASA_EARTHDATA_PASSWORD", "")
-os.environ["API_KEYS"] = ""
+os.environ["API_KEYS"] = "test-api-key"
 
-
-
+@pytest_asyncio.fixture(autouse=True)
+async def setup_db():
+    from backend.api.database import engine
+    from backend.models import Base
+    
+    # Mock Spatialite functions so create_all works without the extension
+    @event.listens_for(engine.sync_engine, "connect")
+    def register_spatialite_mocks(dbapi_connection, connection_record):
+        # Aiosqlite connection has _conn for the underlying sqlite3 connection
+        # SQLAlchemy's dbapi_connection for aiosqlite is the aiosqlite connection proxy
+        if hasattr(dbapi_connection, "create_function"):
+            dbapi_connection.create_function("RecoverGeometryColumn", 4, lambda *a: 1)
+            dbapi_connection.create_function("RecoverGeometryColumn", 5, lambda *a: 1)
+            dbapi_connection.create_function("AddGeometryColumn", 5, lambda *a: 1)
+            dbapi_connection.create_function("AddGeometryColumn", 6, lambda *a: 1)
+            dbapi_connection.create_function("CreateSpatialIndex", 2, lambda *a: 1)
+            dbapi_connection.create_function("DisableSpatialIndex", 2, lambda *a: 1)
+            dbapi_connection.create_function("CheckSpatialIndex", 2, lambda *a: 1)
+            dbapi_connection.create_function("DiscardGeometryColumn", 2, lambda *a: 1)
+    
+    # Enable SQLite in-memory or file-based tables
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
 @pytest.fixture
 def wayanad_bbox():
     return {"min_lat": 11.3, "max_lat": 11.9, "min_lon": 75.7, "max_lon": 76.4}

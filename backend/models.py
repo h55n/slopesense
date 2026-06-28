@@ -129,6 +129,18 @@ class FPIGrid(Base):
     )
 
 
+class ApiKey(Base):
+    __tablename__ = "api_keys"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    key = Column(String(64), nullable=False, unique=True, index=True)
+    name = Column(String(128), nullable=False)
+    email = Column(String(128), nullable=False, index=True)
+    organization = Column(String(128), nullable=True)
+    tier = Column(String(32), default="public")
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
 class FPIHistory(Base):
     """
     Immutable historical record — every model run kept for retrospective audit.
@@ -182,6 +194,8 @@ class Alert(Base):
     district_name = Column(String(64), nullable=False)
     block_code = Column(String(24), nullable=True)
     block_name = Column(String(64), nullable=True)
+    lat = Column(Float, nullable=True)
+    lon = Column(Float, nullable=True)
 
     # Aggregated scores
     fpi_score = Column(Float, nullable=False)         # block-level aggregate (95th percentile of cells)
