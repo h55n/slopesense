@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="slopesense.svg" width="600" alt="SlopeSense Logo" />
+<img src="slopesense.svg" width="250" alt="SlopeSense Logo" />
 
 # SlopeSense 🏔️
 
