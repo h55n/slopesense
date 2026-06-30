@@ -24,7 +24,7 @@
 Experience how SlopeSense delivers actionable insights through an intuitive GIS dashboard. The platform aggregates complex geospatial data into a simple, interactive format.
 
 ### Watch the Demo
-![SlopeSense App Demo](docs/assets/demo_final.webp)
+![SlopeSense App Demo](docs/assets/demo_v2.webp)
 
 ### Dashboard Overview
 <p align="center">
