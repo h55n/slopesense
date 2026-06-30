@@ -1,19 +1,36 @@
 <div align="center">
 
-# 🏔️ SlopeSense
+<img src="slopesense.svg" width="600" alt="SlopeSense Logo" />
 
-### Landslide Risk Intelligence Platform
+# SlopeSense 🏔️
 
-**Pure-software · Free satellite data · Sub-district resolution · Village-level delivery · 24–48 hour lead time**
+[SlopeSense Web](https://slopesense-olive.vercel.app) | [GitHub Repository](https://github.com/h55n/slopesense)
 
-[![CI/CD](https://github.com/slopesense/slopesense/actions/workflows/ci.yml/badge.svg)](https://github.com/slopesense/slopesense/actions)
+[![CI/CD](https://github.com/h55n/slopesense/actions/workflows/pipeline.yml/badge.svg)](https://github.com/h55n/slopesense/actions)
 [![Test Coverage](https://img.shields.io/badge/coverage-92%25-brightgreen.svg)](htmlcov/index.html)
-[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://python.org)
+[![Python](https://img.shields.io/badge/python-3.12-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688.svg)](https://fastapi.tiangolo.com)
 [![Next.js](https://img.shields.io/badge/Next.js-14-black.svg)](https://nextjs.org)
 
+**The predictive Landslide Intelligence Platform built to save lives.** SlopeSense is a pure-software early warning system that fuses free satellite data into a probabilistic Failure Probability Index (FPI). Computed at 1km² resolution and updated every 6 hours, it delivers critical warnings directly to decision-makers with a 24–48 hour lead time before disasters strike. 
+
 </div>
+
+---
+
+## App Demo & Screenshots
+
+Experience how SlopeSense delivers actionable insights through an intuitive GIS dashboard. The platform aggregates complex geospatial data into a simple, interactive format.
+
+### Watch the Demo
+![SlopeSense App Demo](docs/assets/demo.webp)
+
+### Dashboard Overview
+<p align="center">
+  <img src="docs/assets/main_dashboard.png" width="48%" />
+  <img src="docs/assets/live_map.png" width="48%" />
+</p>
 
 ---
 
