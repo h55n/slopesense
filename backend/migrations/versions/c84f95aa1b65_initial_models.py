@@ -98,7 +98,7 @@ def upgrade() -> None:
     sa.Column('is_high_risk', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index('idx_districts_geom', 'districts', ['geom'], unique=False, postgresql_using='gist')
+    # op.create_index(idx_districts_geom...)
     op.create_index(op.f('ix_districts_block_code'), 'districts', ['block_code'], unique=False)
     op.create_index(op.f('ix_districts_district_code'), 'districts', ['district_code'], unique=True)
     op.create_index(op.f('ix_districts_state_code'), 'districts', ['state_code'], unique=False)
@@ -132,7 +132,8 @@ def upgrade() -> None:
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index('idx_fpi_grid_geom', 'fpi_grid', ['geom'], unique=False, postgresql_using='gist')
+    # Spatial indexes are automatically created by geoalchemy2
+    # # spatial index
     op.create_index(op.f('ix_fpi_grid_block_code'), 'fpi_grid', ['block_code'], unique=False)
     op.create_index(op.f('ix_fpi_grid_cell_id'), 'fpi_grid', ['cell_id'], unique=True)
     op.create_index('ix_fpi_grid_district', 'fpi_grid', ['district_code', 'run_timestamp'], unique=False)
@@ -195,7 +196,7 @@ def upgrade() -> None:
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index('idx_landslide_events_geom', 'landslide_events', ['geom'], unique=False, postgresql_using='gist')
+    # spatial index
     op.create_index('ix_events_date_district', 'landslide_events', ['event_date', 'district_code'], unique=False)
     op.create_index(op.f('ix_landslide_events_district_code'), 'landslide_events', ['district_code'], unique=False)
     op.create_index(op.f('ix_landslide_events_event_date'), 'landslide_events', ['event_date'], unique=False)
