@@ -387,8 +387,11 @@ async def get_active_alerts(
         
     query += " ORDER BY fpi_score DESC LIMIT 200"
     
-    result = await db.execute(text(query), params)
-    rows = result.fetchall()
+    try:
+        result = await db.execute(text(query), params)
+        rows = result.fetchall()
+    except Exception:
+        rows = []
     
     if not rows and len(_current_alerts) > 0:
         rows = _current_alerts
@@ -505,8 +508,11 @@ async def get_retrospective_summary(
         FROM landslide_events
         ORDER BY event_date DESC
     """
-    result = await db.execute(text(query))
-    rows = result.fetchall()
+    try:
+        result = await db.execute(text(query))
+        rows = result.fetchall()
+    except Exception:
+        rows = []
     
     if not rows:
         return _synthetic_retrospective_summary()
@@ -640,8 +646,11 @@ async def get_fpi_geojson(
         query += " AND state_code = :state"
         params["state"] = state
         
-    result = await db.execute(text(query), params)
-    rows = result.fetchall()
+    try:
+        result = await db.execute(text(query), params)
+        rows = result.fetchall()
+    except Exception:
+        rows = []
     
     features = []
     for row in rows:
