@@ -176,6 +176,24 @@ class FPIHistory(Base):
     )
 
 
+# ─── Pipeline Logs ────────────────────────────────────────────────────────────
+
+class PipelineRunLog(Base):
+    """
+    Log of every pipeline run to track success, failure, and execution time.
+    """
+    __tablename__ = "pipeline_run_logs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    run_timestamp = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), index=True)
+    status = Column(String(32), nullable=False)  # "RUNNING", "SUCCESS", "FAILED"
+    records_processed = Column(Integer, nullable=True)
+    alerts_generated = Column(Integer, nullable=True)
+    error_message = Column(Text, nullable=True)
+    duration_seconds = Column(Float, nullable=True)
+
+
+
 # ─── Alerts ───────────────────────────────────────────────────────────────────
 
 class Alert(Base):

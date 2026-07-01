@@ -26,16 +26,13 @@ jobs:
         
     - name: Check formatting with black
       run: black --check backend scripts
-      continue-on-error: true
       
     - name: Lint with flake8
       run: flake8 backend scripts --count --show-source --statistics --max-line-length=100
-      continue-on-error: true
 
     - name: Run tests
       run: |
         pytest backend/tests/
-      continue-on-error: true
 
   frontend-build:
     runs-on: ubuntu-latest
