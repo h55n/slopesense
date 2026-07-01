@@ -153,7 +153,17 @@ manager = ConnectionManager()
 
 # ── In-memory state (replace with DB in production) ───────────────────────────
 
+import json
+from pathlib import Path
+
 _current_alerts: List[Dict] = []
+try:
+    demo_path = Path(__file__).parent.parent / "demo_alerts.json"
+    if demo_path.exists():
+        with open(demo_path) as f:
+            _current_alerts = json.load(f)
+except Exception as e:
+    pass
 _retrospective_cache: Dict = {}
 _fpi_grid_cache: Optional[Dict] = None
 _last_run: Optional[datetime] = None
@@ -380,9 +390,12 @@ async def get_active_alerts(
     result = await db.execute(text(query), params)
     rows = result.fetchall()
     
+    if not rows and len(_current_alerts) > 0:
+        rows = _current_alerts
+
     alerts = []
     for row in rows:
-        alert_dict = dict(row._mapping)
+        alert_dict = dict(row._mapping) if hasattr(row, '_mapping') else dict(row)
         if isinstance(alert_dict.get("dominant_signals"), str):
             try:
                 alert_dict["dominant_signals"] = json.loads(alert_dict["dominant_signals"])
