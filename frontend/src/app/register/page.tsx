@@ -112,7 +112,7 @@ export default function RegisterPage() {
     <div className="editorial-shell min-h-screen bg-slope-bg text-white overflow-hidden">
       <header className="border-b border-white/10 px-6 py-8 relative z-10 bg-black/20 backdrop-blur-md">
         <div className="mx-auto max-w-2xl">
-          <nav className="mb-4 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-white/40">
+          <nav className="mb-4 flex items-center gap-2 text-small font-bold uppercase tracking-[0.2em] text-white/40">
             <Link href="/" className="hover:text-white transition-colors">SlopeSense</Link>
             <span>/</span>
             <span className="text-white">Register for Alerts</span>
@@ -122,7 +122,7 @@ export default function RegisterPage() {
             animate={{ opacity: 1, x: 0 }}
           >
             <h1 className="text-4xl font-serif font-bold text-white drop-shadow-md">Register for WhatsApp Alerts</h1>
-            <p className="mt-3 text-[13px] font-medium tracking-wide text-white/50">
+            <p className="mt-3 text-base-sm font-medium tracking-wide text-white/50">
               Receive block-level landslide risk alerts in your language. For DDMA officers, Aapda Mitra, and Gram Pradhans.
             </p>
           </motion.div>
@@ -138,7 +138,7 @@ export default function RegisterPage() {
             transition={{ delay: 0.1 }}
             className="glass-panel p-7 space-y-4"
           >
-            <legend className="text-[11px] font-bold uppercase tracking-wider text-white/50 mb-5 w-full border-b border-white/10 pb-4">
+            <legend className="text-small font-bold uppercase tracking-wider text-white/50 mb-5 w-full border-b border-white/10 pb-4">
               Contact Information
             </legend>
 
@@ -150,7 +150,7 @@ export default function RegisterPage() {
                 placeholder="District Collector Name"
                 value={form.name}
                 onChange={e => update('name', e.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[13px] font-medium text-white placeholder-white/50 outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base-sm font-medium text-white placeholder-white/50 outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner"
               />
             </FormField>
 
@@ -160,7 +160,7 @@ export default function RegisterPage() {
                 required
                 value={form.role}
                 onChange={e => update('role', e.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[13px] font-medium text-white outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner [&>option]:bg-zinc-900"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base-sm font-medium text-white outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner [&>option]:bg-zinc-900"
               >
                 <option value="">Select your role</option>
                 {ROLES.map(r => (
@@ -176,7 +176,7 @@ export default function RegisterPage() {
                 placeholder="DDMA Wayanad"
                 value={form.organization}
                 onChange={e => update('organization', e.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[13px] font-medium text-white placeholder-white/50 outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base-sm font-medium text-white placeholder-white/50 outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner"
               />
             </FormField>
 
@@ -189,9 +189,9 @@ export default function RegisterPage() {
                   placeholder="+91 98765 43210"
                   value={form.whatsapp_number}
                   onChange={e => update('whatsapp_number', e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[13px] font-medium text-white placeholder-white/50 outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base-sm font-medium text-white placeholder-white/50 outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner"
                 />
-                <p className="mt-2 text-[10px] uppercase tracking-wider text-white/30">E.164 format: +91XXXXXXXXXX</p>
+                <p className="mt-2 text-tiny uppercase tracking-wider text-white/30">E.164 format: +91XXXXXXXXXX</p>
               </FormField>
 
               <FormField label="Email (optional)" id="reg-email">
@@ -201,7 +201,7 @@ export default function RegisterPage() {
                   placeholder="dc@kerala.gov.in"
                   value={form.email}
                   onChange={e => update('email', e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[13px] font-medium text-white placeholder-white/50 outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base-sm font-medium text-white placeholder-white/50 outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner"
                 />
               </FormField>
             </div>
@@ -214,7 +214,7 @@ export default function RegisterPage() {
             transition={{ delay: 0.2 }}
             className="glass-panel p-7 space-y-4"
           >
-            <legend className="text-[11px] font-bold uppercase tracking-wider text-white/50 mb-5 w-full border-b border-white/10 pb-4">
+            <legend className="text-small font-bold uppercase tracking-wider text-white/50 mb-5 w-full border-b border-white/10 pb-4">
               Coverage Area
             </legend>
 
@@ -224,7 +224,7 @@ export default function RegisterPage() {
                 required
                 value={form.state_code}
                 onChange={e => { update('state_code', e.target.value); update('district_code', ''); }}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[13px] font-medium text-white outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner [&>option]:bg-zinc-900"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base-sm font-medium text-white outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner [&>option]:bg-zinc-900"
               >
                 <option value="">Select state</option>
                 {STATES.map(s => (
@@ -241,9 +241,9 @@ export default function RegisterPage() {
                   placeholder="WYD (district code)"
                   value={form.district_code}
                   onChange={e => update('district_code', e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[13px] font-medium text-white placeholder-white/50 outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base-sm font-medium text-white placeholder-white/50 outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner"
                 />
-                <p className="mt-2 text-[10px] uppercase tracking-wider text-white/30">Enter district code e.g. WYD for Wayanad. Leave blank for state-wide.</p>
+                <p className="mt-2 text-tiny uppercase tracking-wider text-white/30">Enter district code e.g. WYD for Wayanad. Leave blank for state-wide.</p>
               </FormField>
 
               <FormField label="Block (optional)" id="reg-block">
@@ -253,9 +253,9 @@ export default function RegisterPage() {
                   placeholder="MEP (block code)"
                   value={form.block_code}
                   onChange={e => update('block_code', e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[13px] font-medium text-white placeholder-white/50 outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base-sm font-medium text-white placeholder-white/50 outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner"
                 />
-                <p className="mt-2 text-[10px] uppercase tracking-wider text-white/30">Enter block code e.g. MEP for Meppadi</p>
+                <p className="mt-2 text-tiny uppercase tracking-wider text-white/30">Enter block code e.g. MEP for Meppadi</p>
               </FormField>
             </div>
           </motion.fieldset>
@@ -267,7 +267,7 @@ export default function RegisterPage() {
             transition={{ delay: 0.3 }}
             className="glass-panel p-7 space-y-5"
           >
-            <legend className="text-[11px] font-bold uppercase tracking-wider text-white/50 mb-5 w-full border-b border-white/10 pb-4">
+            <legend className="text-small font-bold uppercase tracking-wider text-white/50 mb-5 w-full border-b border-white/10 pb-4">
               Alert Preferences
             </legend>
 
@@ -276,7 +276,7 @@ export default function RegisterPage() {
                 id="reg-language"
                 value={form.language}
                 onChange={e => update('language', e.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[13px] font-medium text-white outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner [&>option]:bg-zinc-900"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base-sm font-medium text-white outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner [&>option]:bg-zinc-900"
               >
                 {LANGUAGES.map(l => (
                   <option key={l.code} value={l.code}>{l.label}</option>
@@ -285,7 +285,7 @@ export default function RegisterPage() {
             </FormField>
 
             <div>
-              <label className="mb-3 block text-[11px] font-bold uppercase tracking-wider text-white/50">
+              <label className="mb-3 block text-small font-bold uppercase tracking-wider text-white/50">
                 Minimum Alert Tier *
               </label>
               <div className="space-y-3">
@@ -309,8 +309,8 @@ export default function RegisterPage() {
                       className="mt-1 h-4 w-4 accent-slope-accent bg-transparent"
                     />
                     <div className="relative z-10">
-                      <div className="text-[13px] font-bold text-white tracking-wide">{tier.label}</div>
-                      <div className="text-[11px] font-medium text-white/50 mt-1">{tier.desc}</div>
+                      <div className="text-base-sm font-bold text-white tracking-wide">{tier.label}</div>
+                      <div className="text-small font-medium text-white/50 mt-1">{tier.desc}</div>
                     </div>
                     {form.min_tier === tier.value && (
                       <motion.div layoutId="tier-active" className="absolute left-0 top-0 bottom-0 w-1.5 bg-slope-accent" />
@@ -338,12 +338,12 @@ export default function RegisterPage() {
             id="register-submit-btn"
             type="submit"
             disabled={submitStatus === 'submitting'}
-            className="w-full relative rounded-full bg-slope-accent py-4 text-[13px] font-bold uppercase tracking-[0.2em] text-black transition-all hover:bg-white shadow-glow-lime hover:shadow-glow-lime-strong disabled:opacity-50 overflow-hidden"
+            className="w-full relative rounded-full bg-slope-accent py-4 text-base-sm font-bold uppercase tracking-[0.2em] text-black transition-all hover:bg-white shadow-glow-lime hover:shadow-glow-lime-strong disabled:opacity-50 overflow-hidden"
           >
             <span className="relative z-10">{submitStatus === 'submitting' ? 'Registering...' : 'Register for Alerts →'}</span>
           </motion.button>
 
-          <p className="text-center text-[10px] font-bold uppercase tracking-wider text-white/30 mt-4">
+          <p className="text-center text-tiny font-bold uppercase tracking-wider text-white/30 mt-4">
             By registering you consent to receive WhatsApp messages from SlopeSense. Reply STOP to unsubscribe.
           </p>
         </form>
@@ -355,7 +355,7 @@ export default function RegisterPage() {
 function FormField({ label, id, children }: { label: string; id: string; children: React.ReactNode }) {
   return (
     <div>
-      <label htmlFor={id} className="mb-2 block text-[11px] font-bold uppercase tracking-wider text-white/50">
+      <label htmlFor={id} className="mb-2 block text-small font-bold uppercase tracking-wider text-white/50">
         {label}
       </label>
       {children}
@@ -389,19 +389,19 @@ function SuccessScreen({ form, id, onReset }: { form: FormData; id: string; onRe
             for {form.district_code || form.state_code} in {lang}.
           </p>
           <div className="mt-6 rounded-xl border border-white/10 bg-black/40 px-5 py-4 text-left shadow-inner">
-            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30 mb-2">Registration ID</div>
-            <code className="text-slope-accent font-mono text-[13px]">{id}</code>
+            <div className="text-tiny font-bold uppercase tracking-[0.2em] text-white/30 mb-2">Registration ID</div>
+            <code className="text-slope-accent font-mono text-base-sm">{id}</code>
           </div>
           <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
             <Link
               href="/"
-              className="rounded-full border border-white/20 bg-white/5 px-6 py-3 text-[11px] font-bold uppercase tracking-[0.2em] text-white/70 hover:text-white hover:bg-white/10 hover:border-white/40 transition-all text-center"
+              className="rounded-full border border-white/20 bg-white/5 px-6 py-3 text-small font-bold uppercase tracking-[0.2em] text-white/70 hover:text-white hover:bg-white/10 hover:border-white/40 transition-all text-center"
             >
               Go to Dashboard
             </Link>
             <button
               onClick={onReset}
-              className="rounded-full bg-slope-accent px-6 py-3 text-[11px] font-bold uppercase tracking-[0.2em] text-black hover:bg-white shadow-glow-lime transition-all"
+              className="rounded-full bg-slope-accent px-6 py-3 text-small font-bold uppercase tracking-[0.2em] text-black hover:bg-white shadow-glow-lime transition-all"
             >
               Register Another
             </button>

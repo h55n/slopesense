@@ -52,7 +52,7 @@ export default function SearchMeter() {
 
   return (
     <div className="glass-panel p-6 relative overflow-hidden">
-      <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-slope-accent mb-3 flex items-center gap-2">
+      <div className="text-tiny font-bold uppercase tracking-[0.24em] text-slope-accent mb-3 flex items-center gap-2">
         <span className="w-1.5 h-1.5 rounded-full bg-slope-accent animate-pulse" />
         Live FPI Search
       </div>
@@ -63,12 +63,12 @@ export default function SearchMeter() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="e.g. 11.58, 76.08"
-          className="flex-1 bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-[13px] text-white placeholder-white/30 focus:outline-none focus:border-slope-accent/50 transition-colors"
+          className="flex-1 bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-base-sm text-white placeholder-white/30 focus:outline-none focus:border-slope-accent/50 transition-colors"
         />
         <button
           type="submit"
           disabled={loading}
-          className="bg-slope-accent text-slope-bg px-5 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-50"
+          className="bg-slope-accent text-slope-bg px-5 py-2 rounded-lg text-small font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-50"
         >
           {loading ? '...' : 'Scan'}
         </button>
@@ -81,7 +81,7 @@ export default function SearchMeter() {
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
-            className="text-red-400 text-[12px] p-3 bg-red-400/10 border border-red-400/20 rounded-lg"
+            className="text-red-400 text-base-sm p-3 bg-red-400/10 border border-red-400/20 rounded-lg"
           >
             {error}
           </motion.div>
@@ -100,8 +100,8 @@ export default function SearchMeter() {
               <div className="font-serif text-4xl font-bold leading-none" style={{ color: fpiColor(result.fpi_score) }}>
                 {Math.round(result.fpi_score * 100)}%
               </div>
-              <div className="mt-1 text-[11px] font-medium text-white/50">Current Risk Index</div>
-              <div className="mt-2 text-[10px] uppercase tracking-widest font-bold" style={{ color: tierColor(result.alert_tier) }}>
+              <div className="mt-1 text-small font-medium text-white/50">Current Risk Index</div>
+              <div className="mt-2 text-tiny uppercase tracking-widest font-bold" style={{ color: tierColor(result.alert_tier) }}>
                 {result.alert_tier}
               </div>
             </div>

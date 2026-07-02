@@ -89,7 +89,7 @@ export default function StatusPage() {
       {/* ── Header ── */}
       <header className="border-b border-white/6 px-6 py-8 bg-black/20 backdrop-blur-md">
         <div className="mx-auto max-w-4xl">
-          <nav className="mb-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-white/30">
+          <nav className="mb-4 flex items-center gap-2 text-tiny font-bold uppercase tracking-[0.22em] text-white/30">
             <Link href="/" className="hover:text-slope-accent hover:underline transition-all cursor-pointer">SlopeSense</Link>
             <span className="text-white/15">/</span>
             <span className="text-white/70">System Status</span>
@@ -106,7 +106,7 @@ export default function StatusPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className={`flex items-center gap-2.5 rounded-full border px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] ${
+              className={`flex items-center gap-2.5 rounded-full border px-4 py-2 text-tiny font-bold uppercase tracking-[0.2em] ${
                 status.api === 'ok'      ? 'bg-emerald-500/8 border-emerald-500/25 text-emerald-400' :
                 status.api === 'loading' ? 'bg-amber-500/8  border-amber-500/25  text-amber-400'   :
                                            'bg-red-500/8    border-red-500/25    text-red-400'
@@ -134,7 +134,7 @@ export default function StatusPage() {
           transition={{ delay: 0.05 }}
           className="glass-panel px-6 py-5"
         >
-          <p className="text-[9px] font-bold uppercase tracking-[0.28em] text-white/30 mb-4">Signal pipeline</p>
+          <p className="text-micro font-bold uppercase tracking-[0.28em] text-white/30 mb-4">Signal pipeline</p>
           <div className="flex items-center gap-0">
             {PIPELINE_MINI.map((step, i) => (
               <div key={step.label} className="flex flex-1 items-center">
@@ -148,7 +148,7 @@ export default function StatusPage() {
                   >
                     {step.icon}
                   </div>
-                  <span className="text-[9px] font-semibold uppercase tracking-[0.18em]" style={{ color: step.color }}>
+                  <span className="text-micro font-semibold uppercase tracking-[0.18em]" style={{ color: step.color }}>
                     {step.label}
                   </span>
                 </div>
@@ -185,8 +185,8 @@ export default function StatusPage() {
                 className="flex flex-col sm:flex-row sm:items-center justify-between rounded-xl border border-white/6 bg-white/2 px-5 py-3.5 hover:bg-white/4 transition-colors gap-3"
               >
                 <div>
-                  <div className="text-[13px] font-semibold text-white/90">{svc.name}</div>
-                  <div className="text-[11px] text-white/35 mt-0.5">{svc.detail}</div>
+                  <div className="text-base-sm font-semibold text-white/90">{svc.name}</div>
+                  <div className="text-small text-white/35 mt-0.5">{svc.detail}</div>
                 </div>
                 <StatusBadge status={svc.status as 'ok' | 'error' | 'loading'} />
               </motion.div>
@@ -225,7 +225,7 @@ export default function StatusPage() {
             <SectionLabel>Retrospective Validation</SectionLabel>
 
             <div className="mb-5 flex flex-wrap items-center gap-4">
-              <span className={`rounded-full border px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] ${
+              <span className={`rounded-full border px-4 py-1.5 text-tiny font-bold uppercase tracking-[0.2em] ${
                 status.retrospective.passed
                   ? 'border-emerald-500/25 bg-emerald-500/8 text-emerald-400'
                   : 'border-red-500/25 bg-red-500/8 text-red-400'
@@ -236,7 +236,7 @@ export default function StatusPage() {
                 <span className="font-serif text-4xl font-bold text-white">
                   {status.retrospective.flagged}/{status.retrospective.total}
                 </span>
-                <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/40">
+                <span className="text-tiny font-bold uppercase tracking-[0.14em] text-white/40">
                   events flagged at T-24h
                 </span>
               </div>
@@ -262,12 +262,12 @@ export default function StatusPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <p className="text-[11px] text-white/35">
+              <p className="text-small text-white/35">
                 Pass criterion: ≥4/6 events flagged at T-24h with FPI ≥ target
               </p>
               <Link
                 href="/"
-                className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.14em] text-slope-accent hover:text-white transition-colors"
+                className="inline-flex items-center gap-1 text-small font-bold uppercase tracking-[0.14em] text-slope-accent hover:text-white transition-colors"
               >
                 View full audit →
               </Link>
@@ -297,13 +297,13 @@ export default function StatusPage() {
                     src.status === 'active' ? 'bg-emerald-400' : 'bg-white/20'
                   }`} />
                   <div>
-                    <span className="text-[12px] font-semibold text-white/85">{src.name}</span>
-                    <span className="ml-0 sm:ml-3 block sm:inline text-[11px] text-white/35 mt-0.5 sm:mt-0">
+                    <span className="text-base-sm font-semibold text-white/85">{src.name}</span>
+                    <span className="ml-0 sm:ml-3 block sm:inline text-small text-white/35 mt-0.5 sm:mt-0">
                       {src.detail}
                     </span>
                   </div>
                 </div>
-                <span className={`text-[9px] font-bold uppercase tracking-[0.2em] ${
+                <span className={`text-micro font-bold uppercase tracking-[0.2em] ${
                   src.status === 'active' ? 'text-emerald-400' : 'text-white/25'
                 }`}>
                   {src.status === 'active' ? 'Active' : 'Optional'}
@@ -311,7 +311,7 @@ export default function StatusPage() {
               </motion.div>
             ))}
           </div>
-          <div className="mt-5 text-[11px] text-white/40 leading-relaxed max-w-2xl">
+          <div className="mt-5 text-small text-white/40 leading-relaxed max-w-2xl">
             * IMD QPF requires a MoU with MoES. NOAA GFS is active as fallback. Forecast window: 24h (vs 48h with IMD).
           </div>
         </motion.section>
@@ -330,7 +330,7 @@ export default function StatusPage() {
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.55 + i * 0.04 }}
-                className="flex items-center gap-3 text-[12px] font-medium text-white/60"
+                className="flex items-center gap-3 text-base-sm font-medium text-white/60"
               >
                 <span className="shrink-0 h-4 w-4 rounded-full bg-slope-accent/15 border border-slope-accent/25 flex items-center justify-center">
                   <span className="text-slope-accent text-[8px] font-black">✓</span>
@@ -349,7 +349,7 @@ export default function StatusPage() {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="mb-5 text-[10px] font-bold uppercase tracking-[0.26em] text-white/35">
+    <h2 className="mb-5 text-tiny font-bold uppercase tracking-[0.26em] text-white/35">
       {children}
     </h2>
   );
@@ -363,7 +363,7 @@ function StatusBadge({ status }: { status: 'ok' | 'error' | 'loading' }) {
   }[status];
 
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[9px] font-bold uppercase tracking-[0.2em] ${cfg.cls}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-micro font-bold uppercase tracking-[0.2em] ${cfg.cls}`}>
       <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
       {cfg.label}
     </span>
@@ -373,9 +373,9 @@ function StatusBadge({ status }: { status: 'ok' | 'error' | 'loading' }) {
 function InfoCard({ label, value, sub }: { label: string; value: string; sub: string }) {
   return (
     <div className="rounded-xl border border-white/6 bg-white/3 p-5 hover:bg-white/5 transition-colors">
-      <div className="text-[9px] font-bold uppercase tracking-[0.22em] text-white/35">{label}</div>
+      <div className="text-micro font-bold uppercase tracking-[0.22em] text-white/35">{label}</div>
       <div className="mt-2.5 font-serif text-3xl font-bold text-white leading-none">{value}</div>
-      <div className="mt-2 text-[11px] text-white/35">{sub}</div>
+      <div className="mt-2 text-small text-white/35">{sub}</div>
     </div>
   );
 }

@@ -8,6 +8,7 @@ on:
 jobs:
   run-pipeline:
     runs-on: ubuntu-latest
+    if: ${{ secrets.DATABASE_URL != '' }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4

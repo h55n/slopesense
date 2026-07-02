@@ -14,7 +14,7 @@ const RiskMap = dynamic(() => import('@/components/map/RiskMap'), {
     <div className="flex h-full items-center justify-center bg-black/50 text-white">
       <div className="text-center">
         <div className="mx-auto mb-3 h-6 w-6 animate-spin rounded-full border-2 border-slope-accent border-t-transparent" />
-        <p className="text-[10px] uppercase tracking-[0.2em] text-white/40">Initialising map</p>
+        <p className="text-tiny uppercase tracking-[0.2em] text-white/40">Initialising map</p>
       </div>
     </div>
   ),
@@ -110,7 +110,7 @@ export default function DashboardPage() {
                 style={{ transformOrigin: 'left' }}
                 className="mb-5 h-px w-10 bg-slope-accent opacity-80"
               />
-              <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/40">
+              <p className="mb-4 text-tiny font-semibold uppercase tracking-[0.28em] text-white/40">
                 India-wide landslide intelligence
               </p>
               <h1 className="text-[44px] leading-[1.06] sm:text-[58px] lg:text-[72px] font-serif">
@@ -165,7 +165,7 @@ export default function DashboardPage() {
               {/* Console header */}
               <div className="flex items-center justify-between border-b border-white/6 px-6 py-4 bg-white/[0.02]">
                 <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/40">Signal console</div>
+                  <div className="text-tiny font-semibold uppercase tracking-[0.24em] text-white/40">Signal console</div>
                   <div className="mt-1 font-serif text-2xl leading-tight">Operational summary</div>
                 </div>
                 <LiveBadge />
@@ -173,10 +173,10 @@ export default function DashboardPage() {
 
               <div className="p-6">
                 <div className="mb-4 flex items-center justify-between">
-                  <div className="text-[11px] font-semibold tracking-wide text-white/50">
+                  <div className="text-small font-semibold tracking-wide text-white/50">
                     Showing top {topSignals.length} high-risk blocks
                   </div>
-                  <div className="text-[11px] font-semibold text-white/30">
+                  <div className="text-small font-semibold text-white/30">
                     Last run: {lastRun ? new Date(lastRun).toLocaleTimeString('en-IN') : 'Pending'}
                   </div>
                 </div>
@@ -192,7 +192,7 @@ export default function DashboardPage() {
                     />
                   ))}
                   {!topSignals.length && (
-                    <div className="col-span-full py-10 text-center text-[13px] text-white/30 italic glass-panel border-dashed">
+                    <div className="col-span-full py-10 text-center text-base-sm text-white/30 italic glass-panel border-dashed">
                       No high-risk alerts detected currently
                     </div>
                   )}
@@ -237,7 +237,7 @@ export default function DashboardPage() {
               <div className="glass-panel lime-outline overflow-hidden flex flex-col h-[700px]">
                 <div className="flex items-center justify-between border-b border-white/6 px-6 py-4 bg-white/[0.02]">
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/40">Live map</div>
+                    <div className="text-tiny font-bold uppercase tracking-[0.24em] text-white/40">Live map</div>
                     <div className="mt-1 font-serif text-2xl">Risk field</div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -245,7 +245,7 @@ export default function DashboardPage() {
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slope-accent opacity-60" />
                       <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-slope-accent" />
                     </span>
-                    <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/50" title={`Data refreshed every 6 hours. Last model run: ${lastRun ? new Date(lastRun).toLocaleString() : 'Pending'}`}>Live telemetry</span>
+                    <span className="text-tiny font-bold uppercase tracking-[0.18em] text-white/50" title={`Data refreshed every 6 hours. Last model run: ${lastRun ? new Date(lastRun).toLocaleString() : 'Pending'}`}>Live telemetry</span>
                   </div>
                 </div>
                 <div className="flex-1 w-full scan-effect bg-black/60">
@@ -279,7 +279,7 @@ export default function DashboardPage() {
                     )}
                   </div>
                   <div className="mt-3 pt-3 border-t border-white/6 text-right">
-                    <Link href="/districts" className="text-[11px] font-bold uppercase tracking-wider text-slope-accent hover:text-white transition-colors">
+                    <Link href="/districts" className="text-small font-bold uppercase tracking-wider text-slope-accent hover:text-white transition-colors">
                       View all active blocks →
                     </Link>
                   </div>
@@ -299,11 +299,11 @@ export default function DashboardPage() {
                         <div className="flex items-start justify-between gap-4 border-b border-white/8 pb-4">
                           <div>
                             <div className="font-serif text-3xl font-bold leading-tight">{selectedAlert.block_name}</div>
-                            <div className="mt-1.5 text-[12px] font-medium tracking-wide text-white/50">
+                            <div className="mt-1.5 text-base-sm font-medium tracking-wide text-white/50">
                               {selectedAlert.district_name}, {selectedAlert.state_name}
                             </div>
                           </div>
-                          <div className={`shrink-0 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${tierBadgeClass(selectedAlert.tier)}`}>
+                          <div className={`shrink-0 rounded-full border px-3 py-1 text-tiny font-bold uppercase tracking-[0.18em] ${tierBadgeClass(selectedAlert.tier)}`}>
                             {selectedAlert.tier}
                           </div>
                         </div>
@@ -320,8 +320,8 @@ export default function DashboardPage() {
                                 <span className="text-lg">{rl.emoji}</span>
                                 <span className="text-base font-bold" style={{ color: rl.color }}>{rl.short}</span>
                               </div>
-                              <p className="text-[12px] leading-relaxed text-white/70">{selectedAlert.risk_description || rl.description}</p>
-                              <p className="text-[11px] font-semibold mt-2" style={{ color: rl.color }}>Action: {selectedAlert.risk_action || rl.action}</p>
+                              <p className="text-base-sm leading-relaxed text-white/70">{selectedAlert.risk_description || rl.description}</p>
+                              <p className="text-small font-semibold mt-2" style={{ color: rl.color }}>Action: {selectedAlert.risk_action || rl.action}</p>
                             </div>
                           );
                         })()}
@@ -334,20 +334,20 @@ export default function DashboardPage() {
                         </div>
                         
                         <div className="mt-5 pt-5 border-t border-white/8">
-                          <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-4">Signal Breakdown</div>
+                          <div className="text-tiny font-bold uppercase tracking-[0.2em] text-white/50 mb-4">Signal Breakdown</div>
                           <div className="space-y-3">
                             <div className="flex items-center gap-3">
-                              <div className="w-24 text-[11px] font-medium text-white/70">Rainfall 3D</div>
+                              <div className="w-24 text-small font-medium text-white/70">Rainfall 3D</div>
                               <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden"><div className="h-full bg-blue-400" style={{ width: `${Math.min(100, (selectedAlert.rainfall_3d_mm || 0) / 3)}%` }} /></div>
-                              <div className="w-12 text-right text-[11px] font-mono">{Math.round(selectedAlert.rainfall_3d_mm || 0)}mm</div>
+                              <div className="w-12 text-right text-small font-mono">{Math.round(selectedAlert.rainfall_3d_mm || 0)}mm</div>
                             </div>
                             <div className="flex items-center gap-3">
-                              <div className="w-24 text-[11px] font-medium text-white/70">Soil Moisture</div>
+                              <div className="w-24 text-small font-medium text-white/70">Soil Moisture</div>
                               <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden"><div className="h-full bg-amber-600" style={{ width: `${selectedAlert.soil_moisture_percentile || 0}%` }} /></div>
-                              <div className="w-12 text-right text-[11px] font-mono">{Math.round(selectedAlert.soil_moisture_percentile || 0)}%</div>
+                              <div className="w-12 text-right text-small font-mono">{Math.round(selectedAlert.soil_moisture_percentile || 0)}%</div>
                             </div>
                             {selectedAlert.dominant_signals && selectedAlert.dominant_signals.length > 0 && (
-                              <div className="mt-4 text-[11px] font-medium text-white/60">
+                              <div className="mt-4 text-small font-medium text-white/60">
                                 Dominant signal: <span className="text-slope-accent capitalize">{selectedAlert.dominant_signals[0].signal.replace(/_/g, ' ')}</span>
                               </div>
                             )}
@@ -378,17 +378,17 @@ export default function DashboardPage() {
                       <MetricCardLight label="Flagged T-24h" value={`${summary.flagged_at_t24}`} highlight />
                     </div>
 
-                    <div className={`rounded-lg border px-4 py-3 text-[12px] font-bold flex items-center gap-2 ${summary.passed ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+                    <div className={`rounded-lg border px-4 py-3 text-base-sm font-bold flex items-center gap-2 ${summary.passed ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
                       <span className={`h-2 w-2 rounded-full ${summary.passed ? 'bg-emerald-400' : 'bg-red-400'}`} />
                       {summary.flagged_at_t24}/{summary.total_events} events flagged at T-24h
                     </div>
 
                     <div className="rounded-xl border border-slope-accent/15 bg-slope-accent/4 p-5 relative overflow-hidden">
-                      <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-slope-accent mb-2 flex items-center gap-2">
+                      <div className="text-tiny font-bold uppercase tracking-[0.22em] text-slope-accent mb-2 flex items-center gap-2">
                         <span className="w-1 h-3.5 rounded-full bg-slope-accent" />
                         Key finding
                       </div>
-                      <p className="text-[13px] leading-relaxed text-white/80">
+                      <p className="text-base-sm leading-relaxed text-white/80">
                         On July 29, 2024, SlopeSense reached{' '}
                         <strong className="text-slope-accent">73% FPI</strong> for Meppadi block and an{' '}
                         <strong className="text-slope-accent">81% 24h forecast</strong>.
@@ -416,11 +416,11 @@ export default function DashboardPage() {
                           <div className="flex items-center justify-between gap-4">
                             <div>
                               <div className="font-serif text-xl font-medium">{result.event_name}</div>
-                              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40 mt-1">
+                              <div className="text-tiny font-semibold uppercase tracking-[0.18em] text-white/40 mt-1">
                                 {result.state} · {result.district}
                               </div>
                             </div>
-                            <div className={`shrink-0 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${
+                            <div className={`shrink-0 rounded-full border px-3 py-1 text-tiny font-bold uppercase tracking-[0.18em] ${
                               result.flagged_at_t24
                                 ? 'border-emerald-500/30 bg-emerald-500/8 text-emerald-400'
                                 : 'border-red-500/30 bg-red-500/10 text-red-400'
@@ -429,7 +429,7 @@ export default function DashboardPage() {
                             </div>
                           </div>
                           {result.notes && (
-                            <div className="text-[11px] leading-relaxed text-white/60 bg-black/20 p-2 rounded border border-white/5">
+                            <div className="text-small leading-relaxed text-white/60 bg-black/20 p-2 rounded border border-white/5">
                               {result.notes}
                             </div>
                           )}
@@ -468,12 +468,12 @@ function PipelineSection({
       {/* Section header */}
       <div className="mb-8 flex items-end justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-slope-accent mb-2">
+          <p className="text-tiny font-semibold uppercase tracking-[0.28em] text-slope-accent mb-2">
             How it works
           </p>
           <h2 className="font-serif text-3xl sm:text-4xl text-white">The signal pipeline</h2>
         </div>
-        <p className="hidden text-[12px] text-white/35 max-w-xs text-right sm:block">
+        <p className="hidden text-base-sm text-white/35 max-w-xs text-right sm:block">
           Click any stage to see its role in the risk computation chain.
         </p>
       </div>
@@ -506,14 +506,14 @@ function PipelineSection({
                     <span className="text-xl">{step.icon}</span>
                   </div>
                   <div className="sm:text-center">
-                    <div className="text-[12px] font-bold text-white/90 tracking-tight">{step.label}</div>
-                    <div className="text-[10px] text-white/40 mt-0.5">{step.sublabel}</div>
+                    <div className="text-base-sm font-bold text-white/90 tracking-tight">{step.label}</div>
+                    <div className="text-tiny text-white/40 mt-0.5">{step.sublabel}</div>
                   </div>
                 </div>
 
                 {/* Step number */}
                 <div
-                  className="hidden sm:block text-center mt-3 text-[9px] font-bold uppercase tracking-[0.24em] text-white/40"
+                  className="hidden sm:block text-center mt-3 text-micro font-bold uppercase tracking-[0.24em] text-white/40"
                 >
                   Step {i + 1}
                 </div>
@@ -557,7 +557,7 @@ function PipelineSection({
                       style={{ color: PIPELINE_STEPS[expandedStep].color }}>
                       {PIPELINE_STEPS[expandedStep].label}
                     </div>
-                    <p className="text-[13px] leading-relaxed text-white/70">
+                    <p className="text-base-sm leading-relaxed text-white/70">
                       {PIPELINE_STEPS[expandedStep].detail}
                     </p>
                   </div>
@@ -591,12 +591,12 @@ function TopBar({
       <div className="flex items-center gap-4">
         <div>
           <div className="font-serif text-2xl leading-none">SlopeSense</div>
-          <div className="mt-1 text-[9px] uppercase tracking-[0.26em] text-white/35">
+          <div className="mt-1 text-micro uppercase tracking-[0.26em] text-white/35">
             Landslide risk intelligence · India
           </div>
         </div>
         <div className="hidden h-6 w-px bg-white/10 sm:block" />
-        <div className="hidden items-center gap-3 text-[10px] text-white/40 sm:flex">
+        <div className="hidden items-center gap-3 text-tiny text-white/40 sm:flex">
           <span className="stat-chip">{stats.total} active</span>
           {summary && (
             <span className="stat-chip text-slope-accent border-slope-accent/20">
@@ -622,7 +622,7 @@ function ModeButton({ active, onClick, label }: { active: boolean; onClick: () =
   return (
     <button
       onClick={onClick}
-      className={`relative rounded-lg px-5 py-2 text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-200 ${
+      className={`relative rounded-lg px-5 py-2 text-tiny font-bold uppercase tracking-[0.2em] transition-all duration-200 ${
         active ? 'text-slope-bg' : 'text-white/50 hover:text-white'
       }`}
     >
@@ -654,7 +654,7 @@ function ActionButton({
       whileHover={{ scale: 1.02, y: -1 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className={`h-11 rounded-full px-6 text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-200 ${
+      className={`h-11 rounded-full px-6 text-tiny font-bold uppercase tracking-[0.2em] transition-all duration-200 ${
         variant === 'primary'
           ? 'bg-slope-accent text-slope-bg shadow-glow-lime hover:shadow-glow-lime-strong hover:bg-white'
           : 'border border-white/12 bg-white/4 text-white/70 hover:border-white/25 hover:bg-white/8 hover:text-white'
@@ -705,9 +705,9 @@ function MetricCard({
       <div className={`absolute left-0 top-4 bottom-4 w-0.5 rounded-full ${leftBarColors[accent]}`} />
 
       <div className="pl-3">
-        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/35">{label}</div>
+        <div className="text-tiny font-bold uppercase tracking-[0.2em] text-white/35">{label}</div>
         <div className="mt-2.5 font-serif text-4xl leading-none text-white">{value}</div>
-        <div className="mt-2 text-[12px] text-white/40">{detail}</div>
+        <div className="mt-2 text-base-sm text-white/40">{detail}</div>
       </div>
     </motion.div>
   );
@@ -724,12 +724,12 @@ function FeatureCard({ eyebrow, title, copy }: { eyebrow: string; title: string;
     >
       <div className="absolute top-0 right-0 w-28 h-28 rounded-full bg-slope-accent/4 blur-3xl group-hover:bg-slope-accent/8 transition-colors duration-700" />
       <div className="relative z-10">
-        <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-slope-accent mb-3 flex items-center gap-2">
+        <div className="text-tiny font-bold uppercase tracking-[0.24em] text-slope-accent mb-3 flex items-center gap-2">
           <span className="w-1 h-1 rounded-full bg-slope-accent" />
           {eyebrow}
         </div>
         <div className="font-serif text-xl leading-tight mb-2 text-white">{title}</div>
-        <p className="text-[13px] leading-relaxed text-white/50">{copy}</p>
+        <p className="text-base-sm leading-relaxed text-white/50">{copy}</p>
       </div>
     </motion.div>
   );
@@ -754,13 +754,13 @@ function SignalCard({ alert, active, onClick }: { alert: Alert; active: boolean;
       <div className="pl-1">
         <div className="flex items-center gap-1.5 mb-1">
           <span className="text-sm">{rl.emoji}</span>
-          <span className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: rl.color }}>{rl.label}</span>
+          <span className="text-micro font-bold uppercase tracking-[0.2em]" style={{ color: rl.color }}>{rl.label}</span>
         </div>
         <div className="font-serif text-lg leading-tight text-white/90 truncate">{alert.block_name}</div>
-        <div className="text-[10px] text-white/40 truncate mt-0.5">{alert.district_name}</div>
+        <div className="text-tiny text-white/40 truncate mt-0.5">{alert.district_name}</div>
         <div className="mt-2.5 flex items-baseline gap-2">
           <span className="text-base font-bold" style={{ color: rl.color }}>{formatFPI(alert.fpi_score)}</span>
-          <span className="text-[10px] text-white/35">FPI</span>
+          <span className="text-tiny text-white/35">FPI</span>
         </div>
       </div>
     </motion.button>
@@ -772,8 +772,8 @@ function SignalCard({ alert, active, onClick }: { alert: Alert; active: boolean;
 function ConsoleStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-white/6 bg-white/3 px-4 py-3">
-      <div className="text-[9px] font-bold uppercase tracking-[0.22em] text-white/35">{label}</div>
-      <div className="mt-1.5 text-[12px] font-semibold text-white/80 truncate">{value}</div>
+      <div className="text-micro font-bold uppercase tracking-[0.22em] text-white/35">{label}</div>
+      <div className="mt-1.5 text-base-sm font-semibold text-white/80 truncate">{value}</div>
     </div>
   );
 }
@@ -784,7 +784,7 @@ function TerminalLine({ cmd, active = false }: { cmd: string; active?: boolean }
   return (
     <div className="flex items-center gap-2">
       <span className="text-white/25 select-none">$</span>
-      <span className={`text-slope-accent/80 text-[11px] tracking-wide ${active ? 'text-slope-accent' : ''}`}>
+      <span className={`text-slope-accent/80 text-small tracking-wide ${active ? 'text-slope-accent' : ''}`}>
         {cmd}
       </span>
       {active && <span className="terminal-cursor" />}
@@ -798,7 +798,7 @@ function Panel({ eyebrow, title, children }: { eyebrow: string; title: string; c
   return (
     <section className="glass-panel p-5 flex flex-col">
       <div className="mb-4 border-b border-white/6 pb-4">
-        <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/40">{eyebrow}</div>
+        <div className="text-tiny font-bold uppercase tracking-[0.22em] text-white/40">{eyebrow}</div>
         <div className="mt-1.5 font-serif text-2xl text-white">{title}</div>
       </div>
       <div className="flex-1">{children}</div>
@@ -824,7 +824,7 @@ function AlertLine({ alert, active, onClick }: { alert: Alert; active: boolean; 
       <div className="flex items-center justify-between gap-3 pl-1">
         <div className="min-w-0 flex-1">
           <div className="font-serif text-lg font-medium text-white/90 truncate">{alert.block_name}</div>
-          <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/40 truncate">
+          <div className="mt-0.5 text-tiny font-semibold uppercase tracking-[0.14em] text-white/40 truncate">
             {alert.district_name} · {alert.state_name}
           </div>
         </div>
@@ -832,7 +832,7 @@ function AlertLine({ alert, active, onClick }: { alert: Alert; active: boolean; 
           <div className="text-lg font-bold" style={{ color: rl.color }}>
             {formatFPI(alert.fpi_score)}
           </div>
-          <div className="mt-1 text-[9px] font-bold uppercase tracking-[0.1em]" style={{ color: rl.color }}>
+          <div className="mt-1 text-micro font-bold uppercase tracking-[0.1em]" style={{ color: rl.color }}>
             {rl.emoji} {rl.label}
           </div>
         </div>
@@ -850,7 +850,7 @@ function MetricCardLight({ label, value, highlight = false }: { label: string; v
         ? 'border-slope-accent/25 bg-slope-accent/5'
         : 'border-white/6 bg-white/3 hover:bg-white/5'
     }`}>
-      <div className={`text-[9px] font-bold uppercase tracking-[0.2em] ${highlight ? 'text-slope-accent' : 'text-white/40'}`}>
+      <div className={`text-micro font-bold uppercase tracking-[0.2em] ${highlight ? 'text-slope-accent' : 'text-white/40'}`}>
         {label}
       </div>
       <div className="mt-2 font-serif text-2xl font-medium text-white">{value}</div>
@@ -867,7 +867,7 @@ function LiveBadge() {
         <span className="absolute inline-flex h-full w-full rounded-full bg-slope-accent opacity-75 animate-ping" />
         <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-slope-accent" />
       </span>
-      <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-slope-accent">Live</span>
+      <span className="text-micro font-bold uppercase tracking-[0.22em] text-slope-accent">Live</span>
     </div>
   );
 }
@@ -891,7 +891,7 @@ function LoadingSkeleton({ rows = 3 }: { rows?: number }) {
 
 function EmptyState({ text }: { text: string }) {
   return (
-    <div className="rounded-xl border border-dashed border-white/10 bg-white/2 px-6 py-8 text-center text-[12px] font-medium text-white/35">
+    <div className="rounded-xl border border-dashed border-white/10 bg-white/2 px-6 py-8 text-center text-base-sm font-medium text-white/35">
       {text}
     </div>
   );

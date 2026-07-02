@@ -33,7 +33,7 @@ export default function Navigation() {
         {/* ── Logo ── */}
         <Link
           href="/"
-          className="group flex items-center gap-3 transition-opacity hover:opacity-90"
+          className="group flex items-center gap-3 transition-opacity hover:opacity-90 focus-ring rounded-lg"
         >
           {/* Icon */}
           <div className="relative flex h-7 w-7 items-center justify-center rounded-[9px] border border-slope-accent/25 bg-slope-accent/8 shadow-glow-lime transition-all duration-300 group-hover:border-slope-accent/40 group-hover:shadow-glow-lime-strong">
@@ -50,12 +50,12 @@ export default function Navigation() {
           </div>
 
           {/* Name */}
-          <span className="text-[13px] font-semibold tracking-tight text-white/90 transition-colors group-hover:text-white">
+          <span className="text-base-sm font-semibold tracking-tight text-white/90 transition-colors group-hover:text-white">
             SlopeSense
           </span>
 
           {/* Badge */}
-          <span className="hidden rounded-md border border-white/8 bg-white/4 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-white/35 sm:block">
+          <span className="hidden rounded-md border border-white/8 bg-white/4 px-1.5 py-0.5 text-micro font-bold uppercase tracking-widest text-white/35 sm:block">
             v0.1
           </span>
         </Link>
@@ -70,7 +70,7 @@ export default function Navigation() {
               <li key={link.href} className="relative">
                 <Link
                   href={link.href}
-                  className={`relative z-10 block rounded-lg px-4 py-2 text-[11px] font-semibold tracking-wide transition-colors duration-200 ${
+                  className={`relative z-10 block rounded-lg px-4 py-2 text-small font-semibold tracking-wide transition-colors duration-200 focus-ring ${
                     isActive
                       ? 'text-slope-bg'
                       : 'text-white/50 hover:text-white hover:bg-white/5'
@@ -100,7 +100,7 @@ export default function Navigation() {
               className="hidden items-center gap-2 rounded-full border border-red-500/25 bg-red-500/8 px-3 py-1.5 sm:flex"
             >
               <span className="h-1.5 w-1.5 rounded-full bg-red-400 animate-pulse" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-red-400">
+              <span className="text-tiny font-bold uppercase tracking-widest text-red-400">
                 {emergencyCount} Emergency
               </span>
             </motion.div>
@@ -108,11 +108,11 @@ export default function Navigation() {
 
           {/* Mobile hamburger */}
           <button
-            className="flex items-center gap-1 rounded-lg border border-white/8 bg-white/4 px-3 py-2 sm:hidden"
+            className="flex items-center gap-1 rounded-lg border border-white/12 bg-white/4 hover:bg-white/8 hover:text-white hover:border-white/25 px-3 py-2 sm:hidden focus-ring transition-colors"
             onClick={() => setMenuOpen(v => !v)}
             aria-label="Toggle menu"
           >
-            <span className="text-[11px] font-semibold text-white/60">Menu</span>
+            <span className="text-small font-semibold text-white/70">Menu</span>
           </button>
         </div>
       </div>
@@ -136,9 +136,9 @@ export default function Navigation() {
                     key={link.href}
                     href={link.href}
                     onClick={() => setMenuOpen(false)}
-                    className={`rounded-lg px-4 py-2.5 text-[12px] font-semibold tracking-wide transition-colors ${
+                    className={`rounded-lg px-4 py-2.5 text-base-sm font-semibold tracking-wide transition-colors focus-ring ${
                       isActive
-                        ? 'bg-slope-accent text-slope-bg'
+                        ? 'bg-slope-accent text-slope-bg shadow-glow-lime'
                         : 'text-white/50 hover:text-white hover:bg-white/5'
                     }`}
                   >

@@ -79,7 +79,7 @@ export default function DistrictsPage() {
       {/* Header */}
       <header className="border-b border-white/10 px-6 py-8 relative z-10 bg-black/20 backdrop-blur-md">
         <div className="mx-auto max-w-7xl">
-          <nav className="mb-4 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-white/40">
+          <nav className="mb-4 flex items-center gap-2 text-small font-bold uppercase tracking-[0.2em] text-white/40">
             <Link href="/" className="hover:text-slope-accent hover:underline transition-all cursor-pointer">SlopeSense</Link>
             <span>/</span>
             <span className="text-white">All Districts</span>
@@ -90,7 +90,7 @@ export default function DistrictsPage() {
               animate={{ opacity: 1, x: 0 }}
             >
               <h1 className="text-4xl font-serif font-bold text-white drop-shadow-md">India-Wide Districts</h1>
-              <p className="mt-2 text-[13px] font-medium tracking-wide text-white/50">
+              <p className="mt-2 text-base-sm font-medium tracking-wide text-white/50">
                 {sorted.length} high-risk monitored block{sorted.length !== 1 ? 's' : ''} across all states
               </p>
             </motion.div>
@@ -104,7 +104,7 @@ export default function DistrictsPage() {
                   key={t}
                   id={`tier-filter-${t.toLowerCase()}`}
                   onClick={() => setTierFilter(t)}
-                  className={`rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${
+                  className={`rounded-full px-4 py-1.5 text-tiny font-bold uppercase tracking-[0.2em] transition-all ${
                     tierFilter === t
                       ? 'bg-white text-black shadow-md'
                       : 'text-white/60 hover:text-white hover:bg-white/10'
@@ -136,7 +136,7 @@ export default function DistrictsPage() {
               placeholder="Search districts..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full rounded-full border border-white/10 bg-white/5 pl-10 pr-4 py-3 text-[13px] font-medium text-white placeholder-white/30 outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner"
+              className="w-full rounded-full border border-white/10 bg-white/5 pl-10 pr-4 py-3 text-base-sm font-medium text-white placeholder-white/30 outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner"
             />
           </div>
         </motion.div>
@@ -150,7 +150,7 @@ export default function DistrictsPage() {
         {loading ? (
           <SkeletonTable />
         ) : sorted.length === 0 ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-panel py-20 text-center text-[13px] font-medium text-white/50">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-panel py-20 text-center text-base-sm font-medium text-white/50">
             No districts found for {tierFilter !== 'ALL' ? `tier ${tierFilter}` : 'your search'}.
           </motion.div>
         ) : (
@@ -166,8 +166,8 @@ export default function DistrictsPage() {
                   <SortTh label="District" field="district_name" onSort={toggleSort}>
                     <SortIcon field="district_name" />
                   </SortTh>
-                  <th className="px-5 py-4 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">State</th>
-                  <th className="px-5 py-4 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">Risk Level</th>
+                  <th className="px-5 py-4 text-left text-tiny font-bold uppercase tracking-[0.2em] text-white/50">State</th>
+                  <th className="px-5 py-4 text-left text-tiny font-bold uppercase tracking-[0.2em] text-white/50">Risk Level</th>
                   <SortTh label="Tier" field="tier" onSort={toggleSort}>
                     <SortIcon field="tier" />
                   </SortTh>
@@ -193,10 +193,10 @@ export default function DistrictsPage() {
                     >
                       <td className="px-5 py-5">
                         <div className="font-serif text-lg font-medium text-white">{alert.district_name}</div>
-                        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mt-1">{alert.district_code} — {alert.block_name}</div>
+                        <div className="text-tiny font-bold uppercase tracking-[0.2em] text-white/40 mt-1">{alert.district_code} — {alert.block_name}</div>
                       </td>
                       <td className="px-5 py-5">
-                        <span className="text-[13px] font-medium text-white/80">{STATE_NAMES[alert.state_code] || alert.state_code}</span>
+                        <span className="text-base-sm font-medium text-white/80">{STATE_NAMES[alert.state_code] || alert.state_code}</span>
                       </td>
                       <td className="px-5 py-5">
                         {(() => {
@@ -205,8 +205,8 @@ export default function DistrictsPage() {
                             <div className="flex items-center gap-2">
                               <span className="text-base">{rl.emoji}</span>
                               <div>
-                                <div className="text-[11px] font-bold" style={{ color: rl.color }}>{rl.label}</div>
-                                <div className="text-[9px] text-white/40 mt-0.5">{rl.short}</div>
+                                <div className="text-small font-bold" style={{ color: rl.color }}>{rl.label}</div>
+                                <div className="text-micro text-white/40 mt-0.5">{rl.short}</div>
                               </div>
                             </div>
                           );
@@ -228,26 +228,26 @@ export default function DistrictsPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="px-5 py-5 font-mono text-[13px] font-medium text-white/60">
+                      <td className="px-5 py-5 font-mono text-base-sm font-medium text-white/60">
                         {formatFPI(alert.fpi_ci_lower ?? 0)}–{formatFPI(alert.fpi_ci_upper ?? 0)}
                       </td>
-                      <td className="px-5 py-5 text-[13px] font-medium text-white/80">
+                      <td className="px-5 py-5 text-base-sm font-medium text-white/80">
                         {alert.rainfall_3d_mm != null ? `${alert.rainfall_3d_mm} mm` : '—'}
                       </td>
-                      <td className="px-5 py-5 text-[13px] font-medium text-white/80">
+                      <td className="px-5 py-5 text-base-sm font-medium text-white/80">
                         {alert.soil_moisture_percentile != null ? `${alert.soil_moisture_percentile}th %ile` : '—'}
                       </td>
                       <td className="px-5 py-5">
                         <div className="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
                           <Link
                             href={`/alerts/${alert.id}`}
-                            className="rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white hover:border-white/40 hover:bg-white/10 transition-all shadow-sm"
+                            className="rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-tiny font-bold uppercase tracking-[0.2em] text-white hover:border-white/40 hover:bg-white/10 transition-all shadow-sm"
                           >
                             Details
                           </Link>
                           <button
                             onClick={() => window.alert("PDF generation in progress — downloading shortly")}
-                            className="rounded-full border border-white/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 hover:text-white hover:bg-white/5 transition-all"
+                            className="rounded-full border border-white/10 px-4 py-1.5 text-tiny font-bold uppercase tracking-[0.2em] text-white/50 hover:text-white hover:bg-white/5 transition-all"
                           >
                             PDF
                           </button>
@@ -292,7 +292,7 @@ function SortTh({
 }) {
   return (
     <th
-      className="cursor-pointer select-none px-5 py-4 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 hover:text-white transition-colors"
+      className="cursor-pointer select-none px-5 py-4 text-left text-tiny font-bold uppercase tracking-[0.2em] text-white/50 hover:text-white transition-colors"
       onClick={() => onSort(field)}
     >
       {label}{children}

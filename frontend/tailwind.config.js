@@ -7,6 +7,18 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontSize: {
+        'micro': ['9px', { lineHeight: '12px' }],
+        'tiny':  ['10px', { lineHeight: '14px' }],
+        'small': ['11px', { lineHeight: '16px' }],
+        'base-sm': ['13px', { lineHeight: '20px' }],
+      },
+      letterSpacing: {
+        'loose': '0.15em',
+        'looser': '0.2em',
+        'widest': '0.24em',
+        'mega': '0.28em',
+      },
       colors: {
         slope: {
           bg:      '#080809',

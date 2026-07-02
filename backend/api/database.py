@@ -28,6 +28,8 @@ def _get_db_url() -> str:
         (``sqlite+aiosqlite://`` or ``postgresql+asyncpg://``).
     """
     raw = os.environ.get("DATABASE_URL", "sqlite:///./slopesense.db")
+    if not raw:
+        raw = "sqlite:///./slopesense.db"
     if raw.startswith("sqlite://") and not raw.startswith("sqlite+aiosqlite://"):
         return raw.replace("sqlite://", "sqlite+aiosqlite://", 1)
     if raw.startswith("postgresql://"):

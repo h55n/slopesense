@@ -91,7 +91,7 @@ export default function AlertDetailPage() {
       <header className={`relative border-b border-white/6 px-6 py-8 bg-gradient-to-b ${TIER_GRADIENT[gradientKey]}`}>
         <div className="mx-auto max-w-6xl">
           {/* Breadcrumb */}
-          <nav className="mb-5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-white/30">
+          <nav className="mb-5 flex items-center gap-2 text-tiny font-bold uppercase tracking-[0.22em] text-white/30">
             <Link href="/" className="hover:text-slope-accent transition-colors">SlopeSense</Link>
             <span className="text-white/15">/</span>
             <Link href={`/districts/${alert.state_code}`} className="hover:text-white/70 transition-colors">
@@ -115,12 +115,12 @@ export default function AlertDetailPage() {
                   initial={{ opacity: 0, scale: 0.85 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.1 }}
-                  className={`shrink-0 inline-flex rounded-full px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] ${tierBadgeClass(alert.tier)}`}
+                  className={`shrink-0 inline-flex rounded-full px-3.5 py-1.5 text-tiny font-bold uppercase tracking-[0.18em] ${tierBadgeClass(alert.tier)}`}
                 >
                   {alert.tier}
                 </motion.span>
               </div>
-              <p className="text-[12px] font-medium tracking-wide text-white/40">
+              <p className="text-base-sm font-medium tracking-wide text-white/40">
                 {alert.district_name} · {alert.state_name} ·{' '}
                 Issued {new Date(alert.issued_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
               </p>
@@ -132,7 +132,7 @@ export default function AlertDetailPage() {
               target="_blank"
               rel="noopener noreferrer"
               id="download-pdf-btn"
-              className="shrink-0 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/5 px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/70 hover:bg-white/10 hover:border-white/25 hover:text-white transition-all shadow-glass"
+              className="shrink-0 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/5 px-5 py-2.5 text-tiny font-bold uppercase tracking-[0.2em] text-white/70 hover:bg-white/10 hover:border-white/25 hover:text-white transition-all shadow-glass"
             >
               <span>↓</span> PDF Report
             </motion.a>
@@ -160,12 +160,12 @@ export default function AlertDetailPage() {
                 <div className="font-serif text-6xl font-bold leading-none" style={{ color: accentColor }}>
                   {fpiPct}%
                 </div>
-                <div className="mt-2 text-[11px] font-medium text-white/40">Current FPI</div>
-                <div className="mt-1 font-mono text-[10px] text-white/30 tracking-wider">
+                <div className="mt-2 text-small font-medium text-white/40">Current FPI</div>
+                <div className="mt-1 font-mono text-tiny text-white/30 tracking-wider">
                   95% CI: {ciLo}% – {ciHi}%
                 </div>
                 {alert.is_suppressed && (
-                  <div className="mt-2 text-[10px] font-bold text-amber-400 bg-amber-500/8 border border-amber-500/20 rounded-full px-3 py-1">
+                  <div className="mt-2 text-tiny font-bold text-amber-400 bg-amber-500/8 border border-amber-500/20 rounded-full px-3 py-1">
                     ⚠ High uncertainty — suppressed
                   </div>
                 )}
@@ -174,7 +174,7 @@ export default function AlertDetailPage() {
 
             {/* CI bar */}
             <div className="mb-6">
-              <div className="flex justify-between text-[9px] font-bold uppercase tracking-[0.2em] text-white/25 mb-2">
+              <div className="flex justify-between text-micro font-bold uppercase tracking-[0.2em] text-white/25 mb-2">
                 <span>0%</span><span>50%</span><span>100%</span>
               </div>
               <div className="relative h-2 rounded-full overflow-hidden bg-white/5 border border-white/6">
@@ -250,7 +250,7 @@ export default function AlertDetailPage() {
 
             {/* Breach fraction */}
             <div className="mt-5 rounded-xl border border-white/6 bg-white/3 p-4">
-              <div className="text-[9px] font-bold uppercase tracking-[0.22em] text-white/35 mb-3">Breach Fraction</div>
+              <div className="text-micro font-bold uppercase tracking-[0.22em] text-white/35 mb-3">Breach Fraction</div>
               <div className="flex items-center gap-4">
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/5 border border-white/6">
                   <motion.div
@@ -260,7 +260,7 @@ export default function AlertDetailPage() {
                     className="h-full rounded-full bg-slope-accent shadow-glow-lime"
                   />
                 </div>
-                <span className="text-[12px] font-bold text-white/80 shrink-0">
+                <span className="text-base-sm font-bold text-white/80 shrink-0">
                   {alert.cell_count_breached}/{alert.cell_count_total} cells
                   <span className="ml-1 text-white/40 font-normal">
                     ({Math.round((alert.breach_fraction || 0) * 100)}%)
@@ -271,7 +271,7 @@ export default function AlertDetailPage() {
 
             {/* Spatial note */}
             <div className="mt-3 rounded-xl border border-white/5 bg-white/2 px-4 py-3">
-              <div className="text-[10px] text-white/35 leading-relaxed">
+              <div className="text-tiny text-white/35 leading-relaxed">
                 <strong className="text-white/60">Dominant signal:</strong>{' '}
                 {(alert.dominant_signals?.[0]?.signal || 'rainfall_accumulation').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
               </div>
@@ -290,7 +290,7 @@ export default function AlertDetailPage() {
                     id={`lang-btn-${lang.code}`}
                     onClick={() => setSelectedLang(lang.code)}
                     title={lang.label}
-                    className={`h-7 w-7 rounded-lg text-[11px] font-bold transition-all duration-150 ${
+                    className={`h-7 w-7 rounded-lg text-small font-bold transition-all duration-150 ${
                       selectedLang === lang.code
                         ? 'bg-white text-slope-bg shadow-sm'
                         : 'text-white/40 hover:text-white hover:bg-white/8'
@@ -306,16 +306,16 @@ export default function AlertDetailPage() {
             <div className="rounded-2xl border border-white/8 bg-black/50 overflow-hidden">
               {/* WA header */}
               <div className="bg-[#128C7E]/20 border-b border-[#128C7E]/20 px-4 py-3 flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full bg-[#25D366]/80 flex items-center justify-center text-[10px] font-bold text-white">
+                <div className="h-8 w-8 rounded-full bg-[#25D366]/80 flex items-center justify-center text-tiny font-bold text-white">
                   SS
                 </div>
                 <div>
-                  <div className="text-[12px] font-bold text-white">SlopeSense Alert</div>
-                  <div className="text-[9px] text-white/40">via WhatsApp Business API</div>
+                  <div className="text-base-sm font-bold text-white">SlopeSense Alert</div>
+                  <div className="text-micro text-white/40">via WhatsApp Business API</div>
                 </div>
                 <div className="ml-auto flex items-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#25D366]" />
-                  <span className="text-[9px] text-white/30">online</span>
+                  <span className="text-micro text-white/30">online</span>
                 </div>
               </div>
               {/* Message bubble */}
@@ -327,7 +327,7 @@ export default function AlertDetailPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -4 }}
                     transition={{ duration: 0.2 }}
-                    className="inline-block rounded-2xl rounded-tl-sm bg-[#1a1a1a] border border-white/5 px-4 py-3 text-[12px] leading-relaxed text-white/85 whitespace-pre-wrap font-mono max-w-full"
+                    className="inline-block rounded-2xl rounded-tl-sm bg-[#1a1a1a] border border-white/5 px-4 py-3 text-base-sm leading-relaxed text-white/85 whitespace-pre-wrap font-mono max-w-full"
                   >
                     {waMessage}
                   </motion.div>
@@ -342,7 +342,7 @@ export default function AlertDetailPage() {
               <SectionLabel className="mb-0">CAP v1.2 XML Feed</SectionLabel>
               <button
                 onClick={() => setShowXml(v => !v)}
-                className="rounded-full border border-white/12 bg-white/4 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-white/60 hover:bg-white/8 hover:border-white/22 hover:text-white transition-all"
+                className="rounded-full border border-white/12 bg-white/4 px-4 py-1.5 text-tiny font-bold uppercase tracking-[0.18em] text-white/60 hover:bg-white/8 hover:border-white/22 hover:text-white transition-all"
               >
                 {showXml ? 'Hide XML' : 'Show XML'}
               </button>
@@ -355,7 +355,7 @@ export default function AlertDetailPage() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="overflow-x-auto overflow-hidden rounded-xl bg-black/60 border border-white/5 p-4 text-[10px] leading-relaxed text-emerald-400 max-h-60"
+                  className="overflow-x-auto overflow-hidden rounded-xl bg-black/60 border border-white/5 p-4 text-tiny leading-relaxed text-emerald-400 max-h-60"
                 >
                   {capXml || 'Loading CAP XML…'}
                 </motion.pre>
@@ -366,10 +366,10 @@ export default function AlertDetailPage() {
                   animate={{ opacity: 1 }}
                   className="rounded-xl bg-white/2 border border-white/5 p-5 space-y-3"
                 >
-                  <p className="text-[13px] text-white/50 leading-relaxed">
+                  <p className="text-base-sm text-white/50 leading-relaxed">
                     CAP v1.2 compliant XML alert feed, compatible with NDMA Sachet and national emergency broadcast systems.
                   </p>
-                  <div className="font-mono text-[11px] text-slope-accent/60 bg-black/40 rounded-lg px-4 py-3 border border-white/5">
+                  <div className="font-mono text-small text-slope-accent/60 bg-black/40 rounded-lg px-4 py-3 border border-white/5">
                     GET /v1/cap/feed?state={alert.state_code}&amp;min_fpi=0.65
                   </div>
                 </motion.div>
@@ -380,7 +380,7 @@ export default function AlertDetailPage() {
               href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/v1/cap/feed`}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-4 inline-flex items-center gap-1.5 text-[11px] font-semibold text-white/35 hover:text-slope-accent transition-colors"
+              className="mt-4 inline-flex items-center gap-1.5 text-small font-semibold text-white/35 hover:text-slope-accent transition-colors"
             >
               Open live CAP feed ↗
             </a>
@@ -400,7 +400,7 @@ const fadeUp = {
 
 function SectionLabel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <h2 className={`mb-5 text-[10px] font-bold uppercase tracking-[0.26em] text-white/35 ${className}`}>
+    <h2 className={`mb-5 text-tiny font-bold uppercase tracking-[0.26em] text-white/35 ${className}`}>
       {children}
     </h2>
   );
@@ -419,10 +419,10 @@ function DetailCard({
 }) {
   return (
     <div className="rounded-xl border border-white/6 bg-white/3 p-4 hover:bg-white/5 transition-colors">
-      <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/35">{label}</div>
+      <div className="text-micro font-bold uppercase tracking-[0.2em] text-white/35">{label}</div>
       <div className="mt-2 font-serif text-2xl font-bold" style={color ? { color } : undefined}>
         <span className={color ? '' : 'text-white'}>{value}</span>
-        {unit && <span className="ml-1 text-[12px] font-sans font-medium text-white/35">{unit}</span>}
+        {unit && <span className="ml-1 text-base-sm font-sans font-medium text-white/35">{unit}</span>}
       </div>
     </div>
   );
