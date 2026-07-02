@@ -43,6 +43,7 @@ body {
 h1, h2, h3, h4 {
   font-family: 'PT Serif', Georgia, serif;
   letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
 ::selection {
@@ -208,6 +209,7 @@ h1, h2, h3, h4 {
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Animated terminal cursor ─────────────────────────────────────────────── */

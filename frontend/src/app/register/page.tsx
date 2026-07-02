@@ -132,15 +132,15 @@ export default function RegisterPage() {
       <main className="mx-auto max-w-2xl px-6 py-10 relative z-10">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Personal info */}
-          <motion.fieldset 
+          <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="glass-panel p-7 space-y-4"
           >
-            <legend className="text-small font-bold uppercase tracking-wider text-white/50 mb-5 w-full border-b border-white/10 pb-4">
+            <div className="text-small font-bold uppercase tracking-wider text-white/50 mb-5 w-full border-b border-white/10 pb-4">
               Contact Information
-            </legend>
+            </div>
 
             <FormField label="Full Name *" id="reg-name">
               <input
@@ -205,18 +205,18 @@ export default function RegisterPage() {
                 />
               </FormField>
             </div>
-          </motion.fieldset>
+          </motion.div>
 
           {/* Location */}
-          <motion.fieldset 
+          <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             className="glass-panel p-7 space-y-4"
           >
-            <legend className="text-small font-bold uppercase tracking-wider text-white/50 mb-5 w-full border-b border-white/10 pb-4">
+            <div className="text-small font-bold uppercase tracking-wider text-white/50 mb-5 w-full border-b border-white/10 pb-4">
               Coverage Area
-            </legend>
+            </div>
 
             <FormField label="State *" id="reg-state">
               <select
@@ -258,18 +258,18 @@ export default function RegisterPage() {
                 <p className="mt-2 text-tiny uppercase tracking-wider text-white/30">Enter block code e.g. MEP for Meppadi</p>
               </FormField>
             </div>
-          </motion.fieldset>
+          </motion.div>
 
           {/* Preferences */}
-          <motion.fieldset 
+          <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             className="glass-panel p-7 space-y-5"
           >
-            <legend className="text-small font-bold uppercase tracking-wider text-white/50 mb-5 w-full border-b border-white/10 pb-4">
+            <div className="text-small font-bold uppercase tracking-wider text-white/50 mb-5 w-full border-b border-white/10 pb-4">
               Alert Preferences
-            </legend>
+            </div>
 
             <FormField label="Alert Language *" id="reg-language">
               <select
@@ -319,7 +319,7 @@ export default function RegisterPage() {
                 ))}
               </div>
             </div>
-          </motion.fieldset>
+          </motion.div>
 
           {/* Error */}
           {submitStatus === 'error' && (

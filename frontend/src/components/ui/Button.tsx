@@ -17,7 +17,7 @@ export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref' | 'ch
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className = '', variant = 'primary', size = 'md', isLoading, children, disabled, ...props }, ref) => {
-    const baseStyles = 'inline-flex items-center justify-center rounded-full font-bold uppercase tracking-widest transition-all duration-200 focus-ring disabled:opacity-50 disabled:cursor-not-allowed';
+    const baseStyles = 'inline-flex items-center justify-center rounded-full font-bold uppercase tracking-widest transition-colors transition-shadow duration-200 focus-ring disabled:opacity-50 disabled:cursor-not-allowed';
     
     const variants: Record<ButtonVariant, string> = {
       primary: 'bg-slope-accent text-slope-bg shadow-glow-lime hover:shadow-glow-lime-strong hover:bg-white',
@@ -35,7 +35,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <motion.button
         ref={ref}
         whileHover={disabled || isLoading ? {} : { scale: 1.02, y: -1 }}
-        whileTap={disabled || isLoading ? {} : { scale: 0.98 }}
+        whileTap={disabled || isLoading ? {} : { scale: 0.96 }}
         className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
         disabled={disabled || isLoading}
         {...props}

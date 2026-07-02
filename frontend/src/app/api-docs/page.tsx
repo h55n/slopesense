@@ -81,10 +81,10 @@ export default function ApiDocsPage() {
           <aside className="space-y-6">
             <div>
               <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-white/30">Overview</h3>
-              <div className="space-y-1 text-sm text-white/60">
-                <div className="rounded-lg bg-white/5 px-3 py-2 text-white">Authentication</div>
-                <div className="px-3 py-1.5 hover:text-white cursor-default">Rate Limits</div>
-                <div className="px-3 py-1.5 hover:text-white cursor-default">Error Codes</div>
+              <div className="space-y-1 text-sm font-medium text-white/60">
+                <a href="#authentication" className="block rounded-lg bg-white/10 px-3 py-2 text-white transition-colors">Authentication</a>
+                <a href="#rate-limits" className="block rounded-lg px-3 py-2 hover:bg-white/5 hover:text-white transition-colors">Rate Limits</a>
+                <a href="#error-codes" className="block rounded-lg px-3 py-2 hover:bg-white/5 hover:text-white transition-colors">Error Codes</a>
               </div>
             </div>
             <div>
@@ -94,7 +94,7 @@ export default function ApiDocsPage() {
                   <div key={g.group}>
                     <div className="mb-1 mt-3 text-xs font-semibold uppercase tracking-wider text-white/30">{g.group}</div>
                     {g.endpoints.map(e => (
-                      <a key={e.path} href={`#${e.id}`} className="flex items-center gap-2 px-3 py-1.5 hover:text-white transition-colors">
+                      <a key={e.path} href={`#${e.id}`} className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-white/5 hover:text-white transition-colors">
                         <MethodBadge method={e.method} />
                         <span className="font-mono text-xs truncate">{e.path}</span>
                       </a>
@@ -120,18 +120,52 @@ export default function ApiDocsPage() {
                     curl -H &quot;X-API-Key: your_key&quot; https://api.slopesense.in/v1/alerts/active
                   </code>
                 </div>
+              </div>
+            </section>
+
+            {/* Rate Limits section */}
+            <section id="rate-limits">
+              <h2 className="mb-4 text-xl font-bold">Rate Limits</h2>
+              <div className="rounded-xl border border-white/10 bg-white/3 p-6 space-y-4">
+                <p className="text-sm text-white/70">
+                  API rate limits depend on your tier. Headers <code className="text-lime-300">X-RateLimit-Remaining</code> and <code className="text-lime-300">X-RateLimit-Reset</code> are included in every response.
+                </p>
                 <div className="grid gap-3 sm:grid-cols-3 text-sm">
                   {[
                     { tier: 'Public', limit: '100/hour', key: 'No key required' },
                     { tier: 'Research', limit: '1,000/hour', key: 'X-API-Key required' },
                     { tier: 'Paid', limit: '10,000/hour', key: 'X-API-Key required' },
                   ].map(t => (
-                    <div key={t.tier} className="rounded-lg border border-white/10 p-3">
+                    <div key={t.tier} className="rounded-lg border border-white/10 p-3 bg-black/20">
                       <div className="font-semibold">{t.tier}</div>
                       <div className="text-white/60 text-xs mt-1">{t.limit}</div>
-                      <div className="text-white/40 text-xs">{t.key}</div>
+                      <div className="text-white/40 text-xs mt-1">{t.key}</div>
                     </div>
                   ))}
+                </div>
+              </div>
+            </section>
+
+            {/* Error Codes section */}
+            <section id="error-codes">
+              <h2 className="mb-4 text-xl font-bold">Error Codes</h2>
+              <div className="rounded-xl border border-white/10 bg-white/3 p-6 space-y-4">
+                <p className="text-sm text-white/70">
+                  Standard HTTP status codes are returned alongside a JSON payload containing a detailed message.
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-4 border-b border-white/5 py-2">
+                    <span className="font-mono text-sm text-red-400 w-12">400</span>
+                    <span className="text-sm text-white/60">Bad Request (e.g. invalid coordinates)</span>
+                  </div>
+                  <div className="flex items-center gap-4 border-b border-white/5 py-2">
+                    <span className="font-mono text-sm text-amber-400 w-12">401</span>
+                    <span className="text-sm text-white/60">Unauthorized (missing or invalid API Key)</span>
+                  </div>
+                  <div className="flex items-center gap-4 py-2">
+                    <span className="font-mono text-sm text-orange-400 w-12">429</span>
+                    <span className="text-sm text-white/60">Too Many Requests (Rate limit exceeded)</span>
+                  </div>
                 </div>
               </div>
             </section>

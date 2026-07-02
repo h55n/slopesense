@@ -24,7 +24,7 @@ export default function Navigation() {
 
   return (
     <nav
-      className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-2xl transition-all duration-300"
+      className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-2xl transition-colors duration-300"
       style={{ background: 'rgba(8,8,9,0.85)' }}
       aria-label="Global navigation"
     >
@@ -36,8 +36,8 @@ export default function Navigation() {
           className="group flex items-center gap-3 transition-opacity hover:opacity-90 focus-ring rounded-lg"
         >
           {/* Icon */}
-          <div className="relative flex h-7 w-7 items-center justify-center rounded-[9px] border border-slope-accent/25 bg-slope-accent/8 shadow-glow-lime transition-all duration-300 group-hover:border-slope-accent/40 group-hover:shadow-glow-lime-strong">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <div className="relative flex h-7 w-7 items-center justify-center rounded-[9px] border border-slope-accent/25 bg-slope-accent/8 shadow-glow-lime transition-colors duration-300 group-hover:border-slope-accent/40 group-hover:shadow-glow-lime-strong">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
               <path d="M7 1L13 12H1L7 1Z" stroke="#c5ff4a" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(197,255,74,0.08)" />
               <path d="M7 5L9.5 10H4.5L7 5Z" fill="#c5ff4a" opacity="0.6" />
             </svg>
@@ -111,6 +111,7 @@ export default function Navigation() {
             className="flex items-center gap-1 rounded-lg border border-white/12 bg-white/4 hover:bg-white/8 hover:text-white hover:border-white/25 px-3 py-2 sm:hidden focus-ring transition-colors"
             onClick={() => setMenuOpen(v => !v)}
             aria-label="Toggle menu"
+            aria-expanded={menuOpen}
           >
             <span className="text-small font-semibold text-white/70">Menu</span>
           </button>
