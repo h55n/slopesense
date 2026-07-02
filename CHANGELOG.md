@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **UI/UX Skills:** Integrated `web-design-guidelines` and `make-interfaces-feel-better` design engineering principles.
 - `scripts/expand_districts.py` — procedural script to expand district and block tracking to all 21 vulnerable Indian states.
 - `backend/model/live_verification.py` — live verification engine that continuously queries the NASA COOLR/GLC API for actual landslide reports to validate model predictions.
 - `scripts/verify_live.py` — CLI tool to execute the live verification engine and generate continuous accuracy reports.
@@ -18,12 +19,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `CONTRIBUTING.md` — comprehensive contributor guide with coding standards, branch naming conventions, commit message format (Conventional Commits), and PR checklist
 
 ### Changed
+- **Global Typography:** Standardized all text sizing via `text-micro`, `text-tiny`, `text-small`, and `text-base-sm` semantic tokens.
+- **Interactions:** Enforced exactly `scale: 0.96` tactile scaling on buttons to match professional design specs.
+- **Typographic Balance:** Added `text-wrap: balance` to all headers to prevent orphans, and applied `tabular-nums` to `.stat-chip`s to eliminate jitter during dynamic updates.
+- **Animation Performance:** Eradicated `transition-all` usage across components, replacing them with specific composited properties (e.g., `transition-colors`, `transition-shadow`).
 - `data/india_landslide_districts.json` — massively scaled geographic coverage from 88 districts (275 blocks) to 1,049 districts (18,389 blocks) across all major mountain ranges.
 - `backend/processing/preprocessor.py` — implemented high-availability fallbacks for the data ingestion pipeline, automatically switching from NASA GPM/SMAP to Open-Meteo in case of API downtime to guarantee 100% uptime.
 - `README.md` — full rewrite to industry-standard format with architecture diagram, repository tree, quickstart table, data sources table, alert tier table, API overview, and performance benchmarks
 - `ARCHITECTURE.md` — full rewrite with 7 Mermaid diagrams: system overview, data flow sequence, FPI computation model, database ER diagram, API middleware pipeline, Docker infrastructure, and tech stack table
 
 ### Fixed
+- **Next.js Caching:** Resolved a `ChunkLoadError` Webpack cache invalidation bug when running production builds alongside the dev server.
+- **Register Form Layout:** Fixed a "hanging" `<legend>` text layout bug in `register/page.tsx` by replacing the `fieldset` wrapper with a standard `div` box-model structure.
+- **API Docs Sidebar:** Fixed static non-interactive sidebar links in `/api-docs` by upgrading them to full anchors (`<a>`), adding hover states, and mapping them to explicitly split out `#rate-limits` and `#error-codes` sections.
 - `backend/tests/conftest.py` — resolved `sqlalchemy.exc.OperationalError: no such function: RecoverGeometryColumn` by injecting mock Spatialite functions (`RecoverGeometryColumn`, `AddGeometryColumn`, `CreateSpatialIndex`, `DisableSpatialIndex`, `DiscardGeometryColumn`) into the SQLite test connection via SQLAlchemy's `connect` event listener
 - `backend/tests/test_api.py` — fixed `should_notify=True` being passed to `Alert()` constructor (field does not exist in model); fixed `str(uuid.uuid4())` → `uuid.uuid4()` (SQLAlchemy UUID column rejects pre-serialized strings)
 - `backend/api/main.py` — fixed `/v1/retrospective` SQL query referencing non-existent columns (`fpi_target_t24`, `description`) → corrected to `fpi_at_t24`, `location_description as description`
