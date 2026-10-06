@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ARCHITECTURE.md` — full rewrite with 7 Mermaid diagrams: system overview, data flow sequence, FPI computation model, database ER diagram, API middleware pipeline, Docker infrastructure, and tech stack table
 
 ### Fixed
+- `backend/config.py` — validate production `SECRET_KEY` using the resolved application environment, so values loaded from `.env` or passed to `Settings` cannot bypass the minimum length check.
 - **Next.js Caching:** Resolved a `ChunkLoadError` Webpack cache invalidation bug when running production builds alongside the dev server.
 - **Register Form Layout:** Fixed a "hanging" `<legend>` text layout bug in `register/page.tsx` by replacing the `fieldset` wrapper with a standard `div` box-model structure.
 - **API Docs Sidebar:** Fixed static non-interactive sidebar links in `/api-docs` by upgrading them to full anchors (`<a>`), adding hover states, and mapping them to explicitly split out `#rate-limits` and `#error-codes` sections.

@@ -4,9 +4,8 @@ Loaded from environment variables / .env file
 """
 
 from pydantic_settings import BaseSettings
-from pydantic import field_validator
+from pydantic import model_validator
 from typing import List, Optional
-import os
 
 
 class Settings(BaseSettings):
@@ -96,13 +95,11 @@ class Settings(BaseSettings):
     def api_key_list(self) -> List[str]:
         return [key.strip() for key in self.api_keys.split(",") if key.strip()]
 
-    @field_validator("secret_key")
-    @classmethod
-    def validate_secret_key(cls, value: str):
-        environment = os.getenv("ENVIRONMENT", "development")
-        if environment == "production" and len(value or "") < 32:
+    @model_validator(mode="after")
+    def validate_secret_key(self) -> "Settings":
+        if self.environment == "production" and len(self.secret_key or "") < 32:
             raise ValueError("SECRET_KEY must be at least 32 characters in production")
-        return value
+        return self
 
 
 settings = Settings()
