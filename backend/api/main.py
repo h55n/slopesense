@@ -368,37 +368,44 @@ async def get_active_alerts(
     """Get all currently active alerts for high-risk blocks."""
     from sqlalchemy import text
     import json
-    
-    if db is None:
-        return {"count": len(_current_alerts), "alerts": _current_alerts, "run_timestamp": datetime.now(timezone.utc).isoformat()}
 
-    query = """
-        SELECT * FROM alerts 
-        WHERE is_active = 1 AND is_suppressed = 0 AND fpi_score >= :min_fpi
-    """
-    params = {"min_fpi": min_fpi}
-    
-    if tier:
-        query += " AND tier = :tier"
-        params["tier"] = tier
-    if state:
-        query += " AND state_code = :state"
-        params["state"] = state
-        
-    query += " ORDER BY fpi_score DESC LIMIT 200"
-    
-    try:
-        result = await db.execute(text(query), params)
-        rows = result.fetchall()
-    except Exception:
-        rows = []
-    
-    if not rows and len(_current_alerts) > 0:
+    if db is None:
         rows = _current_alerts
+    else:
+        query = """
+            SELECT * FROM alerts
+            WHERE is_active = 1 AND is_suppressed = 0 AND fpi_score >= :min_fpi
+        """
+        params = {"min_fpi": min_fpi}
+
+        if tier:
+            query += " AND tier = :tier"
+            params["tier"] = tier
+        if state:
+            query += " AND state_code = :state"
+            params["state"] = state
+
+        query += " ORDER BY fpi_score DESC LIMIT 200"
+
+        try:
+            result = await db.execute(text(query), params)
+            rows = result.fetchall()
+        except Exception as exc:
+            logger.warning("Active alert query failed, using filtered cache fallback: %s", exc)
+            rows = _current_alerts
 
     alerts = []
     for row in rows:
         alert_dict = dict(row._mapping) if hasattr(row, '_mapping') else dict(row)
+        if not alert_dict.get("is_active") or alert_dict.get("is_suppressed"):
+            continue
+        fpi = alert_dict.get("fpi_score", 0.0) or 0.0
+        if fpi < min_fpi:
+            continue
+        if tier and alert_dict.get("tier") != tier:
+            continue
+        if state and str(alert_dict.get("state_code") or "").lower() != state.lower():
+            continue
         if isinstance(alert_dict.get("dominant_signals"), str):
             try:
                 alert_dict["dominant_signals"] = json.loads(alert_dict["dominant_signals"])
@@ -606,7 +613,9 @@ async def get_cap_feed(
     alert_xmls = []
     for alert in alerts[:50]:  # cap at 50
         try:
-            xml = engine.format_cap_xml(alert)
+            xml = engine.format_cap_xml(alert).strip()
+            if xml.startswith("<?xml"):
+                xml = xml.partition("?>")[2].strip()
             alert_xmls.append(xml)
         except Exception as e:
             logger.warning(f"CAP XML generation failed for {alert.get('alert_code')}: {e}")

@@ -76,6 +76,23 @@ class TestAlertsEndpoint:
         assert resp_high.json()["count"] == 0  # 0.73 < 0.80
         assert resp_low.json()["count"] == 1   # 0.73 > 0.60
 
+    async def test_active_alerts_cache_fallback_respects_min_fpi(self, monkeypatch):
+        from backend.api import main
+
+        monkeypatch.setattr(
+            main,
+            "_current_alerts",
+            [
+                {"alert_code": "HIGH", "fpi_score": 0.81, "is_active": True},
+                {"alert_code": "LOW", "fpi_score": 0.73, "is_active": True},
+            ],
+        )
+
+        response = await main.get_active_alerts(min_fpi=0.80, db=None)
+
+        assert response["count"] == 1
+        assert [alert["alert_code"] for alert in response["alerts"]] == ["HIGH"]
+
 
 @pytest.mark.asyncio
 class TestRiskEndpoint:
