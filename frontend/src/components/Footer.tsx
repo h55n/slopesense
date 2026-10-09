@@ -98,7 +98,7 @@ export default function Footer() {
 
       <div className="relative z-10 border-t border-black/20 bg-[#0b0b0c]/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-3 px-6 py-4 text-small text-white/50 sm:px-8 lg:px-12">
-          <span>&copy; 2026 SlopeSense. Built to give districts a day's notice.</span>
+          <span>&copy; 2026 SlopeSense. Built to give districts a day&apos;s notice.</span>
           <span className="flex gap-5">
             <a href="https://github.com/h55n/slopesense" target="_blank" rel="noopener noreferrer" className="underline-offset-4 hover:text-white hover:underline">Source</a>
             <Link href="/api-docs" className="underline-offset-4 hover:text-white hover:underline">API</Link>

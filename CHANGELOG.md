@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Illustrated redesign:** forest-green palette with saffron accent, Fraunces display type, paper grain, risograph hero band, bento-style pipeline cards, sensor section and a site-wide footer.
 - **UI/UX Skills:** Integrated `web-design-guidelines` and `make-interfaces-feel-better` design engineering principles.
 - `scripts/expand_districts.py` — procedural script to expand district and block tracking to all 21 vulnerable Indian states.
 - `backend/model/live_verification.py` — live verification engine that continuously queries the NASA COOLR/GLC API for actual landslide reports to validate model predictions.
