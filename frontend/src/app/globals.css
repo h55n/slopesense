@@ -97,17 +97,15 @@ h1, h2, h3, h4 {
 
 /* ── Glass panel ──────────────────────────────────────────────────────────── */
 .glass-panel {
-  background: rgba(255,255,255,0.025);
-  backdrop-filter: blur(24px) saturate(160%);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(180deg, rgba(243,234,216,0.045), rgba(243,234,216,0.02));
+  border: 1px solid rgba(243,234,216,0.09);
+  border-radius: 20px;
+  box-shadow: 0 1px 0 rgba(243,234,216,0.05) inset, 0 12px 32px rgba(0,0,0,0.28);
+  transition: border-color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
 }
 .glass-panel:hover {
-  border-color: rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.035);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+  border-color: rgba(243,234,216,0.16);
+  box-shadow: 0 1px 0 rgba(243,234,216,0.07) inset, 0 16px 40px rgba(0,0,0,0.34);
 }
 
 /* ── Lime accent border ───────────────────────────────────────────────────── */
@@ -151,7 +149,7 @@ h1, h2, h3, h4 {
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08);
   font-size: 22px;
-  transition: all 0.3s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
   position: relative;
   overflow: hidden;
 }

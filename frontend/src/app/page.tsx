@@ -324,7 +324,7 @@ export default function DashboardPage() {
                               style={{ borderColor: `${rl.color}40`, backgroundColor: `${rl.color}0D` }}
                             >
                               <div className="flex items-center gap-2">
-                                <span className="text-lg">{rl.emoji}</span>
+                                <span className="text-lg" style={{ color: rl.color }} aria-hidden="true">{rl.emoji}</span>
                                 <span className="text-base font-bold" style={{ color: rl.color }}>{rl.short}</span>
                               </div>
                               <p className="text-base-sm leading-relaxed text-white/70">{selectedAlert.risk_description || rl.description}</p>
@@ -717,7 +717,7 @@ function SignalCard({ alert, active, onClick }: { alert: Alert; active: boolean;
       {active && <div className="absolute top-0 left-0 w-0.5 h-full rounded-r-sm" style={{ backgroundColor: rl.color }} />}
       <div className="pl-1">
         <div className="flex items-center gap-1.5 mb-1">
-          <span className="text-sm">{rl.emoji}</span>
+          <span className="text-sm" style={{ color: rl.color }} aria-hidden="true">{rl.emoji}</span>
           <span className="text-micro font-bold uppercase tracking-[0.2em]" style={{ color: rl.color }}>{rl.label}</span>
         </div>
         <div className="font-serif text-lg leading-tight text-white/90 truncate">{alert.block_name}</div>

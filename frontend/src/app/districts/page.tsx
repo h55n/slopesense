@@ -143,7 +143,7 @@ export default function DistrictsPage() {
 
         {error && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 px-5 py-4 text-sm font-medium text-amber-300">
-            ⚠️ {error}
+            {error}
           </motion.div>
         )}
 
@@ -203,7 +203,7 @@ export default function DistrictsPage() {
                           const rl = getRiskLevel(alert.fpi_score ?? 0);
                           return (
                             <div className="flex items-center gap-2">
-                              <span className="text-base">{rl.emoji}</span>
+                              <span className="text-base" style={{ color: rl.color }} aria-hidden="true">{rl.emoji}</span>
                               <div>
                                 <div className="text-small font-bold" style={{ color: rl.color }}>{rl.label}</div>
                                 <div className="text-micro text-white/40 mt-0.5">{rl.short}</div>
@@ -265,11 +265,11 @@ export default function DistrictsPage() {
         <div className="mt-8 flex flex-wrap items-center gap-6 text-xs text-white/40">
           <span>Risk Level:</span>
           {[
-            { label: '🆘 CRITICAL ≥80%', color: '#dc2626' },
-            { label: '🔴 HIGH ≥65%', color: '#ea580c' },
-            { label: '⚠️ ELEVATED ≥40%', color: '#d97706' },
-            { label: '🟡 MODERATE ≥20%', color: '#65a30d' },
-            { label: '✅ LOW <20%', color: '#16a34a' },
+            { label: 'CRITICAL ≥80%', color: '#dc2626' },
+            { label: 'HIGH ≥65%', color: '#ea580c' },
+            { label: 'ELEVATED ≥40%', color: '#d97706' },
+            { label: 'MODERATE ≥20%', color: '#65a30d' },
+            { label: 'LOW <20%', color: '#16a34a' },
           ].map(l => (
             <span key={l.label} className="flex items-center gap-1.5">
               <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: l.color }} />

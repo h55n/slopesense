@@ -17,10 +17,10 @@ export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref' | 'ch
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className = '', variant = 'primary', size = 'md', isLoading, children, disabled, ...props }, ref) => {
-    const baseStyles = 'inline-flex items-center justify-center rounded-full font-bold uppercase tracking-widest transition-colors transition-shadow duration-200 focus-ring disabled:opacity-50 disabled:cursor-not-allowed';
+    const baseStyles = 'inline-flex select-none items-center justify-center rounded-full font-bold uppercase tracking-widest transition-colors transition-shadow duration-200 focus-ring disabled:pointer-events-none disabled:opacity-40';
     
     const variants: Record<ButtonVariant, string> = {
-      primary: 'bg-slope-accent text-slope-bg shadow-glow-lime hover:shadow-glow-lime-strong hover:bg-white',
+      primary: 'bg-slope-accent text-slope-bg shadow-glow-lime hover:shadow-glow-lime-strong hover:bg-[#f3ead8]',
       secondary: 'border border-white/12 bg-white/4 text-white/70 hover:border-white/25 hover:bg-white/8 hover:text-white',
       ghost: 'text-white/50 hover:text-white hover:bg-white/5',
     };

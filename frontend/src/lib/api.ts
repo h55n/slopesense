@@ -213,31 +213,31 @@ export interface RiskLevel {
 const RISK_LEVELS: RiskLevel[] = [
   {
     label: 'CRITICAL', short: 'Landslide Imminent',
-    color: '#dc2626', bgColor: '#fef2f2', emoji: '🆘',
+    color: '#dc2626', bgColor: '#fef2f2', emoji: '●',
     description: 'Landslide is imminent or already occurring. Immediate evacuation required.',
     action: 'Evacuate all households on or below slopes immediately. Do not wait.',
   },
   {
     label: 'HIGH', short: 'Very High Risk',
-    color: '#ea580c', bgColor: '#fff7ed', emoji: '🔴',
+    color: '#ea580c', bgColor: '#fff7ed', emoji: '●',
     description: 'Very high probability of landslide within 24–48 hours. Conditions are dangerous.',
     action: 'Pre-position NDRF/SDRF. Issue public advisory. Pre-evacuate highest-risk households.',
   },
   {
     label: 'ELEVATED', short: 'Elevated Risk',
-    color: '#d97706', bgColor: '#fffbeb', emoji: '⚠️',
+    color: '#d97706', bgColor: '#fffbeb', emoji: '●',
     description: 'Elevated landslide risk. Soil is saturated and terrain is primed.',
     action: 'Alert DDMA. Monitor slopes closely. Warn communities on steep terrain.',
   },
   {
     label: 'MODERATE', short: 'Moderate Risk',
-    color: '#65a30d', bgColor: '#f7fee7', emoji: '🟡',
+    color: '#65a30d', bgColor: '#f7fee7', emoji: '●',
     description: 'Some risk factors are present but conditions are not yet dangerous.',
     action: 'Stay informed. Review evacuation routes. No immediate action needed.',
   },
   {
     label: 'LOW', short: 'Low Risk',
-    color: '#16a34a', bgColor: '#f0fdf4', emoji: '✅',
+    color: '#16a34a', bgColor: '#f0fdf4', emoji: '●',
     description: 'No significant landslide risk indicators at this time.',
     action: 'Normal monitoring. No action required.',
   },
