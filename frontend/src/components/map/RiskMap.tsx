@@ -77,7 +77,7 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick }: RiskMap
                   width: isSelected ? size + 6 : size,
                   height: isSelected ? size + 6 : size,
                   background: color,
-                  border: `2px solid ${isSelected ? '#c5ff4a' : '#ffffff'}`,
+                  border: `2px solid ${isSelected ? '#f4c95d' : '#ffffff'}`,
                   borderRadius: '9999px',
                   boxShadow: `0 0 ${isSelected ? 18 : 8}px ${color}66`,
                   display: 'flex',
@@ -121,7 +121,7 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick }: RiskMap
         <div className="mb-2 font-semibold uppercase tracking-[0.2em] text-white/45">Failure Probability Index</div>
         <div className="space-y-1.5">
           {[
-            { color: '#c5ff4a', label: 'EMERGENCY >80%' },
+            { color: '#f4c95d', label: 'EMERGENCY >80%' },
             { color: '#ef4444', label: 'WARNING 65-80%' },
             { color: '#f59e0b', label: 'WATCH 40-65%' },
             { color: '#10b981', label: 'NORMAL <40%' },

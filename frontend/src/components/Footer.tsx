@@ -40,8 +40,8 @@ export default function Footer() {
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-slope-accent/25 bg-slope-accent/10">
                 <svg width="15" height="15" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                  <path d="M7 1L13 12H1L7 1Z" stroke="#c5ff4a" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(197,255,74,0.08)" />
-                  <path d="M7 5L9.5 10H4.5L7 5Z" fill="#c5ff4a" opacity="0.6" />
+                  <path d="M7 1L13 12H1L7 1Z" stroke="#f4c95d" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(244,201,93,0.08)" />
+                  <path d="M7 5L9.5 10H4.5L7 5Z" fill="#f4c95d" opacity="0.6" />
                 </svg>
               </div>
               <span className="font-serif text-2xl text-white">SlopeSense</span>

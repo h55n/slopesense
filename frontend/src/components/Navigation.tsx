@@ -25,7 +25,7 @@ export default function Navigation() {
   return (
     <nav
       className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-2xl transition-colors duration-300"
-      style={{ background: 'rgba(8,8,9,0.85)' }}
+      style={{ background: 'rgba(7,21,14,0.85)' }}
       aria-label="Global navigation"
     >
       <div className="mx-auto flex max-w-[1600px] items-center justify-between px-6 py-3.5 sm:px-8 lg:px-12">
@@ -38,8 +38,8 @@ export default function Navigation() {
           {/* Icon */}
           <div className="relative flex h-7 w-7 items-center justify-center rounded-[9px] border border-slope-accent/25 bg-slope-accent/8 shadow-glow-lime transition-colors duration-300 group-hover:border-slope-accent/40 group-hover:shadow-glow-lime-strong">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-              <path d="M7 1L13 12H1L7 1Z" stroke="#c5ff4a" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(197,255,74,0.08)" />
-              <path d="M7 5L9.5 10H4.5L7 5Z" fill="#c5ff4a" opacity="0.6" />
+              <path d="M7 1L13 12H1L7 1Z" stroke="#f4c95d" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(244,201,93,0.08)" />
+              <path d="M7 5L9.5 10H4.5L7 5Z" fill="#f4c95d" opacity="0.6" />
             </svg>
             {hasAlerts && (
               <span className="absolute -top-1 -right-1 flex h-3 w-3">

@@ -240,7 +240,7 @@ export default function AlertDetailPage() {
                     {signalData.map((_, i) => (
                       <Cell
                         key={i}
-                        fill={i === 0 ? '#c5ff4a' : `rgba(197,255,74,${Math.max(0.25, 0.7 - i * 0.2)})`}
+                        fill={i === 0 ? '#f4c95d' : `rgba(244,201,93,${Math.max(0.25, 0.7 - i * 0.2)})`}
                       />
                     ))}
                   </Bar>

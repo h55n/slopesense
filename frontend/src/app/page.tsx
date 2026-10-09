@@ -64,8 +64,8 @@ const PIPELINE_STEPS = [
     label: 'WhatsApp',
     sublabel: 'Multilingual',
     detail: 'Gram Pradhan-level dispatch in 7 languages. Reply "NO EVENT" to confirm, closing the feedback loop.',
-    color: 'rgba(197,255,74,0.9)',
-    glow: 'rgba(197,255,74,0.15)',
+    color: 'rgba(244,201,93,0.9)',
+    glow: 'rgba(244,201,93,0.15)',
   },
 ];
 
@@ -458,6 +458,8 @@ export default function DashboardPage() {
 
 // ── Pipeline section ──────────────────────────────────────────────────────────
 
+const BENTO_ART = ['/art/b-ingest.webp', '/art/b-model.webp', '/art/b-tier.webp', '/art/b-dispatch.webp'];
+
 function PipelineSection({
   expandedStep,
   setExpandedStep,
@@ -468,117 +470,72 @@ function PipelineSection({
   return (
     <motion.section
       initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, delay: 0.3 }}
-      className="mb-16 relative z-10"
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-80px' }}
+      transition={{ duration: 0.7 }}
+      className="relative z-10 mb-20"
     >
-      {/* Section header */}
-      <div className="mb-8 flex items-end justify-between">
-        <div>
-          <p className="text-tiny font-semibold uppercase tracking-[0.28em] text-slope-accent mb-2">
-            How it works
-          </p>
-          <h2 className="font-serif text-3xl sm:text-4xl text-white">The signal pipeline</h2>
-        </div>
-        <p className="hidden text-base-sm text-white/35 max-w-xs text-right sm:block">
-          Click any stage to see its role in the risk computation chain.
+      <div className="mb-10 max-w-2xl">
+        <p className="mb-3 text-tiny font-semibold uppercase tracking-[0.28em] text-slope-accent">How it works</p>
+        <h2 className="font-serif text-4xl leading-tight text-[#f3ead8] sm:text-5xl">
+          From a satellite pass to a phone in a village
+        </h2>
+        <p className="mt-4 text-[15px] leading-relaxed text-white/50">
+          Five steps, every six hours. Tap a card to read what happens inside it.
         </p>
       </div>
 
-      {/* Pipeline nodes */}
-      <div className="glass-panel p-6 sm:p-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-0">
-          {PIPELINE_STEPS.map((step, i) => (
-            <div key={step.label} className="flex sm:flex-col sm:flex-1 items-center sm:items-stretch gap-0">
-              {/* Node */}
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setExpandedStep(expandedStep === i ? null : i)}
-                className={`pipeline-node flex-1 sm:flex-none rounded-xl border p-4 text-left transition-all duration-300 cursor-pointer ${
-                  expandedStep === i
-                    ? 'border-white/20 bg-white/6'
-                    : 'border-white/6 bg-white/2 hover:border-white/14 hover:bg-white/4'
-                }`}
-              >
-                {/* Icon row */}
-                <div className="flex sm:flex-col sm:items-center sm:text-center gap-3 sm:gap-2">
-                  <div
-                    className="pipeline-node-icon shrink-0"
-                    style={{
-                      borderColor: expandedStep === i ? step.color.replace('0.9', '0.4') : undefined,
-                      boxShadow: expandedStep === i ? `0 0 16px ${step.glow}` : undefined,
-                    }}
-                  >
-                    <span className="text-white/80">{step.icon}</span>
-                  </div>
-                  <div className="sm:text-center">
-                    <div className="text-base-sm font-bold text-white/90 tracking-tight">{step.label}</div>
-                    <div className="text-tiny text-white/40 mt-0.5">{step.sublabel}</div>
-                  </div>
-                </div>
-
-                {/* Step number */}
-                <div
-                  className="hidden sm:block text-center mt-3 text-micro font-bold uppercase tracking-[0.24em] text-white/40"
-                >
-                  Step {i + 1}
-                </div>
-              </motion.button>
-
-              {/* Connector (between steps) */}
-              {i < PIPELINE_STEPS.length - 1 && (
-                <div className="pipeline-connector sm:justify-center sm:py-2 sm:px-0 px-2 py-0">
-                  <div
-                    className="hidden sm:block pipeline-connector-line bg-white/20"
-                  />
-                  <div className="sm:hidden w-px h-6 bg-gradient-to-b from-white/20 to-white/5 mx-auto" />
-                </div>
-              )}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {PIPELINE_STEPS.slice(0, 4).map((step, i) => (
+          <motion.button
+            key={step.label}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setExpandedStep(expandedStep === i ? null : i)}
+            aria-expanded={expandedStep === i}
+            className="group relative aspect-[4/3] overflow-hidden rounded-3xl border border-white/10 text-left sm:aspect-square lg:aspect-[4/3]"
+          >
+            <Image
+              src={BENTO_ART[i]}
+              alt=""
+              fill
+              sizes="(min-width: 640px) 50vw, 100vw"
+              className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#07150e]/85 via-[#07150e]/10 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 p-6">
+              <p className="text-micro font-bold uppercase tracking-[0.28em] text-slope-accent">Step {i + 1} · {step.sublabel}</p>
+              <h3 className="mt-1 font-serif text-3xl text-[#f3ead8] sm:text-4xl">{step.label}</h3>
             </div>
-          ))}
-        </div>
-
-        {/* Expanded detail */}
-        <AnimatePresence>
-          {expandedStep !== null && (
-            <motion.div
-              key={expandedStep}
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.35, ease: 'easeInOut' }}
-              className="overflow-hidden"
-            >
-              <div
-                className="mt-6 rounded-xl border p-5"
-                style={{
-                  borderColor: PIPELINE_STEPS[expandedStep].color.replace('0.9', '0.2'),
-                  background: PIPELINE_STEPS[expandedStep].glow,
-                }}
-              >
-                <div className="flex items-start gap-4">
-                  <span className="text-3xl shrink-0">{PIPELINE_STEPS[expandedStep].icon}</span>
+            <AnimatePresence>
+              {expandedStep === i && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 flex items-end bg-[#07150e]/92 p-6 backdrop-blur-sm"
+                >
                   <div>
-                    <div className="font-serif text-xl font-bold mb-1"
-                      style={{ color: PIPELINE_STEPS[expandedStep].color }}>
-                      {PIPELINE_STEPS[expandedStep].label}
-                    </div>
-                    <p className="text-base-sm leading-relaxed text-white/70">
-                      {PIPELINE_STEPS[expandedStep].detail}
-                    </p>
+                    <h3 className="font-serif text-3xl text-[#f3ead8]">{step.label}</h3>
+                    <p className="mt-3 text-base-sm leading-relaxed text-white/70">{step.detail}</p>
                   </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.button>
+        ))}
+        <button
+          onClick={() => setExpandedStep(expandedStep === 4 ? null : 4)}
+          aria-expanded={expandedStep === 4}
+          className="rounded-3xl border border-slope-accent/30 bg-slope-accent/10 p-6 text-left transition-colors hover:bg-slope-accent/15 sm:col-span-2"
+        >
+          <p className="text-micro font-bold uppercase tracking-[0.28em] text-slope-accent">Step 5 · {PIPELINE_STEPS[4].sublabel}</p>
+          <h3 className="mt-1 font-serif text-3xl text-[#f3ead8] sm:text-4xl">{PIPELINE_STEPS[4].label}</h3>
+          <p className="mt-3 max-w-2xl text-base-sm leading-relaxed text-white/65">{PIPELINE_STEPS[4].detail}</p>
+        </button>
       </div>
     </motion.section>
   );
 }
-
-// ── Top bar ───────────────────────────────────────────────────────────────────
 
 function TopBar({
   mode,
