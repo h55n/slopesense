@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
+import { Radio, Cpu, Target, BellRing, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Alert, formatFPI, tierBadgeClass, tierColor, getRiskLevel, fpiBarColor } from '@/lib/api';
 import { useAlerts, useRetrospective } from '@/lib/hooks';
@@ -27,7 +28,7 @@ type ViewMode = 'live' | 'audit';
 
 const PIPELINE_STEPS = [
   {
-    icon: '📡',
+    icon: <Radio className="h-5 w-5" strokeWidth={1.75} />,
     label: 'Data Ingestion',
     sublabel: 'Raw signals',
     detail: 'NASA GPM rainfall · SMAP soil moisture · Copernicus DEM · Sentinel-2 NDVI · NOAA GFS forecast',
@@ -35,7 +36,7 @@ const PIPELINE_STEPS = [
     glow: 'rgba(99,179,237,0.15)',
   },
   {
-    icon: '⚙️',
+    icon: <Cpu className="h-5 w-5" strokeWidth={1.75} />,
     label: 'FPI Model',
     sublabel: 'Physics-based',
     detail: 'Weighted multi-signal fusion → Failure Probability Index (0–100%) with Monte Carlo CI bounds per cell',
@@ -43,7 +44,7 @@ const PIPELINE_STEPS = [
     glow: 'rgba(167,139,250,0.15)',
   },
   {
-    icon: '🎯',
+    icon: <Target className="h-5 w-5" strokeWidth={1.75} />,
     label: 'Tier Classification',
     sublabel: 'Block-level',
     detail: 'WATCH ≥40% · WARNING ≥65% · EMERGENCY ≥80% — spatial clustering across 1km² grid cells',
@@ -51,7 +52,7 @@ const PIPELINE_STEPS = [
     glow: 'rgba(251,191,36,0.15)',
   },
   {
-    icon: '🔔',
+    icon: <BellRing className="h-5 w-5" strokeWidth={1.75} />,
     label: 'Alert Dispatch',
     sublabel: 'CAP v1.2',
     detail: 'Structured alerts pushed via REST API, CAP XML feed (NDMA Sachet-compatible), and email hooks',
@@ -59,7 +60,7 @@ const PIPELINE_STEPS = [
     glow: 'rgba(239,68,68,0.15)',
   },
   {
-    icon: '📱',
+    icon: <MessageCircle className="h-5 w-5" strokeWidth={1.75} />,
     label: 'WhatsApp',
     sublabel: 'Multilingual',
     detail: 'Gram Pradhan-level dispatch in 7 languages. Reply "NO EVENT" to confirm, closing the feedback loop.',
@@ -509,7 +510,7 @@ function PipelineSection({
                       boxShadow: expandedStep === i ? `0 0 16px ${step.glow}` : undefined,
                     }}
                   >
-                    <span className="text-xl">{step.icon}</span>
+                    <span className="text-white/80">{step.icon}</span>
                   </div>
                   <div className="sm:text-center">
                     <div className="text-base-sm font-bold text-white/90 tracking-tight">{step.label}</div>
@@ -922,9 +923,9 @@ function ArtBand() {
           sizes="(min-width: 1600px) 1500px, 100vw"
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+        <div className="absolute inset-0 hidden bg-gradient-to-t from-black/75 via-transparent to-transparent sm:block" />
       </div>
-      <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-4 p-5 sm:p-8">
+      <div className="flex flex-wrap items-end justify-between gap-4 bg-black/80 p-5 sm:absolute sm:inset-x-0 sm:bottom-0 sm:bg-transparent sm:p-8">
         <div className="max-w-md">
           <p className="text-tiny font-semibold uppercase tracking-[0.28em] text-slope-accent">Why it matters</p>
           <p className="mt-2 font-serif text-xl leading-snug text-white sm:text-3xl">

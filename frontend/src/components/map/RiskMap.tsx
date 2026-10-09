@@ -104,10 +104,10 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick }: RiskMap
             offset={15}
             className="slope-popup"
           >
-            <div style={{ background: '#ffffff', border: '1px solid #d1d5db', borderRadius: 0, padding: '10px', minWidth: '160px', color: '#000000' }}>
-              <div style={{ fontSize: '11px', color: '#6b7280', marginBottom: '2px', letterSpacing: '0.18em', textTransform: 'uppercase' }}>{selectedAlert.state_name}</div>
+            <div style={{ background: 'transparent', padding: '4px', minWidth: '160px', color: '#ffffff' }}>
+              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginBottom: '2px', letterSpacing: '0.18em', textTransform: 'uppercase' }}>{selectedAlert.state_name}</div>
               <div style={{ fontWeight: 700, fontSize: '13px', fontFamily: 'Georgia,serif' }}>{selectedAlert.district_name}</div>
-              <div style={{ fontSize: '12px', color: '#111827' }}>{selectedAlert.block_name}</div>
+              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.75)' }}>{selectedAlert.block_name}</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
                 <div style={{ width: '8px', height: '8px', borderRadius: '4px', background: tierColor(selectedAlert.tier) }}></div>
                 <div style={{ fontSize: '12px', fontWeight: 600, color: tierColor(selectedAlert.tier) }}>{selectedAlert.tier}</div>
@@ -117,30 +117,30 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick }: RiskMap
         )}
       </Map>
 
-      <div className="absolute bottom-6 left-4 z-10 rounded-none border border-black/10 bg-white/95 p-3 text-xs text-black">
-        <div className="mb-2 font-semibold uppercase tracking-[0.2em] text-black/45">Failure Probability Index</div>
+      <div className="absolute bottom-6 left-4 z-10 rounded-xl border border-white/10 bg-black/70 p-3 text-xs text-white backdrop-blur-md">
+        <div className="mb-2 font-semibold uppercase tracking-[0.2em] text-white/45">Failure Probability Index</div>
         <div className="space-y-1.5">
           {[
-            { color: '#111111', label: 'EMERGENCY >80%' },
+            { color: '#c5ff4a', label: 'EMERGENCY >80%' },
             { color: '#ef4444', label: 'WARNING 65-80%' },
             { color: '#f59e0b', label: 'WATCH 40-65%' },
             { color: '#10b981', label: 'NORMAL <40%' },
           ].map(({ color, label }) => (
             <div key={label} className="flex items-center gap-2">
               <div className="h-3 w-3 flex-shrink-0 rounded-full" style={{ background: color }} />
-              <span className="text-black/75">{label}</span>
+              <span className="text-white/75">{label}</span>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="absolute left-3 top-3 z-10 rounded-none border border-black/10 bg-white/90 px-2 py-1 text-xs font-medium text-black/60 backdrop-blur">
+      <div className="absolute left-3 top-3 z-10 rounded-lg border border-white/10 bg-black/60 px-2.5 py-1 text-xs font-medium text-white/60 backdrop-blur-md">
         NASA GPM · SMAP · NOAA GFS · Copernicus DEM
       </div>
 
       <button
         onClick={() => setViewState({ longitude: INDIA_CENTER[0], latitude: INDIA_CENTER[1], zoom: INDIA_ZOOM, pitch: 55, bearing: -15 })}
-        className="absolute right-3 top-12 z-10 mt-20 rounded-none border border-black/10 bg-white px-2 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-black/70 transition-colors hover:border-lime-400 hover:bg-lime-300 hover:text-black"
+        className="absolute right-3 top-12 z-10 mt-20 rounded-lg border border-white/10 bg-black/60 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/70 backdrop-blur-md transition-colors hover:border-lime-400 hover:bg-lime-300 hover:text-black"
       >
         India ↺
       </button>
