@@ -458,7 +458,7 @@ export default function DashboardPage() {
 
 // ── Pipeline section ──────────────────────────────────────────────────────────
 
-const BENTO_ART = ['/art/b-ingest.webp', '/art/b-model.webp', '/art/b-tier.webp', '/art/b-dispatch.webp'];
+const BENTO_ART = ['/art/r-ingest.webp', '/art/r-model.webp', '/art/r-tier.webp', '/art/r-dispatch.webp'];
 
 function PipelineSection({
   expandedStep,
