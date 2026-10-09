@@ -911,7 +911,7 @@ function GroundTruth() {
       <div className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-white/8">
         <Image
           src="/art/sensors.webp"
-          alt="Illustrated rain gauge and satellite dish on a hillside with a fresh slide scar"
+          alt="Rain gauge, weather station and satellite dish on a hillside above a fresh slope crack"
           fill
           sizes="(min-width: 1024px) 50vw, 100vw"
           className="object-cover"
