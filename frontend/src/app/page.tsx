@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Alert, formatFPI, tierBadgeClass, tierColor, getRiskLevel, fpiBarColor } from '@/lib/api';
@@ -216,11 +217,16 @@ export default function DashboardPage() {
           </motion.div>
         </section>
 
+        {/* ── Illustrated field band ── */}
+        <ArtBand />
+
         {/* ── Pipeline diagram ── */}
         <PipelineSection
           expandedStep={expandedPipelineStep}
           setExpandedStep={setExpandedPipelineStep}
         />
+
+        <GroundTruth />
 
         {/* ── Live / Audit ── */}
         <AnimatePresence mode="wait">
@@ -894,5 +900,81 @@ function EmptyState({ text }: { text: string }) {
     <div className="rounded-xl border border-dashed border-white/10 bg-white/2 px-6 py-8 text-center text-base-sm font-medium text-white/35">
       {text}
     </div>
+  );
+}
+
+function ArtBand() {
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-80px' }}
+      transition={{ duration: 0.7 }}
+      className="relative z-10 mb-16 overflow-hidden rounded-3xl border border-white/8"
+      aria-label="Monitored terrain"
+    >
+      <div className="relative aspect-[16/10] w-full sm:aspect-[21/9]">
+        <Image
+          src="/art/hero.webp"
+          alt="Illustrated Himalayan valley with a landslide scar on the right hillside"
+          fill
+          priority
+          sizes="(min-width: 1600px) 1500px, 100vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+      </div>
+      <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-4 p-5 sm:p-8">
+        <div className="max-w-md">
+          <p className="text-tiny font-semibold uppercase tracking-[0.28em] text-slope-accent">Why it matters</p>
+          <p className="mt-2 font-serif text-xl leading-snug text-white sm:text-3xl">
+            Wayanad had a warning 16 hours out. It never reached the district collector.
+          </p>
+        </div>
+        <Link
+          href="/status"
+          className="rounded-full bg-slope-accent px-5 py-2.5 text-tiny font-bold uppercase tracking-[0.16em] text-black transition-colors hover:bg-slope-accent2"
+        >
+          See live system status
+        </Link>
+      </div>
+    </motion.section>
+  );
+}
+
+function GroundTruth() {
+  const items = [
+    { k: '6', v: 'free satellite and model feeds fused per cell' },
+    { k: '1 km²', v: 'grid resolution, rolled up to blocks' },
+    { k: '6 h', v: 'refresh cycle through monsoon season' },
+  ];
+  return (
+    <section className="relative z-10 mb-16 grid items-center gap-8 lg:grid-cols-2">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-white/8">
+        <Image
+          src="/art/sensors.webp"
+          alt="Illustrated rain gauge and satellite dish on a hillside with a fresh slide scar"
+          fill
+          sizes="(min-width: 1024px) 50vw, 100vw"
+          className="object-cover"
+        />
+      </div>
+      <div>
+        <p className="mb-2 text-tiny font-semibold uppercase tracking-[0.28em] text-slope-accent">Ground truth from orbit</p>
+        <h2 className="font-serif text-3xl text-white sm:text-4xl">No new hardware on the hill</h2>
+        <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-white/50">
+          Rainfall, soil moisture, slope and forecast signals already exist in public data. SlopeSense
+          fuses them into one score per block and sends it where the decision gets made.
+        </p>
+        <dl className="mt-8 grid gap-3 sm:grid-cols-3">
+          {items.map((it) => (
+            <div key={it.k} className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+              <dt className="font-serif text-3xl text-white tabular-nums">{it.k}</dt>
+              <dd className="mt-1 text-small text-white/45">{it.v}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
   );
 }
