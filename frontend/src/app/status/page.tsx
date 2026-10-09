@@ -1,5 +1,6 @@
 'use client';
 
+import { Radio, Cpu, Target, BellRing, MessageCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -35,11 +36,11 @@ const SECURITY_ITEMS = [
 ];
 
 const PIPELINE_MINI = [
-  { icon: '📡', label: 'Ingest',   color: 'rgba(255,255,255,0.7)' },
-  { icon: '⚙️', label: 'FPI',      color: 'rgba(255,255,255,0.7)' },
-  { icon: '🎯', label: 'Classify', color: 'rgba(255,255,255,0.7)' },
-  { icon: '🔔', label: 'Alert',    color: 'rgba(255,255,255,0.7)' },
-  { icon: '📱', label: 'WhatsApp', color: 'rgba(255,255,255,0.7)' },
+  { icon: <Radio className="h-4 w-4" />, label: 'Ingest',   color: 'rgba(255,255,255,0.7)' },
+  { icon: <Cpu className="h-4 w-4" />, label: 'FPI',      color: 'rgba(255,255,255,0.7)' },
+  { icon: <Target className="h-4 w-4" />, label: 'Classify', color: 'rgba(255,255,255,0.7)' },
+  { icon: <BellRing className="h-4 w-4" />, label: 'Alert',    color: 'rgba(255,255,255,0.7)' },
+  { icon: <MessageCircle className="h-4 w-4" />, label: 'WhatsApp', color: 'rgba(255,255,255,0.7)' },
 ];
 
 // ── Page ─────────────────────────────────────────────────────────────────────

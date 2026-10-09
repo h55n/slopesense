@@ -27,7 +27,7 @@ export function Header({ lastRun, stats }: HeaderProps) {
       {/* Centre stats */}
       <div className="flex items-center gap-4 text-xs">
         {stats.emergency > 0 && (
-          <div className="flex items-center gap-1.5 text-purple-400">
+          <div className="flex items-center gap-1.5 text-slope-accent">
             <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
             <span className="font-medium">{stats.emergency} Emergency</span>
           </div>

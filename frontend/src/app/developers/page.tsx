@@ -48,10 +48,10 @@ export default function DevelopersPage() {
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col items-center py-16 px-4">
       <div className="max-w-2xl w-full">
         <div className="mb-8">
-          <Link href="/api-docs" className="text-blue-400 hover:text-blue-300 flex items-center gap-2 mb-6">
+          <Link href="/api-docs" className="text-slope-accent hover:text-[#f3ead8] flex items-center gap-2 mb-6">
             <span>&larr;</span> Back to API Docs
           </Link>
-          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400 mb-4">
+          <h1 className="text-4xl font-bold text-[#f3ead8] mb-4">
             SlopeSense Developer Portal
           </h1>
           <p className="text-slate-400 text-lg">
@@ -69,7 +69,7 @@ export default function DevelopersPage() {
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                   placeholder="Jane Doe"
                 />
               </div>
@@ -81,7 +81,7 @@ export default function DevelopersPage() {
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                   placeholder="jane@university.edu"
                 />
               </div>
@@ -92,7 +92,7 @@ export default function DevelopersPage() {
                   type="text"
                   value={formData.organization}
                   onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                   placeholder="Research Institute"
                 />
               </div>
@@ -106,7 +106,7 @@ export default function DevelopersPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white font-medium py-3 rounded-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-slope-accent hover:bg-[#f3ead8] text-slope-bg font-medium py-3 rounded-lg shadow-lg hover:shadow-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Generating...' : 'Generate API Key'}
               </button>
@@ -120,7 +120,7 @@ export default function DevelopersPage() {
                 </p>
 
                 <div className="flex items-center gap-2 bg-slate-900 p-2 rounded-lg border border-slate-700">
-                  <code className="flex-1 text-left text-sm text-blue-300 px-3 overflow-x-auto whitespace-nowrap">
+                  <code className="flex-1 text-left text-sm text-slope-accent px-3 overflow-x-auto whitespace-nowrap">
                     {apiKey}
                   </code>
                   <button
@@ -144,7 +144,7 @@ export default function DevelopersPage() {
                 </button>
                 <Link
                   href="/api-docs"
-                  className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-center py-3 rounded-lg font-medium transition-colors"
+                  className="flex-1 bg-slope-accent hover:bg-[#f3ead8] text-slope-bg text-center py-3 rounded-lg font-medium transition-colors"
                 >
                   Go to API Docs
                 </Link>

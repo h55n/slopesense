@@ -37,7 +37,7 @@ export default function ApiDocsPage() {
           </nav>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-12">
             <div>
-              <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400 mb-4">
+              <h1 className="text-4xl font-bold text-[#f3ead8] mb-4">
                 SlopeSense API Documentation
               </h1>
               <p className="text-slate-400 text-lg max-w-3xl">
@@ -46,7 +46,7 @@ export default function ApiDocsPage() {
             </div>
             <Link
               href="/developers"
-              className="shrink-0 bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+              className="shrink-0 bg-slope-accent hover:bg-[#f3ead8] text-slope-bg font-medium py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-colors flex items-center gap-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
               Get API Key
@@ -255,8 +255,8 @@ export default function ApiDocsPage() {
 function MethodBadge({ method }: { method: string }) {
   const colors: Record<string, string> = {
     GET: 'bg-emerald-500/20 text-emerald-300',
-    POST: 'bg-blue-500/20 text-blue-300',
-    WS: 'bg-purple-500/20 text-purple-300',
+    POST: 'bg-blue-500/20 text-slope-accent',
+    WS: 'bg-white/10 text-white/70',
   };
   return (
     <span className={`rounded px-2 py-0.5 text-xs font-bold font-mono ${colors[method] || 'bg-white/10 text-white/60'}`}>
