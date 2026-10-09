@@ -20,6 +20,7 @@ Routes:
   WS   /ws/live                   — WebSocket live updates
 """
 
+import re
 import html
 import json
 import logging
@@ -370,7 +371,13 @@ async def get_active_alerts(
     import json
     
     if db is None:
-        return {"count": len(_current_alerts), "alerts": _current_alerts, "run_timestamp": datetime.now(timezone.utc).isoformat()}
+        filtered = [
+            a for a in _current_alerts
+            if a.get("fpi_score", 0) >= min_fpi
+            and (not tier or a.get("tier") == tier)
+            and (not state or a.get("state_code") == state)
+        ]
+        return {"count": len(filtered), "alerts": filtered, "run_timestamp": datetime.now(timezone.utc).isoformat()}
 
     query = """
         SELECT * FROM alerts 
@@ -393,8 +400,24 @@ async def get_active_alerts(
     except Exception:
         rows = []
     
-    if not rows and len(_current_alerts) > 0:
-        rows = _current_alerts
+    table_empty = False
+    if not rows:
+        try:
+            probe = await db.execute(text("SELECT 1 FROM alerts LIMIT 1"))
+            table_empty = probe.first() is None
+        except Exception:
+            table_empty = True
+
+    # Demo fallback only when there is no alert data at all, so a filter that
+    # matches nothing still returns an empty list.
+    if not rows and table_empty and len(_current_alerts) > 0:
+        # Demo fallback must honour the same filters as the database query.
+        rows = [
+            a for a in _current_alerts
+            if a.get("fpi_score", 0) >= min_fpi
+            and (not tier or a.get("tier") == tier)
+            and (not state or a.get("state_code") == state)
+        ]
 
     alerts = []
     for row in rows:
@@ -607,6 +630,8 @@ async def get_cap_feed(
     for alert in alerts[:50]:  # cap at 50
         try:
             xml = engine.format_cap_xml(alert)
+            # An XML declaration is only valid at the start of a document.
+            xml = re.sub(r"^\s*<\?xml[^>]*\?>\s*", "", xml)
             alert_xmls.append(xml)
         except Exception as e:
             logger.warning(f"CAP XML generation failed for {alert.get('alert_code')}: {e}")
