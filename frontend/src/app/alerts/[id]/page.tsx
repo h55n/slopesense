@@ -23,7 +23,7 @@ const WA_TEMPLATES: Record<string, (a: Alert) => string> = {
   mr: (a) => `⚠️ भूस्खलन इशारा — ${a.district_name}\n\nFPI: ${formatFPI(a.fpi_score)}\n\nत्वरित कारवाई करा.`,
   bn: (a) => `⚠️ ভূমিধস সতর্কতা — ${a.district_name}\n\nFPI: ${formatFPI(a.fpi_score)}\n\nতাৎক্ষণিক পদক্ষেপ নিন।`,
   ta: (a) => `⚠️ நிலச்சரிவு எச்சரிக்கை — ${a.district_name}\n\nFPI: ${formatFPI(a.fpi_score)}\n\nஉடனடியாக நடவடிக்கை எடுங்கள்.`,
-  en: (a) => `⚠️ LANDSLIDE ${a.tier} — ${a.district_name}, ${a.state_name}\n\nBlock: ${a.block_name}\nFPI Score: ${formatFPI(a.fpi_score)} (95% CI: ${formatFPI(a.fpi_ci_lower)}–${formatFPI(a.fpi_ci_upper)})\n24h Forecast: ${formatFPI(a.fpi_24h || 0)}\n3-day Rainfall: ${a.rainfall_3d_mm} mm | Soil Moisture: ${a.soil_moisture_percentile}th %ile\n\nReply NO EVENT if no hazard observed.`,
+  en: (a) => `⚠️ LANDSLIDE ${a.tier} — ${a.district_name}, ${a.state_name}\n\nBlock: ${a.block_name}\nFPI Score: ${formatFPI(a.fpi_score)} (95% CI: ${formatFPI(a.fpi_ci_lower)}–${formatFPI(a.fpi_ci_upper)})\n24h Forecast: ${formatFPI(a.fpi_24h || 0)}\n3-day Rainfall: ${a.rainfall_3d_mm} mm | Soil Moisture: ${a.soil_moisture_percentile}th percentile\n\nReply NO EVENT if no hazard observed.`,
 };
 
 // ── Tier header gradients ─────────────────────────────────────────────────────
@@ -200,7 +200,7 @@ export default function AlertDetailPage() {
               <DetailCard label="24h Forecast"       value={`${fpi24Pct}%`}                        color={fpiColor(alert.fpi_24h || 0)} />
               <DetailCard label="Consecutive Cycles" value={`${alert.consecutive_cycles}`}          unit="× 6h" />
               <DetailCard label="3-day Rainfall"     value={`${alert.rainfall_3d_mm}`}              unit="mm" />
-              <DetailCard label="Soil Moisture"      value={`${alert.soil_moisture_percentile}`}    unit="th %ile" />
+              <DetailCard label="Soil Moisture"      value={`${alert.soil_moisture_percentile}th`}    unit="percentile" />
             </div>
           </motion.section>
 
@@ -253,6 +253,17 @@ export default function AlertDetailPage() {
                   </span>
                 </span>
               </div>
+            </div>
+
+            {/* Risk bands */}
+            <div className="mt-3 rounded-xl border border-white/6 bg-white/3 p-4">
+              <div className="text-micro font-bold uppercase tracking-[0.22em] text-white/35 mb-3">How to read the score</div>
+              <ul className="space-y-1.5 text-small text-white/60">
+                <li className="flex justify-between"><span>Emergency</span><span className="font-mono">above 80%</span></li>
+                <li className="flex justify-between"><span>Warning</span><span className="font-mono">65 to 80%</span></li>
+                <li className="flex justify-between"><span>Watch</span><span className="font-mono">40 to 65%</span></li>
+                <li className="flex justify-between"><span>Normal</span><span className="font-mono">below 40%</span></li>
+              </ul>
             </div>
 
             {/* Spatial note */}
