@@ -36,7 +36,7 @@ def summarize(payload, now):
         raise DataUnavailableError("Unexpected provider rainfall units")
 
     def window(start, end):
-        values = [v for t, v in zip(times, rain) if start <= t < end]
+        values = [v for t, v in zip(times, rain) if start < t <= end]
         if len(values) != int((end - start).total_seconds() / 3600):
             raise DataUnavailableError("Incomplete rainfall time coverage")
         if any(v is None or not math.isfinite(v) or v < 0 for v in values):
@@ -52,10 +52,16 @@ def summarize(payload, now):
         raise DataUnavailableError("Missing/invalid modeled soil moisture")
     return {
         "window_end_utc": cutoff.isoformat(),
-        "modeled_rain_previous_72h_mm": window(cutoff - timedelta(hours=72), cutoff),
-        "modeled_rain_previous_24h_mm": window(cutoff - timedelta(hours=24), cutoff),
-        "forecast_rain_next_24h_mm": window(cutoff, cutoff + timedelta(hours=24)),
-        "forecast_rain_hours_24_to_48_mm": window(
+        "modeled_large_scale_rain_previous_72h_mm": window(
+            cutoff - timedelta(hours=72), cutoff
+        ),
+        "modeled_large_scale_rain_previous_24h_mm": window(
+            cutoff - timedelta(hours=24), cutoff
+        ),
+        "forecast_large_scale_rain_next_24h_mm": window(
+            cutoff, cutoff + timedelta(hours=24)
+        ),
+        "forecast_large_scale_rain_hours_24_to_48_mm": window(
             cutoff + timedelta(hours=24), cutoff + timedelta(hours=48)
         ),
         "modeled_soil_moisture_0_to_1cm_m3_m3": current_soil[0],
@@ -63,6 +69,8 @@ def summarize(payload, now):
         "provider_grid_longitude": payload["longitude"],
         "provider_elevation_m": payload.get("elevation"),
         "data_kind": "weather_model_output_not_measured_satellite_data",
+        "rain_semantics": "Large-scale rain only, excludes convective showers; values sum preceding hours",
+        "attribution": "Open-Meteo, CC BY 4.0",
         "is_sample": False,
         "used_for_warnings": False,
     }
