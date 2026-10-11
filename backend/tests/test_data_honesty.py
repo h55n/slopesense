@@ -93,3 +93,28 @@ async def test_registry_failure_never_reports_success():
             ).status_code == 503
     finally:
         app.dependency_overrides.clear()
+
+
+@pytest.mark.asyncio
+async def test_credentials_cannot_activate_whatsapp(monkeypatch):
+    from backend.alert.dispatcher import WhatsAppDispatcher, EmailDispatcher
+    from datetime import datetime, timezone
+
+    monkeypatch.setenv("SMTP_USER", "test@example.org")
+    monkeypatch.setenv("WHATSAPP_API_TOKEN", "fake-test-not-a-secret")
+    monkeypatch.setenv("WHATSAPP_PHONE_NUMBER_ID", "fake-id")
+
+    def forbidden(*a, **k):
+        raise AssertionError("No network send is allowed")
+
+    monkeypatch.setattr("aiohttp.ClientSession", forbidden)
+    monkeypatch.setattr("smtplib.SMTP", forbidden)
+    result = await WhatsAppDispatcher().send_text_message("+910000000000", "TEST")
+    assert result["status"] == "disabled"
+    assert result["message_id"] is None
+    assert (
+        await EmailDispatcher().send_daily_digest(
+            ["test@example.org"], [], datetime.now(timezone.utc)
+        )
+        is False
+    )

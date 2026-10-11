@@ -66,6 +66,10 @@ class WhatsAppDispatcher:
         Returns:
             dict with message_id and status
         """
+        # Publication is disabled in this experimental release, even with credentials.
+        # No environment flag can bypass this scientific/permission gate.
+        if not self._dry_run:
+            return {"message_id": None, "status": "disabled", "recipient": to}
         if self._dry_run:
             logger.info(f"WhatsApp DRY RUN → {to}: {message[:100]}...")
             return {
@@ -191,6 +195,9 @@ class EmailDispatcher:
         run_date: datetime,
     ) -> bool:
         """Send HTML email digest of current active alerts."""
+        if not self._dry_run:
+            logger.warning("Email alert publication disabled in experimental release")
+            return False
         if self._dry_run:
             logger.info(
                 f"Email DRY RUN: would send digest to {len(recipients)} recipients"

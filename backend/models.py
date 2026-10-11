@@ -155,7 +155,9 @@ class ApiKey(Base):
     organization = Column(String(128), nullable=True)
     tier = Column(String(32), default="public")
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class FPIHistory(Base):
@@ -326,9 +328,11 @@ class AlertContact(Base):
     is_active = Column(Boolean, default=True)
 
     # Timestamps
-    registered_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    registered_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
     updated_at = Column(
-        DateTime,
+        DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
     )

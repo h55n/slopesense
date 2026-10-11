@@ -308,8 +308,18 @@ async def health():
 
 
 @app.get("/v1/status", tags=["Health"])
-async def system_status():
+async def system_status(db: AsyncSession = Depends(get_db)):
     """Machine-readable system status used by the public status page."""
+    registry_status = "unavailable"
+    try:
+        from backend.models import ApiKey
+
+        await db.execute(select(ApiKey.id).limit(1))
+        await db.execute(select(AlertContact.id).limit(1))
+        registry_status = "operational"
+    except Exception:
+        if db is not None:
+            await db.rollback()
     return {
         "status": "healthy",
         "version": "1.0.0",
@@ -334,8 +344,8 @@ async def system_status():
                 "unsupported_on_vercel" if os.getenv("VERCEL") else "unverified"
             ),
             "whatsapp_dispatch": "disabled",
-            "contact_registry": "requires_database",
-            "api_key_registry": "requires_database",
+            "contact_registry": registry_status,
+            "api_key_registry": registry_status,
         },
     }
 
