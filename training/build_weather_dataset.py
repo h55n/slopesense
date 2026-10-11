@@ -5,6 +5,7 @@ not a confirmed non-event. Day-only event uncertainty precludes exact lead-time 
 """
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -112,7 +113,9 @@ def run(events_path, raw_path, output, limit):
         targets = [(event.parsed_date, 1)] + [
             (d, 0) for d in background_dates(event, reports)
         ]
-        for target, label in targets:
+
+        def fetch_target(pair):
+            target, label = pair
             identity = {
                 "event_id": event.event_id,
                 "target_date": str(target.date()),
@@ -130,27 +133,25 @@ def run(events_path, raw_path, output, limit):
                 "weather_resolution": "0.25_degree_approximately_28km",
             }
             try:
-                rows.append(
-                    {
-                        **identity,
-                        **feature_window(
-                            event.latitude, event.longitude, target, cache
-                        ),
-                    }
-                )
+                return {
+                    **identity,
+                    **feature_window(event.latitude, event.longitude, target, cache),
+                }, None
             except Exception as exc:
-                errors.append(
-                    {
-                        **identity,
-                        "error_type": type(exc).__name__,
-                        "detail": str(exc)[:200],
-                    }
-                )
-                if isinstance(exc, requests.HTTPError) and exc.response.status_code in [
-                    429,
-                    403,
-                ]:
-                    break
+                return None, {
+                    **identity,
+                    "error_type": type(exc).__name__,
+                    "detail": str(exc)[:200],
+                }
+
+        # Three workers, each delayed >=0.4s, theoretical ceiling450/minute
+        # plus network latency, below the free600/minute limit. Bounded per-event.
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            for row, error in pool.map(fetch_target, targets):
+                if row is not None:
+                    rows.append(row)
+                else:
+                    errors.append(error)
         pd.DataFrame(rows).to_csv(output / "dataset.csv", index=False)
         (output / "errors.json").write_text(json.dumps(errors, indent=2))
         print(
