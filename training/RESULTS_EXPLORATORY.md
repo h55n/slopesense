@@ -47,3 +47,5 @@ as evidence. More rigorous preregistered external validation is needed.
 
 Production warnings remain blocked, retrospective API remains not_validated. These
 results are research artifacts only, not replacements for official safety advice.
+
+[All research stages, source licenses and artifacts](INDEX.md) | [Repository overview](../README.md)

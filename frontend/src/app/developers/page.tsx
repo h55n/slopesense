@@ -60,10 +60,13 @@ export default function DevelopersPage() {
             SlopeSense Developer Portal
           </h1>
           <p className="text-slate-400 text-lg">
-            Generate an API key to programmatically access landslide risk data, historical FPI scores, and regional alerts.
+            Generate an API key for documented endpoints. Real risk scoring remains disabled until operational validation clears.
           </p>
         </div>
 
+        <p className="mb-6 text-slate-300">
+          <a href="https://github.com/h55n/slopesense/blob/master/training/INDEX.md" className="underline" target="_blank" rel="noopener noreferrer">Research audit: sources, protocols, results and reproducible artifacts</a>
+        </p>
         <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700 rounded-2xl p-8 shadow-2xl">
           {!apiKey ? (
             <form onSubmit={handleSubmit} className="space-y-6">

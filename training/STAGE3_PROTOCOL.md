@@ -43,3 +43,5 @@ operational weather-source validation, defensible pre-event inputs, source/locat
 and time audits, competent safety review. Research screen is not a regulatory or
 expert-established safety standard. Every gate must clear before real warnings.
 Research fitted artifact stays separate from production. No paid/card paths.
+
+[All research stages, source licenses and artifacts](INDEX.md) | [Repository overview](../README.md)

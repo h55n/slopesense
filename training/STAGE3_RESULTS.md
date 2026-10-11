@@ -48,3 +48,5 @@ https://gis.earthdata.nasa.gov/portal/rest/services/Landslides/COOLR_Reports_Poi
 https://gis.earthdata.nasa.gov/portal/apps/experiencebuilder/experience/?id=a7b17eff544a4ce5ae045c32dbb99f7b
 https://registry.opendata.aws/copernicus-dem/
 https://open-meteo.com/en/docs/historical-weather-api
+
+[All research stages, source licenses and artifacts](INDEX.md) | [Repository overview](../README.md)

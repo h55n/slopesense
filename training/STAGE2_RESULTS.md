@@ -40,3 +40,5 @@ Sources:
 - https://daac.ornl.gov/LAND_VAL/guides/MODIS_Web_Service_C6_V2.html
 - https://bhukosh.gsi.gov.in/Bhukosh/MapViewer.aspx
 - https://bhusanket.gsi.gov.in/
+
+[All research stages, source licenses and artifacts](INDEX.md) | [Repository overview](../README.md)

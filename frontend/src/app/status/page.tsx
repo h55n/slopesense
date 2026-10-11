@@ -88,6 +88,7 @@ export default function StatusPage() {
 
   return (
     <div className="editorial-shell overflow-hidden">
+      <p className="mx-auto max-w-6xl px-6 pt-6 text-sm text-slate-300"><a href="https://github.com/h55n/slopesense/blob/master/training/INDEX.md" className="underline" target="_blank" rel="noopener noreferrer">Research audit: real source data, frozen protocols and published results</a></p>
 
       {/* ── Header ── */}
       <header className="border-b border-white/6  py-8 bg-black/20 backdrop-blur-md">

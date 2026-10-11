@@ -35,3 +35,5 @@ Scale0.0001, retain mean and quality fraction/raw metadata. No cloudy-pixel zero
 fill. Exclude entire event group if ANY matched row lacks NDVI, reporting selection
 counts/bias. Reprocessed historic products remain hindsight, not proof of historic
 operational availability. Same logistic C1, splits and threshold rules.
+
+[All research stages, source licenses and artifacts](INDEX.md) | [Repository overview](../README.md)

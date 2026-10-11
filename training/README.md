@@ -83,3 +83,5 @@ year, with all India catalog reports used to exclude nearby +/-30day event windo
 This is a matched case-control design, not population-base-rate calibration. Dates
 without reports may contain unreported landslides. Scores cannot be marketed as
 real-world failure probabilities. No zero-valued or random synthetic feature vectors.
+
+[All research stages, source licenses and artifacts](INDEX.md) | [Repository overview](../README.md)
