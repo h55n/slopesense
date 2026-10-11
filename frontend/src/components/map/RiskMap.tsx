@@ -223,7 +223,7 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
       </Map>
 
       {/* legend */}
-      <div className="absolute bottom-8 left-3 z-10 rounded-2xl border border-ink/10 bg-paper-card/95 px-4 py-3 shadow-glass backdrop-blur sm:bottom-9">
+      <div className="hidden sm:block absolute bottom-8 left-3 z-10 rounded-2xl border border-ink/10 bg-paper-card/95 px-4 py-3 shadow-glass backdrop-blur sm:bottom-9">
         <div className="eyebrow mb-2">Failure probability</div>
         <ul className="space-y-1.5">
           {LEGEND.map(({ tier, label, range }) => (
@@ -238,7 +238,7 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
 
       {/* source chip */}
       <div className="absolute left-3 top-3 z-10 flex max-w-[calc(100%-70px)] flex-wrap gap-2">
-        <span className="rounded-full border border-ink/10 bg-paper-card/95 px-3 py-1.5 text-[11px] font-medium text-ink/70 shadow-glass backdrop-blur">
+        <span className="hidden sm:inline-block rounded-full border border-ink/10 bg-paper-card/95 px-3 py-1.5 text-[11px] font-medium text-ink/70 shadow-glass backdrop-blur">
           NASA GPM · SMAP · NOAA GFS · Copernicus DEM
         </span>
         {isSample && (

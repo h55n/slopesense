@@ -106,17 +106,17 @@ export default function ApiDocsPage() {
           </aside>
 
           {/* Content */}
-          <div className="space-y-12">
+          <div className="min-w-0 space-y-12">
             {/* Auth section */}
             <section id="authentication">
               <h2 className="mb-4 text-xl font-bold">Authentication</h2>
               <div className="rounded-xl border border-white/10 bg-white/3 p-6 space-y-4">
                 <p className="text-sm text-white/70">
                   Public endpoints are rate-limited to <strong className="text-white">100 requests/hour</strong> per IP.
-                  Research and paid tiers require an <code className="text-lime-300">X-API-Key</code> header.
+                  Research and paid tiers require an <code className="text-forest font-semibold">X-API-Key</code> header.
                 </p>
-                <div className="rounded-lg bg-black/50 p-4">
-                  <code className="text-sm text-green-400">
+                <div className="rounded-lg bg-[#1f3326] p-4 overflow-x-auto">
+                  <code className="text-sm text-[#e8efe3] whitespace-pre">
                     curl -H &quot;X-API-Key: your_key&quot; https://slopesense-olive.vercel.app/api/v1/alerts/active
                   </code>
                 </div>
@@ -128,7 +128,7 @@ export default function ApiDocsPage() {
               <h2 className="mb-4 text-xl font-bold">Rate Limits</h2>
               <div className="rounded-xl border border-white/10 bg-white/3 p-6 space-y-4">
                 <p className="text-sm text-white/70">
-                  API rate limits depend on your tier. Headers <code className="text-lime-300">X-RateLimit-Remaining</code> and <code className="text-lime-300">X-RateLimit-Reset</code> are included in every response.
+                  API rate limits depend on your tier. Headers <code className="text-forest font-semibold">X-RateLimit-Remaining</code> and <code className="text-forest font-semibold">X-RateLimit-Reset</code> are included in every response.
                 </p>
                 <div className="grid gap-3 sm:grid-cols-3 text-sm">
                   {[
@@ -199,7 +199,7 @@ export default function ApiDocsPage() {
                                 <tbody className="divide-y divide-white/5">
                                   {ep.params.map(p => (
                                     <tr key={p.name}>
-                                      <td className="px-3 py-2 font-mono text-lime-300">{p.name}</td>
+                                      <td className="px-3 py-2 font-mono text-forest font-semibold">{p.name}</td>
                                       <td className="px-3 py-2 text-white/50">{p.type}</td>
                                       <td className="px-3 py-2 text-white/60">{p.desc}</td>
                                     </tr>
@@ -212,8 +212,8 @@ export default function ApiDocsPage() {
                         {ep.example && (
                           <div>
                             <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/30">Example</div>
-                            <div className="rounded-lg bg-black/50 p-3">
-                              <code className="text-xs text-green-400 whitespace-pre">{ep.example}</code>
+                            <div className="rounded-lg bg-[#1f3326] p-3 overflow-x-auto">
+                              <code className="text-xs text-[#e8efe3] whitespace-pre">{ep.example}</code>
                             </div>
                           </div>
                         )}

@@ -167,16 +167,16 @@ export default function DistrictsPage() {
                     <SortIcon field="district_name" />
                   </SortTh>
                   <th className="px-5 py-4 text-left text-tiny font-bold uppercase tracking-[0.2em] text-white/50">State</th>
-                  <th className="px-5 py-4 text-left text-tiny font-bold uppercase tracking-[0.2em] text-white/50">Risk Level</th>
+                  <th className="hidden md:table-cell px-5 py-4 text-left text-tiny font-bold uppercase tracking-[0.2em] text-white/50">Risk Level</th>
                   <SortTh label="Tier" field="tier" onSort={toggleSort}>
                     <SortIcon field="tier" />
                   </SortTh>
                   <SortTh label="FPI Score" field="fpi_score" onSort={toggleSort}>
                     <SortIcon field="fpi_score" />
                   </SortTh>
-                  <th className="px-5 py-3 text-left text-xs uppercase tracking-wider text-white/40">95% CI</th>
-                  <th className="px-5 py-3 text-left text-xs uppercase tracking-wider text-white/40">Rainfall 3d</th>
-                  <th className="px-5 py-3 text-left text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Soil Moisture</th>
+                  <th className="hidden md:table-cell px-5 py-3 text-left text-xs uppercase tracking-wider text-white/40">95% CI</th>
+                  <th className="hidden md:table-cell px-5 py-3 text-left text-xs uppercase tracking-wider text-white/40">Rainfall 3d</th>
+                  <th className="hidden md:table-cell px-5 py-3 text-left text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Soil Moisture</th>
                   <th className="px-5 py-3 text-left text-xs uppercase tracking-wider text-white/40">Actions</th>
                 </tr>
               </thead>
@@ -198,7 +198,7 @@ export default function DistrictsPage() {
                       <td className="px-5 py-5">
                         <span className="text-base-sm font-medium text-white/80">{STATE_NAMES[alert.state_code] || alert.state_code}</span>
                       </td>
-                      <td className="px-5 py-5">
+                      <td className="hidden md:table-cell px-5 py-5">
                         {(() => {
                           const rl = getRiskLevel(alert.fpi_score ?? 0);
                           return (
@@ -228,13 +228,13 @@ export default function DistrictsPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="px-5 py-5 font-mono text-base-sm font-medium text-white/60">
+                      <td className="hidden md:table-cell px-5 py-5 font-mono text-base-sm font-medium text-white/60">
                         {formatFPI(alert.fpi_ci_lower ?? 0)}–{formatFPI(alert.fpi_ci_upper ?? 0)}
                       </td>
-                      <td className="px-5 py-5 text-base-sm font-medium text-white/80">
+                      <td className="hidden md:table-cell px-5 py-5 text-base-sm font-medium text-white/80">
                         {alert.rainfall_3d_mm != null ? `${alert.rainfall_3d_mm} mm` : '—'}
                       </td>
-                      <td className="px-5 py-5 text-base-sm font-medium text-white/80">
+                      <td className="hidden md:table-cell px-5 py-5 text-base-sm font-medium text-white/80">
                         {alert.soil_moisture_percentile != null ? `P${Math.round(alert.soil_moisture_percentile)}` : '—'}
                       </td>
                       <td className="px-5 py-5">
