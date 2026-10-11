@@ -35,6 +35,13 @@ async def main():
                 ("api_keys", "created_at"),
                 ("alert_contacts", "registered_at"),
                 ("alert_contacts", "updated_at"),
+                ("alerts", "cleared_at"),
+                ("alerts", "expires_at"),
+                ("alerts", "issued_at"),
+                ("alerts", "updated_at"),
+                ("alerts", "validated_at"),
+                ("fpi_history", "run_timestamp"),
+                ("pipeline_run_logs", "run_timestamp"),
             ]:
                 await conn.execute(text(f"""
                     DO $$ BEGIN

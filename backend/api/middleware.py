@@ -22,10 +22,7 @@ RATE_LIMITS = {
     "paid": 10000,
 }
 
-PROTECTED_PREFIXES = (
-    "/v1/contacts/register",
-    "/v1/districts/",
-)
+PROTECTED_PREFIXES = ("/v1/districts/",)
 
 _memory_windows: Dict[str, Deque[float]] = defaultdict(deque)
 

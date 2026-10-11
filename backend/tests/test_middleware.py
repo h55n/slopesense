@@ -42,15 +42,7 @@ async def test_api_key_rejects_when_configured(monkeypatch):
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as client:
-        resp = await client.post(
-            "/v1/contacts/register",
-            json={
-                "name": "Officer",
-                "role": "district_collector",
-                "whatsapp_number": "+919876543210",
-                "state_code": "KL",
-            },
-        )
+        resp = await client.get("/v1/districts/KL")
 
     assert resp.status_code == 401
     monkeypatch.setattr(settings, "api_keys", "")

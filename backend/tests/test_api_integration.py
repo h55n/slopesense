@@ -495,7 +495,7 @@ class TestContactRegistrationContractTests:
             )
         assert resp.status_code == 422
 
-    async def test_register_without_api_key_returns_401(self):
+    async def test_register_without_api_key_is_public(self):
         from backend.api.main import app
         from backend.config import settings
         from backend.api import middleware
@@ -509,9 +509,14 @@ class TestContactRegistrationContractTests:
             ) as client:
                 resp = await client.post(
                     "/v1/contacts/register",
-                    json={"name": "test", "role": "GRAM_PRADHAN", "state_code": "KL"},
+                    json={
+                        "name": "test",
+                        "role": "GRAM_PRADHAN",
+                        "state_code": "KL",
+                        "whatsapp_number": "+910000000000",
+                    },
                 )
-            assert resp.status_code == 401
+            assert resp.status_code == 200
         finally:
             settings.api_keys = original
             middleware._memory_windows.clear()

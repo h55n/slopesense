@@ -130,10 +130,12 @@ class FPIGrid(Base):
 
     # Metadata
     model_version = Column(String(16), default="v0.1")
-    run_timestamp = Column(DateTime, nullable=False, index=True)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    run_timestamp = Column(DateTime(timezone=True), nullable=False, index=True)
+    created_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
     updated_at = Column(
-        DateTime,
+        DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
     )
@@ -169,7 +171,7 @@ class FPIHistory(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     cell_id = Column(String(32), nullable=False, index=True)
-    run_timestamp = Column(DateTime, nullable=False, index=True)
+    run_timestamp = Column(DateTime(timezone=True), nullable=False, index=True)
 
     lat = Column(Float, nullable=False)
     lon = Column(Float, nullable=False)
@@ -208,7 +210,10 @@ class PipelineRunLog(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     run_timestamp = Column(
-        DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), index=True
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        index=True,
     )
     status = Column(String(32), nullable=False)  # "RUNNING", "SUCCESS", "FAILED"
     records_processed = Column(Integer, nullable=True)
@@ -268,18 +273,21 @@ class Alert(Base):
     validated = Column(
         Boolean, nullable=True
     )  # null = unverified, True = confirmed event, False = false alarm
-    validated_at = Column(DateTime, nullable=True)
+    validated_at = Column(DateTime(timezone=True), nullable=True)
     validation_source = Column(String(128), nullable=True)
     validation_notes = Column(Text, nullable=True)
 
     # Timestamps
     issued_at = Column(
-        DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), index=True
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        index=True,
     )
-    expires_at = Column(DateTime, nullable=True)
-    cleared_at = Column(DateTime, nullable=True)
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+    cleared_at = Column(DateTime(timezone=True), nullable=True)
     updated_at = Column(
-        DateTime,
+        DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
     )
@@ -364,13 +372,13 @@ class AlertDelivery(Base):
     external_message_id = Column(String(128), nullable=True)  # WhatsApp message ID
     error_detail = Column(Text, nullable=True)
 
-    sent_at = Column(DateTime, nullable=True)
-    delivered_at = Column(DateTime, nullable=True)
-    read_at = Column(DateTime, nullable=True)
+    sent_at = Column(DateTime(timezone=True), nullable=True)
+    delivered_at = Column(DateTime(timezone=True), nullable=True)
+    read_at = Column(DateTime(timezone=True), nullable=True)
 
     # Feedback — block officer can reply "NO EVENT" to mark false alarm
     feedback_received = Column(Boolean, default=False)
-    feedback_at = Column(DateTime, nullable=True)
+    feedback_at = Column(DateTime(timezone=True), nullable=True)
     feedback_text = Column(String(256), nullable=True)
 
     alert = relationship("Alert", back_populates="deliveries")
@@ -401,7 +409,7 @@ class LandslideEvent(Base):
     location_description = Column(Text, nullable=True)
 
     # Event details
-    event_date = Column(DateTime, nullable=False, index=True)
+    event_date = Column(DateTime(timezone=True), nullable=False, index=True)
     deaths = Column(Integer, nullable=True)
     injuries = Column(Integer, nullable=True)
     displacement = Column(Integer, nullable=True)
@@ -417,9 +425,11 @@ class LandslideEvent(Base):
     fpi_at_t6 = Column(Float, nullable=True)
     validation_notes = Column(Text, nullable=True)
 
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
     updated_at = Column(
-        DateTime,
+        DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
     )
