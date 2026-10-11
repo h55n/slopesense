@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api, Alert, apiUrl, formatFPI, tierBadgeClass, fpiColor, tierColor } from '@/lib/api';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const LANGUAGES = [
   { code: 'hi', name: 'हि', label: 'Hindi'      },
@@ -213,39 +212,25 @@ export default function AlertDetailPage() {
                 No signal data available
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={180}>
-                <BarChart data={signalData} layout="vertical">
-                  <XAxis
-                    type="number" domain={[0, 100]}
-                    tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 600 }}
-                    unit="%" stroke="rgba(29,42,33,0.12)"
-                  />
-                  <YAxis
-                    type="category" dataKey="name"
-                    tick={{ fill: 'rgba(255,255,255,0.65)', fontSize: 11, fontWeight: 500 }}
-                    width={145} stroke="transparent"
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      background: '#fbf9f3',
-                      backdropFilter: 'blur(16px)',
-                      border: '1px solid rgba(29,42,33,0.15)',
-                      borderRadius: 12,
-                      boxShadow: '0 8px 24px rgba(29,42,33,0.15)',
-                    }}
-                    itemStyle={{ color: '#1d2a21', fontSize: 13, fontWeight: 700 }}
-                    formatter={(v) => [`${v}%`, 'Signal strength']}
-                  />
-                  <Bar dataKey="value" radius={[0, 6, 6, 0]} animationDuration={1400}>
-                    {signalData.map((_, i) => (
-                      <Cell
-                        key={i}
-                        fill={i === 0 ? '#2f4a37' : `rgba(47,74,55,${Math.max(0.3, 0.8 - i * 0.2)})`}
+              <ul className="space-y-4">
+                {signalData.map((d, i) => (
+                  <li key={d.name}>
+                    <div className="mb-1.5 flex items-baseline justify-between text-small">
+                      <span className="font-medium text-white/80">{d.name}</span>
+                      <span className="font-mono text-white/50">{d.value}%</span>
+                    </div>
+                    <div className="h-2.5 overflow-hidden rounded-full bg-white/10">
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${Math.min(100, Math.max(2, d.value))}%`,
+                          backgroundColor: `rgba(47,74,55,${Math.max(0.35, 1 - i * 0.2)})`,
+                        }}
                       />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             )}
 
             {/* Breach fraction */}
