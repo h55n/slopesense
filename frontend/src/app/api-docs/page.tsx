@@ -37,7 +37,7 @@ export default function ApiDocsPage() {
           </nav>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-12">
             <div>
-              <h1 className="text-4xl font-bold text-[#f3ead8] mb-4">
+              <h1 className="text-4xl font-bold text-forest-deep mb-4">
                 SlopeSense API Documentation
               </h1>
               <p className="text-slate-400 text-lg max-w-3xl">

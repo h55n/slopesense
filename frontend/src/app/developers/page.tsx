@@ -48,10 +48,10 @@ export default function DevelopersPage() {
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col items-center py-16 px-4">
       <div className="max-w-2xl w-full">
         <div className="mb-8">
-          <Link href="/api-docs" className="text-slope-accent hover:text-[#f3ead8] flex items-center gap-2 mb-6">
+          <Link href="/api-docs" className="text-slope-accent hover:text-forest-deep flex items-center gap-2 mb-6">
             <span>&larr;</span> Back to API Docs
           </Link>
-          <h1 className="text-4xl font-bold text-[#f3ead8] mb-4">
+          <h1 className="text-4xl font-bold text-forest-deep mb-4">
             SlopeSense Developer Portal
           </h1>
           <p className="text-slate-400 text-lg">
