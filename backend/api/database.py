@@ -16,8 +16,10 @@ prefixes to their async-compatible equivalents.
 
 from typing import AsyncIterator, Optional
 import os
+from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import NullPool
 
 
 def _get_db_url() -> str:
@@ -38,20 +40,39 @@ def _get_db_url() -> str:
 
 
 _db_url = _get_db_url()
+# asyncpg takes ssl as a connect argument rather than libpq sslmode/channel_binding.
+_connect_args = {}
+if _db_url.startswith("postgresql+asyncpg://"):
+    parsed = urlsplit(_db_url)
+    query = dict(parse_qsl(parsed.query))
+    sslmode = query.pop("sslmode", None)
+    query.pop("channel_binding", None)
+    if sslmode in {"require", "verify-full", "verify-ca"}:
+        import ssl
+
+        _connect_args["ssl"] = ssl.create_default_context()
+    _db_url = urlunsplit(parsed._replace(query=urlencode(query)))
+
 
 _engine_kwargs = {
     "echo": False,
     "pool_pre_ping": True,
+    "connect_args": _connect_args,
 }
 # SQLite does not support connection pooling parameters
 if not _db_url.startswith("sqlite"):
     _engine_kwargs.update(
         {
-            "pool_size": 10,  # base pool size
-            "max_overflow": 20,  # extra connections above pool_size
+            "pool_size": 2,  # base pool size
+            "max_overflow": 2,  # extra connections above pool_size
             "pool_recycle": 3600,  # recycle connections every hour
         }
     )
+
+if os.environ.get("VERCEL") and not _db_url.startswith("sqlite"):
+    for key in ("pool_size", "max_overflow", "pool_recycle"):
+        _engine_kwargs.pop(key, None)
+    _engine_kwargs["poolclass"] = NullPool
 
 engine = create_async_engine(_db_url, **_engine_kwargs)
 

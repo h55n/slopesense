@@ -1,3 +1,5 @@
+from backend.ingestion.quality import DataUnavailableError, require_observed
+
 """
 SlopeSense — NASA SMAP L3 Soil Moisture Ingestion
 
@@ -13,7 +15,7 @@ Variable: soil_moisture (volumetric water content, m³/m³)
 
 import logging
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
@@ -104,7 +106,7 @@ class SMAPIngestion:
         if cache_path.exists():
             logger.info(f"SMAP: loading cached data for {date_str} ({overpass})")
             ds = xr.open_dataset(cache_path)
-            return ds["soil_moisture"]
+            return require_observed(ds["soil_moisture"], "cached SMAP")
 
         try:
             import earthaccess
@@ -126,7 +128,9 @@ class SMAPIngestion:
 
             if not results:
                 logger.warning(f"SMAP: no data for {date_str}, using synthetic")
-                return self._generate_synthetic(date, bbox)
+                raise DataUnavailableError(
+                    "SMAP observations unavailable; no sample substitution"
+                )
 
             files = earthaccess.open(results[:1])
 
@@ -159,7 +163,9 @@ class SMAPIngestion:
 
         except Exception as e:
             logger.error(f"SMAP fetch failed for {date_str}: {e}")
-            return self._generate_synthetic(date, bbox)
+            raise DataUnavailableError(
+                "SMAP observations unavailable; no sample substitution"
+            )
 
     def compute_3day_average(
         self,
@@ -182,9 +188,9 @@ class SMAPIngestion:
             if da is not None:
                 daily_arrays.append(da)
 
-        if not daily_arrays:
+        if len(daily_arrays) != 3:
             logger.error("SMAP: no data available for 3-day window")
-            return self._synthetic_average(bbox)
+            raise DataUnavailableError("SMAP 3-day observations unavailable")
 
         # Stack and mean
         stacked = xr.concat(daily_arrays, dim="day")
@@ -210,41 +216,10 @@ class SMAPIngestion:
         In production, this uses a multi-year SMAP climatology.
         For hackathon: uses parameterized seasonal distributions.
         """
-        if month is None:
-            month = datetime.now(timezone.utc).month
-
-        # Seasonal mean and std for India monsoon (Jun–Sep)
-        # Values approximate SMAP climatology 2015–2024
-        if month in [6, 7, 8, 9]:  # monsoon
-            seasonal_mean = 0.28
-            seasonal_std = 0.08
-        elif month in [10, 11]:  # post-monsoon
-            seasonal_mean = 0.22
-            seasonal_std = 0.07
-        elif month in [12, 1, 2]:  # winter
-            seasonal_mean = 0.18
-            seasonal_std = 0.06
-        else:  # pre-monsoon
-            seasonal_mean = 0.15
-            seasonal_std = 0.05
-
-        from scipy import stats
-
-        z_scores = (soil_moisture - seasonal_mean) / seasonal_std
-        percentiles = xr.apply_ufunc(
-            lambda z: stats.norm.cdf(z) * 100,
-            z_scores,
-            vectorize=True,
+        raise DataUnavailableError(
+            "Observed multi-year location-specific soil-moisture climatology is required; "
+            "assumed seasonal distributions are not real percentiles"
         )
-
-        percentiles = percentiles.clip(0, 100)
-        percentiles.name = "soil_moisture_percentile"
-        percentiles.attrs["description"] = (
-            "Soil moisture as seasonal percentile (0–100)"
-        )
-        percentiles.attrs["source"] = "NASA SMAP L3 + SlopeSense climatology"
-
-        return percentiles
 
     def get_fpi_contribution(self, percentile: float) -> float:
         """

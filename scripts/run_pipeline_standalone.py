@@ -26,6 +26,9 @@ logger = logging.getLogger(__name__)
 
 
 async def run():
+    raise RuntimeError(
+        "Warning publication disabled: real input provenance and model validation are required. Use scripts.fetch_source_observations for raw provider data only."
+    )
     import time
 
     start_time = time.time()

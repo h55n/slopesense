@@ -26,7 +26,6 @@ import json
 import logging
 import os
 import uuid
-from dataclasses import asdict
 from datetime import date as date_type
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -58,6 +57,7 @@ from backend.api.middleware import (
 from backend.api.reports import generate_district_report
 from backend.api.webhooks import router as webhooks_router
 from backend.api.apikeys import router as apikeys_router
+from backend.api.observations import router as observations_router
 from backend.config import settings
 from backend.model.fpi_engine import (
     get_risk_label,
@@ -74,21 +74,21 @@ app = FastAPI(
     title="SlopeSense API",
     description=(
         "**Landslide Risk Intelligence Platform — India**\n\n"
-        "Fuses free satellite data (NASA GPM, SMAP, Copernicus DEM, Sentinel-2) "
-        "into a probabilistic Failure Probability Index (FPI) per 1km² grid cell. "
-        "Updates every 6 hours. Delivers 24–48h forward forecasts to district officers "
-        "via GIS dashboard and WhatsApp.\n\n"
+        "Experimental landslide risk scoring, not an official government warning service. "
+        "Bundled examples are sample data. FPI is an uncalibrated heuristic score, "
+        "not a measured probability. The 0.1-degree grid is approximately 11 km. "
+        "No real-data model run or alert delivery is claimed until verified.\n\n"
         "**Authentication**: Most endpoints are public. Protected endpoints require "
         "`x-api-key` header.\n\n"
-        "**CAP v1.2 Feed**: `GET /v1/cap/feed` — NDMA Sachet-compatible XML alert feed."
+        "**Experimental CAP XML**: `GET /v1/cap/feed` — samples use Test status; "
+        "not connected to NDMA Sachet."
     ),
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
     contact={
         "name": "SlopeSense Team",
-        "url": "https://github.com/slopesense/slopesense",
-        "email": "team@slopesense.io",
+        "url": "https://github.com/h55n/slopesense",
     },
     license_info={
         "name": "Apache 2.0",
@@ -123,6 +123,7 @@ app.add_middleware(APIKeyMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
 app.include_router(webhooks_router)
 app.include_router(apikeys_router)
+app.include_router(observations_router)
 
 
 @app.middleware("http")
@@ -196,6 +197,12 @@ def _normalise_sample_alert(raw: Dict[str, Any]) -> Dict[str, Any]:
     for key in ("fpi_score", "fpi_ci_lower", "fpi_ci_upper", "fpi_24h"):
         if isinstance(alert.get(key), (int, float)):
             alert[key] = min(1.0, max(0.0, alert[key]))
+    total = alert.get("cell_count_total") or 0
+    if total:
+        alert["breach_fraction"] = (alert.get("cell_count_breached") or 0) / total
+    alert["model_generated"] = True
+    alert["is_official_warning"] = False
+    alert["score_interpretation"] = "Uncalibrated heuristic, not failure probability"
     alert["is_sample"] = True
     return alert
 
@@ -322,11 +329,13 @@ async def system_status():
         "services": {
             "rest_api": "operational",
             "cap_feed": "operational",
-            "fpi_engine": "operational",
-            "websocket": "operational",
-            "whatsapp_dispatch": (
-                "dry_run" if not settings.is_production else "configured"
+            "fpi_engine": "not_validated",
+            "websocket": (
+                "unsupported_on_vercel" if os.getenv("VERCEL") else "unverified"
             ),
+            "whatsapp_dispatch": "disabled",
+            "contact_registry": "requires_database",
+            "api_key_registry": "requires_database",
         },
     }
 
@@ -341,6 +350,8 @@ async def get_risk_point(
     Get FPI score for a specific lat/lon point.
     Uses nearest 0.1° grid cell.
     """
+    if hours_ahead not in (0, 24, 48):
+        raise HTTPException(status_code=422, detail="hours_ahead must be 0, 24 or 48")
     # Try to find in cache
     if _fpi_grid_cache:
         cell = _find_nearest_cell(_fpi_grid_cache.get("cells", []), lat, lon)
@@ -446,7 +457,7 @@ async def get_district_summary(district_code: str, db: AsyncSession = Depends(ge
 async def download_district_report(
     district_code: str, db: AsyncSession = Depends(get_db)
 ):
-    """Generate an official PDF report for a district."""
+    """Generate a clearly labeled experimental or sample district report."""
     current_alerts = await _get_active_alerts(db)
     alerts = [
         a
@@ -454,15 +465,13 @@ async def download_district_report(
         if a.get("district_code", "").lower() == district_code.lower()
         and a.get("is_active", True)
     ]
-    if not alerts and district_code.upper() in {"WYD", "KL_WYD", "WAYANAD"}:
-        alerts = _synthetic_report_alerts()
 
     district_name = (
         alerts[0].get("district_name", district_code.upper())
         if alerts
         else district_code.upper()
     )
-    run_timestamp = _last_run or datetime.now(timezone.utc)
+    run_timestamp = _last_run
     pdf_bytes = await generate_district_report(
         district_code, district_name, alerts, run_timestamp
     )
@@ -503,7 +512,7 @@ async def get_active_alerts(
 
     query = """
         SELECT * FROM alerts
-        WHERE is_active = 1 AND is_suppressed = 0 AND fpi_score >= :min_fpi
+        WHERE is_active = TRUE AND is_suppressed = FALSE AND fpi_score >= :min_fpi
     """
     params = {"min_fpi": min_fpi}
 
@@ -610,8 +619,11 @@ async def get_historical_fpi(
         )
         rows = [_history_row_to_dict(row) for row in result.scalars().all()]
     except Exception as exc:
-        logger.warning("Historical FPI query failed, using synthetic fallback: %s", exc)
-        rows = _synthetic_historical_rows(str(date), district_code)
+        logger.warning("Historical FPI store unavailable: %s", type(exc).__name__)
+        raise HTTPException(
+            status_code=503,
+            detail="Historical observations unavailable; no synthetic history is substituted",
+        ) from exc
 
     blocks = _aggregate_history_to_blocks(rows)
     if format == "geojson":
@@ -652,87 +664,25 @@ async def get_historical_fpi(
 async def get_retrospective_summary(
     db: AsyncSession = Depends(get_db),
 ):
-    """
-    Run retrospective analysis on historical landslide events to validate FPI model.
-    """
-    from sqlalchemy import text
-
-    if db is None:
-        return _synthetic_retrospective_summary()
-
-    query = """
-        SELECT id as event_id, event_name, event_date, district_code, lat, lon,
-               deaths, fpi_at_t24, was_flagged_24h, location_description as description
-        FROM landslide_events
-        ORDER BY event_date DESC
-    """
-    try:
-        result = await db.execute(text(query))
-        rows = result.fetchall()
-    except Exception:
-        rows = []
-
-    if not rows:
-        return _synthetic_retrospective_summary()
-
-    results = []
-    flagged_count = 0
-    for row in rows:
-        mapping = dict(row._mapping)
-        flagged = bool(mapping.get("was_flagged_24h"))
-        if flagged:
-            flagged_count += 1
-
-        results.append(
-            {
-                "event_id": mapping.get("event_id"),
-                "event_name": mapping.get("event_name"),
-                "event_date": (
-                    mapping.get("event_date").isoformat()
-                    if isinstance(mapping.get("event_date"), datetime)
-                    else mapping.get("event_date")
-                ),
-                "district": mapping.get("district_code"),
-                "deaths": mapping.get("deaths") or 0,
-                "fpi_t24": mapping.get("fpi_at_t24"),
-                "target_fpi": mapping.get("fpi_target_t24"),
-                "flagged_at_t24": flagged,
-                "lead_time_hours": 24 if flagged else None,
-                "notes": mapping.get("description"),
-                "data_source": "historical",
-            }
-        )
-
+    """No validation result is published without an audited real-data evaluation."""
     return {
-        "run_at": datetime.now(timezone.utc).isoformat(),
+        "status": "not_validated",
+        "data_mode": "unavailable",
         "model_version": "v0.1",
-        "total_events": len(results),
-        "flagged_at_t24": flagged_count,
-        "pass_criterion": f"≥{len(results)*0.6:.0f}/{len(results)} flagged at T-24h",
-        "passed": flagged_count >= len(results) * 0.6,
-        "results": results,
+        "total_events": 0,
+        "flagged_at_t24": 0,
+        "passed": None,
+        "results": [],
+        "note": "No audited real-data retrospective exists. Synthetic examples are not validation.",
     }
 
 
 @app.get("/v1/retrospective/{event_id}", tags=["Audit"])
 async def get_retrospective_event(event_id: str):
-    """Get retrospective validation for a single historical event."""
-    event_path = Path(f"data/retrospective/{event_id}.json")
-    if event_path.exists():
-        with open(event_path) as f:
-            return json.load(f)
-
-    # Compute on demand
-    try:
-        from backend.model.retrospective import RetrospectiveRunner
-
-        runner = RetrospectiveRunner()
-        result = runner.run_event(event_id, use_synthetic=True)
-        return asdict(result)
-    except Exception as e:
-        raise HTTPException(
-            status_code=404, detail=f"Event not found or compute failed: {e}"
-        )
+    """Return no synthetic or unverified evaluation as historical evidence."""
+    raise HTTPException(
+        status_code=404, detail="No audited retrospective available for this event"
+    )
 
 
 @app.get("/v1/cap/feed", tags=["CAP"])
@@ -805,14 +755,14 @@ async def get_fpi_geojson(
     from sqlalchemy import text
 
     if db is None:
-        return {"type": "FeatureCollection", "features": _synthetic_wayanad_geojson()}
+        return {"type": "FeatureCollection", "features": [], "data_mode": "unavailable"}
 
     query = """
         SELECT block_code, block_name, district_name, state_code,
                lat, lon, fpi_score, fpi_24h, tier,
                rainfall_3d_mm, soil_moisture_percentile
         FROM alerts
-        WHERE is_active = 1 AND fpi_score >= :min_fpi
+        WHERE is_active = TRUE AND fpi_score >= :min_fpi
     """
     params = {"min_fpi": min_fpi}
     if state:
@@ -880,7 +830,7 @@ async def get_districts_geojson(
                AVG(lat) as lat, AVG(lon) as lon,
                COUNT(*) as block_count
         FROM alerts
-        WHERE is_active = 1 AND fpi_score >= :min_fpi
+        WHERE is_active = TRUE AND fpi_score >= :min_fpi
     """
     params: Dict = {"min_fpi": min_fpi}
     if state:
@@ -982,20 +932,21 @@ async def register_contact(
         db.add(contact_row)
         await db.commit()
     except Exception as exc:
-        await db.rollback()
-        if settings.is_production:
-            logger.exception("Contact registration failed")
-            raise HTTPException(status_code=503, detail="Contact registry unavailable")
-        logger.warning(
-            "Contact registry unavailable, returning transient registration id: %s", exc
-        )
+        if db is not None:
+            await db.rollback()
+        logger.error("Contact registration unavailable: %s", type(exc).__name__)
+        raise HTTPException(
+            status_code=503,
+            detail="Contact registry unavailable; registration was not saved",
+        ) from exc
     logger.info(
         f"Contact registered: {contact.name} ({contact.role}) → {contact.whatsapp_number}"
     )
     return {
         "status": "registered",
         "id": record_id,
-        "message": f"You will receive {contact.min_tier}+ alerts for {contact.district_code or contact.state_code}",
+        "delivery_enabled": False,
+        "message": "Registration saved. Automatic alert delivery is not enabled.",
     }
 
 
@@ -1034,6 +985,8 @@ async def trigger_model_run(request: Request, token: str = Query(...)):
     expected = settings.internal_trigger_token or os.environ.get(
         "INTERNAL_TRIGGER_TOKEN", "dev-token"
     )
+    if not expected or expected == "dev-token":
+        raise HTTPException(status_code=503, detail="Model trigger is not configured")
     if token != expected:
         raise HTTPException(status_code=403, detail="Invalid token")
     client_host = request.client.host if request.client else ""
@@ -1071,6 +1024,10 @@ async def _run_model_pipeline() -> Dict:
     from backend.alert.alert_engine import AlertEngine
     from backend.alert.dispatcher import AlertDispatcher
 
+    raise HTTPException(
+        status_code=503,
+        detail="Live warning publication is disabled pending real-input provenance and model validation",
+    )
     run_time = datetime.now(timezone.utc)
     logger.info(f"Pipeline: starting run at {run_time.isoformat()}")
 
@@ -1118,7 +1075,11 @@ async def _run_model_pipeline() -> Dict:
 
 
 async def _compute_point_fpi(lat: float, lon: float, hours_ahead: int) -> RiskResponse:
-    """On-demand FPI computation for a point."""
+    """No scores are served until provenance and validation are audited."""
+    raise HTTPException(
+        status_code=503,
+        detail="Risk scoring unavailable: required real inputs and model validation are incomplete. Sample scores are not substituted.",
+    )
     from backend.processing.preprocessor import DataPreprocessor
     from backend.model.fpi_engine import FPIEngine
 

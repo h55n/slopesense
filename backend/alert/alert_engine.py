@@ -270,11 +270,11 @@ class AlertEngine:
         return msg
 
     def format_cap_xml(
-        self, alert: Dict, base_url: str = "https://api.slopesense.in"
+        self, alert: Dict, base_url: str = "https://slopesense-olive.vercel.app"
     ) -> str:
         """
         Format alert as CAP v1.2 XML.
-        Compatible with NDMA Sachet app and any CAP consumer.
+        Experimental CAP-format XML; no government integration is claimed.
         """
         from xml.sax.saxutils import escape
 
@@ -290,11 +290,6 @@ class AlertEngine:
             "WARNING": "Moderate",
             "EMERGENCY": "Extreme",
         }.get(tier, "Unknown")
-        certainty = {
-            "WATCH": "Possible",
-            "WARNING": "Likely",
-            "EMERGENCY": "Observed",
-        }.get(tier, "Unknown")
 
         issued = (
             alert["issued_at"].strftime("%Y-%m-%dT%H:%M:%S+00:00")
@@ -307,21 +302,21 @@ class AlertEngine:
   <identifier>{escape(alert['alert_code'])}</identifier>
   <sender>SlopeSense-v0.1@slopesense.in</sender>
   <sent>{issued}</sent>
-  <status>Actual</status>
+  <status>Test</status>
   <msgType>Alert</msgType>
   <scope>Public</scope>
-  <note>SlopeSense Landslide Risk Alert — Failure Probability Index</note>
+  <note>Experimental model output; not an official government alert. Samples are not observations.</note>
   <info>
     <language>en-IN</language>
     <category>Geo</category>
     <event>Landslide Risk — {tier}</event>
     <urgency>{urgency}</urgency>
     <severity>{severity}</severity>
-    <certainty>{certainty}</certainty>
+    <certainty>Unknown</certainty>
     <headline>Landslide Risk Alert: {escape(alert['district_name'])}, {escape(alert['state_name'])} — FPI {fpi_pct}%</headline>
     <description>SlopeSense Failure Probability Index: {fpi_pct}% ({tier}). Block: {escape(alert['block_name'])}. 3-day rainfall: {alert.get('rainfall_3d_mm', 0):.0f}mm. Soil moisture: {alert.get('soil_moisture_percentile', 0):.0f}th percentile. 24h forecast FPI: {int((alert.get('fpi_24h') or alert['fpi_score']) * 100)}%.</description>
-    <instruction>{TIER_ACTIONS.get(tier, {}).get('en', '')}</instruction>
-    <web>{base_url}/dashboard?district={escape(alert['district_code'])}</web>
+    <instruction>Do not act on this test feed. Follow official local authority advisories.</instruction>
+    <web>{base_url}/alert?id={escape(str(alert.get('id', alert['alert_code'])))}</web>
     <parameter>
       <valueName>FPI_Score</valueName>
       <value>{alert['fpi_score']}</value>

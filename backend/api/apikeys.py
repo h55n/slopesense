@@ -1,5 +1,6 @@
 """API Key generation and management."""
 
+import hashlib
 import secrets
 import string
 import uuid
@@ -22,6 +23,11 @@ class ApiKeyRequest(BaseModel):
     organization: Optional[str] = None
 
 
+def key_digest(key: str) -> str:
+    """Only irreversible digests are stored; a key is shown once."""
+    return hashlib.sha256(key.encode()).hexdigest()
+
+
 class ApiKeyResponse(BaseModel):
     key: str
     message: str
@@ -38,12 +44,18 @@ async def generate_api_key(req: ApiKeyRequest, db: AsyncSession = Depends(get_db
     """
     Generate a new SlopeSense API Key.
     """
+    if db is None:
+        raise HTTPException(status_code=503, detail="API key registry unavailable")
     # Check if email already has an active key
-    existing = await db.execute(
-        select(ApiKey).where(
-            ApiKey.email == req.email, ApiKey.is_active == True  # noqa: E712
-        )  # noqa: E712
-    )
+    try:
+        existing = await db.execute(
+            select(ApiKey).where(ApiKey.email == req.email, ApiKey.is_active.is_(True))
+        )
+    except Exception as exc:
+        await db.rollback()
+        raise HTTPException(
+            status_code=503, detail="API key registry unavailable"
+        ) from exc
     if existing.scalars().first():
         raise HTTPException(
             status_code=400, detail="An active API key already exists for this email."
@@ -53,7 +65,7 @@ async def generate_api_key(req: ApiKeyRequest, db: AsyncSession = Depends(get_db
     new_key = generate_secure_key()
     api_key_record = ApiKey(
         id=uuid.uuid4(),
-        key=new_key,
+        key=key_digest(new_key),
         name=req.name,
         email=req.email,
         organization=req.organization,
@@ -61,7 +73,11 @@ async def generate_api_key(req: ApiKeyRequest, db: AsyncSession = Depends(get_db
         is_active=True,
     )
     db.add(api_key_record)
-    await db.commit()
+    try:
+        await db.commit()
+    except Exception as exc:
+        await db.rollback()
+        raise HTTPException(status_code=503, detail="API key was not saved") from exc
 
     return ApiKeyResponse(
         key=new_key,

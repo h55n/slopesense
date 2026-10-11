@@ -231,3 +231,35 @@ This is reflected in the CI width (adds ~0.04 to base uncertainty).
 **Sentinel-2 cloud contamination:** During peak monsoon (July–August), cloud cover >70% in
 Western Ghats and Northeast India limits NDVI retrieval. MODIS Terra/Aqua (250m, daily) would be
 a better option for monsoon periods despite lower resolution.
+
+## Production audit correction (October 11, 2026)
+
+The descriptions above are planned integrations, not proof they are connected.
+The existing FPI is an uncalibrated hand-weighted heuristic on an approximately
+11 km grid. Its ranges are not statistically validated 95% confidence intervals.
+No audited real-input retrospective has been completed. Warning publication is
+blocked. The dashboard's bundled alert examples remain explicitly SAMPLE.
+The CAP XML is a Test feed, not an official alert or verified Sachet integration.
+
+Actual provider values are separately available at `/api/v1/source-observations`:
+Open-Meteo weather-model rainfall/forecast/shallow soil moisture, at six configured
+representative points. These are not NASA satellite observations, ground truth,
+soil percentiles, district-wide coverage, or FPI inputs. Retrieval and time-window
+checks establish provider provenance and completeness, not real-world accuracy.
+Snapshots refresh every six hours through GitHub Actions (best-effort scheduling),
+are marked stale after 12 hours, and retained for 30 days. Automatic WhatsApp/email
+warning delivery is disabled.
+
+Verified source references:
+- https://open-meteo.com/en/terms - free API is for noncommercial use; commercial deployment needs separate review/payment approval.
+- https://gpm.nasa.gov/data/imerg - IMERG is a precipitation estimate, Early latency about four hours; downloads need free registration.
+- https://registry.opendata.aws/copernicus-dem/ - public terrain is available independently of the broken credentialed parser here.
+- https://registry.opendata.aws/sentinel-2-l2a-cogs/ - public COG scenes and free STAC search are available; cloud/quality masking and reprojection still need implementation.
+- https://neon.com/docs/introduction/plans - free-tier usage limits can suspend service; fail closed rather than invent values.
+
+Still required for real warnings: proper source parsers, quality masks and lat/lon
+transforms; location-specific multi-year soil climatology; verified susceptibility
+raster and geographic block mapping; distinct forecast windows; timestamp and
+coverage checks; held-out event and non-event evaluation with false-alarm/miss
+rates, calibration and uncertainty validation. Software tests alone do not provide
+these scientific guarantees.

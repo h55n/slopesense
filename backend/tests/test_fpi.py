@@ -377,9 +377,10 @@ class TestSMAPIngestion:
             np.array([[0.05, 0.20, 0.35, 0.50]]),
             dims=["lat", "lon"],
         )
-        pct = smap.compute_percentile(sm, month=7)
-        assert float(pct.min()) >= 0.0
-        assert float(pct.max()) <= 100.0
+        from backend.ingestion.quality import DataUnavailableError
+
+        with pytest.raises(DataUnavailableError, match="climatology"):
+            smap.compute_percentile(sm, month=7)
 
     def test_high_moisture_high_percentile(self, smap):
         """Very high soil moisture should map to high percentile during monsoon."""
@@ -387,8 +388,10 @@ class TestSMAPIngestion:
 
         # 0.45 m³/m³ is near saturation in Western Ghats
         sm_high = xr.DataArray(np.array([[0.45]]), dims=["lat", "lon"])
-        pct_high = smap.compute_percentile(sm_high, month=7)
-        assert float(pct_high.mean()) > 80.0
+        from backend.ingestion.quality import DataUnavailableError
+
+        with pytest.raises(DataUnavailableError, match="climatology"):
+            smap.compute_percentile(sm_high, month=7)
 
     def test_fpi_contribution_nonlinear(self, smap):
         """FPI contribution should accelerate sharply above 85th percentile."""
@@ -436,27 +439,17 @@ class TestGPMIngestion:
         assert "precipitation_mmhr" in ds
         assert ds["precipitation_mmhr"].min() >= 0.0
 
-    def test_accumulation_nonnegative(self, gpm):
-        """3-day rainfall accumulation should always be non-negative."""
+    def test_accumulation_rejects_sample(self, gpm):
+        from backend.ingestion.quality import DataUnavailableError
+
+        bbox = {"min_lat": 11.0, "max_lat": 12.0, "min_lon": 75.0, "max_lon": 77.0}
         with patch.object(
             gpm,
             "fetch_halfhourly",
-            side_effect=lambda *a, **kw: gpm._generate_synthetic(
-                a[0],
-                {"min_lat": 11.0, "max_lat": 12.0, "min_lon": 75.0, "max_lon": 77.0},
-            ),
+            side_effect=lambda *a, **kw: gpm._generate_synthetic(a[0], bbox),
         ):
-            accum = gpm.compute_accumulation(
-                datetime(2024, 7, 29),
-                days=3,
-                bbox={
-                    "min_lat": 11.0,
-                    "max_lat": 12.0,
-                    "min_lon": 75.0,
-                    "max_lon": 77.0,
-                },
-            )
-            assert float(accum.min()) >= 0.0
+            with pytest.raises(DataUnavailableError):
+                gpm.compute_accumulation(datetime(2024, 7, 29), days=3, bbox=bbox)
 
     def test_synthetic_orographic_enhancement(self, gpm):
         """Western Ghats (lon ~76) should have higher rainfall than surrounding areas."""
@@ -562,27 +555,16 @@ class TestDataPreprocessor:
         assert cls == 1, f"Rajasthan plains should be class 1, got {cls}"
 
     def test_regrid_nan_handling(self, preprocessor):
-        """Regrid should handle NaN values without crashing."""
         import xarray as xr
+        from backend.ingestion.quality import DataUnavailableError
 
-        src = xr.DataArray(
-            np.array([[1.0, np.nan], [np.nan, 2.0]]),
+        da = xr.DataArray(
+            np.full((2, 2), np.nan),
+            coords={"lat": [11.3, 11.9], "lon": [75.7, 76.4]},
             dims=["lat", "lon"],
-            coords={
-                "lat": np.array([11.3, 11.6]),
-                "lon": np.array([75.7, 76.1]),
-            },
         )
-        result = preprocessor._regrid(src)
-        assert result is not None
-        assert not np.any(np.isnan(result))
-
-
-# ── Integration: Alert message contains correct FPI info ──────────────────────
-
-
-class TestIntegration:
-    """End-to-end integration tests using synthetic data."""
+        with pytest.raises(DataUnavailableError):
+            preprocessor._regrid(da)
 
     def test_physics_fpi_to_alert_tier_pipeline(self):
         """Full pipeline: features → FPI score → tier → WhatsApp message."""

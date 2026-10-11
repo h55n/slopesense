@@ -9,7 +9,7 @@ async def generate_district_report(
     district_code: str,
     district_name: str,
     alerts: List[dict],
-    run_timestamp: datetime,
+    run_timestamp: datetime | None,
 ) -> bytes:
     """Generate a compact NDMA-style district PDF report."""
     from reportlab.lib import colors
@@ -36,7 +36,9 @@ async def generate_district_report(
     styles = getSampleStyleSheet()
     story = []
 
-    story.append(Paragraph("National Disaster Management Authority", styles["Title"]))
+    story.append(
+        Paragraph("SlopeSense - Experimental Research Report", styles["Title"])
+    )
     story.append(
         Paragraph(
             "SlopeSense District Landslide Risk Intelligence Report", styles["Heading2"]
@@ -54,8 +56,26 @@ async def generate_district_report(
             f"Generated: {datetime.now(timezone.utc).isoformat()}", styles["Normal"]
         )
     )
-    story.append(Paragraph(f"Model run: {run_timestamp.isoformat()}", styles["Normal"]))
+    story.append(
+        Paragraph(
+            "Model run: "
+            + (
+                run_timestamp.isoformat() if run_timestamp else "None - no verified run"
+            ),
+            styles["Normal"],
+        )
+    )
     story.append(Paragraph("Model version: v0.1", styles["Normal"]))
+    story.append(
+        Paragraph(
+            (
+                "SAMPLE DATA - NOT CURRENT OBSERVATIONS"
+                if any(a.get("is_sample") for a in alerts)
+                else "EXPERIMENTAL MODEL OUTPUT - NOT AN OFFICIAL WARNING"
+            ),
+            styles["Heading2"],
+        )
+    )
     story.append(Spacer(1, 12))
 
     max_fpi = max((float(alert.get("fpi_score", 0)) for alert in alerts), default=0)
@@ -66,7 +86,7 @@ async def generate_district_report(
         )
     )
 
-    rows = [["Block", "Tier", "FPI", "95% CI", "Dominant Signal"]]
+    rows = [["Block", "Tier", "FPI", "Score bounds", "Dominant Signal"]]
     for alert in sorted(
         alerts, key=lambda item: item.get("fpi_score", 0), reverse=True
     )[:20]:
@@ -80,7 +100,7 @@ async def generate_district_report(
             ]
         )
 
-    table = Table(rows, repeatRows=1, colWidths=[120, 82, 50, 70, 170])
+    table = Table(rows, repeatRows=1, colWidths=[115, 78, 45, 88, 164])
     table.setStyle(
         TableStyle(
             [
@@ -101,12 +121,11 @@ async def generate_district_report(
     story.append(table)
     story.append(Spacer(1, 14))
 
-    story.append(Paragraph("Recommended Actions", styles["Heading3"]))
+    story.append(Paragraph("Safety note", styles["Heading3"]))
     story.append(
         Paragraph(
-            "WATCH: monitor rainfall and vulnerable slopes. WARNING: alert DDMA, "
-            "prepare shelters and field teams. EMERGENCY: initiate evacuation planning "
-            "for exposed settlements and coordinate SDRF/NDRF support.",
+            "This is not an official warning or evacuation instruction. Sample scores are "
+            "illustrations only. Follow local authorities and official disaster advisories.",
             styles["Normal"],
         )
     )
@@ -114,16 +133,18 @@ async def generate_district_report(
     story.append(Paragraph("Confidence and Data Sources", styles["Heading3"]))
     story.append(
         Paragraph(
-            "FPI combines NASA GPM rainfall, SMAP soil moisture, Copernicus DEM, "
-            "Sentinel-2 vegetation change, NDMA susceptibility priors, and forecast rainfall. "
-            "Alerts with wide confidence intervals are suppressed to reduce false positives.",
+            "FPI is an uncalibrated heuristic, not a landslide probability. Score bounds are "
+            "heuristic ranges, not statistically validated 95% confidence intervals. "
+            "Data mode: "
+            + (
+                "SAMPLE - not current observations."
+                if any(a.get("is_sample") for a in alerts)
+                else "No verified real-data model run is claimed."
+            ),
             styles["Normal"],
         )
     )
     story.append(Spacer(1, 24))
-    story.append(
-        Paragraph("Digital signature: ______________________________", styles["Normal"])
-    )
 
     doc.build(story)
     return buffer.getvalue()

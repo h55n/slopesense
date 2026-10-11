@@ -109,18 +109,11 @@ class TestRiskEndpoint:
             transport=ASGITransport(app=app), base_url="http://test"
         ) as client:
             resp = await client.get("/v1/risk?lat=11.58&lon=76.08")
-        assert resp.status_code == 200
+        assert resp.status_code == 503
         data = resp.json()
-        assert "fpi_score" in data
-        assert 0.0 <= data["fpi_score"] <= 1.0
-        assert "alert_tier" in data
-        assert data["alert_tier"] in (
-            "NORMAL",
-            "WATCH",
-            "WARNING",
-            "EMERGENCY",
-            "MONITORING",
-        )
+        assert "detail" in data
+        assert "fpi_score" not in data
+        assert "alert_tier" not in data
 
     async def test_risk_point_invalid_coords(self):
         from backend.api.main import app
@@ -144,7 +137,9 @@ class TestRetrospectiveEndpoint:
         assert resp.status_code == 200
         data = resp.json()
         assert "total_events" in data
-        assert data["total_events"] == 6
+        assert data["total_events"] == 0
+        assert data["passed"] is None
+        assert data["status"] == "not_validated"
         assert "flagged_at_t24" in data
         assert "passed" in data
 
@@ -155,10 +150,8 @@ class TestRetrospectiveEndpoint:
             transport=ASGITransport(app=app), base_url="http://test"
         ) as client:
             resp = await client.get("/v1/retrospective/wayanad_2024")
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["event_id"] == "wayanad_2024"
-        assert "fpi_t24" in data
+        assert resp.status_code == 404
+        assert "No audited retrospective" in resp.json()["detail"]
 
 
 @pytest.mark.asyncio

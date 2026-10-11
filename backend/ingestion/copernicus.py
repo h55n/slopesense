@@ -1,3 +1,5 @@
+from backend.ingestion.quality import DataUnavailableError, require_observed
+
 """
 SlopeSense — Copernicus DEM + Sentinel-2 NDVI Ingestion
 
@@ -64,13 +66,13 @@ class DEMProcessor:
 
         if cache_path.exists():
             logger.info(f"DEM: loading cached slope grid from {cache_path}")
-            return xr.open_dataset(cache_path)
+            return require_observed(xr.open_dataset(cache_path), "cached terrain")
 
         # Try fetching from Copernicus
         dem = self._fetch_copernicus_dem(bbox)
         if dem is None:
             logger.warning("DEM: Copernicus fetch failed, using SRTM-like synthetic")
-            dem = self._generate_synthetic_dem(bbox)
+            raise DataUnavailableError("Observed DEM unavailable; no synthetic terrain")
 
         # Compute slope and aspect
         slope, aspect = self._compute_slope_aspect(dem)
@@ -318,7 +320,7 @@ class Sentinel2Ingestion:
 
         if cache_path.exists():
             ds = xr.open_dataset(cache_path)
-            return ds["ndvi_delta"]
+            return require_observed(ds["ndvi_delta"], "cached NDVI")
 
         current_ndvi = self._fetch_ndvi_composite(bbox, end_date, window_days)
         baseline_ndvi = self._fetch_ndvi_composite(
@@ -327,7 +329,9 @@ class Sentinel2Ingestion:
 
         if current_ndvi is None or baseline_ndvi is None:
             logger.warning("Sentinel-2: fetch failed, using zero NDVI delta")
-            return self._zero_delta(bbox)
+            raise DataUnavailableError(
+                "Observed NDVI windows unavailable; zero is not an observation"
+            )
 
         delta = current_ndvi - baseline_ndvi
         delta.name = "ndvi_delta"
@@ -350,7 +354,9 @@ class Sentinel2Ingestion:
             client_secret = os.environ.get("COPERNICUS_CLIENT_SECRET")
 
             if not client_id or not client_secret:
-                return self._generate_synthetic_ndvi(bbox)
+                raise DataUnavailableError(
+                    "Observed cloud-masked Sentinel-2 NDVI unavailable"
+                )
 
             # Get OAuth token
             token_resp = requests.post(
@@ -364,7 +370,9 @@ class Sentinel2Ingestion:
             )
             token = token_resp.json().get("access_token")
             if not token:
-                return self._generate_synthetic_ndvi(bbox)
+                raise DataUnavailableError(
+                    "Observed cloud-masked Sentinel-2 NDVI unavailable"
+                )
 
             start_date = end_date - timedelta(days=window_days)
             stac_resp = requests.post(
@@ -387,11 +395,15 @@ class Sentinel2Ingestion:
             )
 
             if stac_resp.status_code != 200:
-                return self._generate_synthetic_ndvi(bbox)
+                raise DataUnavailableError(
+                    "Observed cloud-masked Sentinel-2 NDVI unavailable"
+                )
 
             items = stac_resp.json().get("features", [])
             if not items:
-                return self._generate_synthetic_ndvi(bbox)
+                raise DataUnavailableError(
+                    "Observed cloud-masked Sentinel-2 NDVI unavailable"
+                )
 
             ndvi_arrays = []
             for item in items[:3]:
@@ -419,7 +431,9 @@ class Sentinel2Ingestion:
                     logger.debug(f"Sentinel-2 tile failed: {e}")
 
             if not ndvi_arrays:
-                return self._generate_synthetic_ndvi(bbox)
+                raise DataUnavailableError(
+                    "Observed cloud-masked Sentinel-2 NDVI unavailable"
+                )
 
             composite = xr.concat(ndvi_arrays, dim="scene").median(dim="scene")
             composite.name = "ndvi"
@@ -427,7 +441,9 @@ class Sentinel2Ingestion:
 
         except Exception as e:
             logger.error(f"Sentinel-2 fetch failed: {e}")
-            return self._generate_synthetic_ndvi(bbox)
+            raise DataUnavailableError(
+                "Observed cloud-masked Sentinel-2 NDVI unavailable"
+            )
 
     def _generate_synthetic_ndvi(
         self, bbox: dict, resolution: float = 0.01

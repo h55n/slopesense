@@ -421,3 +421,18 @@ class LandslideEvent(Base):
     )
 
     __table_args__ = (Index("ix_events_date_district", "event_date", "district_code"),)
+
+
+class SourceObservation(Base):
+    """A raw provider response, never an FPI score or a confirmed landslide warning."""
+
+    __tablename__ = "source_observations"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    point_code = Column(String(64), nullable=False, index=True)
+    point_name = Column(String(128), nullable=False)
+    lat = Column(Float, nullable=False)
+    lon = Column(Float, nullable=False)
+    source = Column(String(128), nullable=False)
+    source_url = Column(Text, nullable=False)
+    fetched_at = Column(DateTime(timezone=True), nullable=False, index=True)
+    payload = Column(JSON, nullable=False)

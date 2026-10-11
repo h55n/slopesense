@@ -1,32 +1,30 @@
-name: SlopeSense 24/7 Pipeline
-
+name: Source weather snapshots (no warning publication)
 on:
   schedule:
-    - cron: "0 0,6,12,18 * * *"  # Runs at 00:00, 06:00, 12:00, 18:00 UTC
-  workflow_dispatch:  # Allow manual triggers
-
+    - cron: "17 0,6,12,18 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: source-observations
+  cancel-in-progress: false
 jobs:
-  run-pipeline:
+  fetch-observations:
     runs-on: ubuntu-latest
-    if: ${{ secrets.DATABASE_URL != '' }}
+    timeout-minutes: 10
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
-          cache: "pip"
-
-      - name: Install Dependencies
-        run: |
-          pip install -r backend/requirements.txt
-
-      - name: Execute FPI Engine & Alert Dispatcher
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          WHATSAPP_API_TOKEN: ${{ secrets.WHATSAPP_API_TOKEN }}
-          WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.WHATSAPP_PHONE_NUMBER_ID }}
-        run: |
-          python scripts/run_pipeline_standalone.py
+          python-version: "3.11"
+          cache: pip
+      - name: Require persistent store
+        run: test -n "$DATABASE_URL"
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+      - name: Initialize non-spatial persistence
+        run: python -m scripts.init_persistence
+      - name: Fetch actual provider values (no FPI scoring or dispatch)
+        run: python -m scripts.fetch_source_observations

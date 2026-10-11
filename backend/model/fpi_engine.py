@@ -59,9 +59,9 @@ RISK_LEVELS = [
     {
         "min_fpi": 0.80,
         "label": "CRITICAL",
-        "short": "Landslide Imminent",
-        "description": "Landslide is imminent or already occurring. Immediate evacuation required. All emergency channels activated.",
-        "action": "Evacuate all households on or below slopes immediately. Do not wait.",
+        "short": "Very high model score",
+        "description": "Very high experimental model score. This does not confirm a landslide or activate any emergency channels.",
+        "action": "Follow official local authority advisories. Do not use this experimental score as an evacuation order.",
         "color": "#dc2626",  # red-600
         "bg_color": "#fef2f2",
         "emoji": "🆘",
@@ -70,8 +70,8 @@ RISK_LEVELS = [
         "min_fpi": 0.65,
         "label": "HIGH",
         "short": "Very High Risk",
-        "description": "Very high probability of landslide within 24–48 hours. Conditions are dangerous.",
-        "action": "Pre-position NDRF/SDRF. Issue public advisory. Pre-evacuate highest-risk households near slopes.",
+        "description": "High experimental model score. Probability and forecast accuracy have not been validated.",
+        "action": "Check official advisories and current local conditions.",
         "color": "#ea580c",  # orange-600
         "bg_color": "#fff7ed",
         "emoji": "🔴",
@@ -80,8 +80,8 @@ RISK_LEVELS = [
         "min_fpi": 0.40,
         "label": "ELEVATED",
         "short": "Elevated Risk",
-        "description": "Elevated landslide risk. Soil is saturated and terrain is primed. Conditions could deteriorate rapidly.",
-        "action": "Alert DDMA. Monitor slopes closely. Warn communities on steep terrain.",
+        "description": "Elevated experimental model score. This is not a confirmed observation of saturated soil or unstable terrain.",
+        "action": "Consult official advisories and monitor local conditions.",
         "color": "#d97706",  # amber-600
         "bg_color": "#fffbeb",
         "emoji": "⚠️",
@@ -90,8 +90,8 @@ RISK_LEVELS = [
         "min_fpi": 0.20,
         "label": "MODERATE",
         "short": "Moderate Risk",
-        "description": "Some risk factors are present but conditions are not yet dangerous. Continue monitoring.",
-        "action": "Stay informed. Review evacuation routes. No immediate action needed.",
+        "description": "Moderate experimental model score. This cannot establish that conditions are safe.",
+        "action": "Stay informed through official local authority advisories.",
         "color": "#65a30d",  # lime-600
         "bg_color": "#f7fee7",
         "emoji": "🟡",
@@ -100,8 +100,8 @@ RISK_LEVELS = [
         "min_fpi": 0.0,
         "label": "LOW",
         "short": "Low Risk",
-        "description": "No significant landslide risk indicators at this time.",
-        "action": "Normal monitoring. No action required.",
+        "description": "Low experimental model score. A low score is not an assurance of safety.",
+        "action": "Continue following official local authority advisories.",
         "color": "#16a34a",  # green-600
         "bg_color": "#f0fdf4",
         "emoji": "✅",

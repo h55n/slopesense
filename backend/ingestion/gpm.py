@@ -1,3 +1,5 @@
+from backend.ingestion.quality import DataUnavailableError, require_observed
+
 """
 SlopeSense — NASA GPM IMERG Ingestion
 
@@ -98,7 +100,9 @@ class GPMIngestion:
 
         if save_local and cache_path.exists():
             logger.info(f"GPM: loading cached data for {date_str}")
-            return xr.open_dataset(cache_path)
+            return require_observed(
+                xr.open_dataset(cache_path), "cached rainfall/forecast"
+            )
 
         try:
             import earthaccess
@@ -120,7 +124,9 @@ class GPMIngestion:
 
             if not results:
                 logger.warning(f"GPM: no results found for {date_str}")
-                return self._generate_synthetic(date, bbox)
+                raise DataUnavailableError(
+                    "GPM observed rainfall unavailable; no sample substitution"
+                )
 
             logger.info(f"GPM: found {len(results)} granules for {date_str}")
 
@@ -141,11 +147,14 @@ class GPMIngestion:
                     logger.warning(f"GPM: could not parse granule: {e}")
                     continue
 
-            if not datasets:
-                return self._generate_synthetic(date, bbox)
+            if len(datasets) != 48:
+                raise DataUnavailableError(
+                    "GPM observed rainfall unavailable; no sample substitution"
+                )
 
             # Concatenate along time dimension
             combined = xr.concat(datasets, dim="time")
+            require_observed(combined, "GPM")
             ds_out = combined.to_dataset(name="precipitation_mmhr")
 
             if save_local:
@@ -156,7 +165,9 @@ class GPMIngestion:
 
         except Exception as e:
             logger.error(f"GPM fetch failed for {date_str}: {e}")
-            return self._generate_synthetic(date, bbox)
+            raise DataUnavailableError(
+                "GPM observed rainfall unavailable; no sample substitution"
+            )
 
     def compute_accumulation(
         self,
@@ -184,11 +195,7 @@ class GPMIngestion:
             target_date = end_date - timedelta(days=d)
             ds = self.fetch_halfhourly(target_date, bbox)
 
-            if ds is None:
-                logger.warning(
-                    f"GPM: missing data for {target_date.date()}, using zeros"
-                )
-                continue
+            require_observed(ds, "GPM daily rainfall")
 
             # Sum half-hourly (mm/hr × 0.5h = mm per interval)
             daily_mm = (ds["precipitation_mmhr"] * 0.5).sum(dim="time")
@@ -199,17 +206,7 @@ class GPMIngestion:
                 accum = accum + daily_mm
 
         if accum is None:
-            # Return zeros if all fetches failed
-            logger.error("GPM: all fetches failed, returning zero accumulation")
-            accum = xr.DataArray(
-                np.zeros(
-                    (
-                        int((bbox["max_lat"] - bbox["min_lat"]) / 0.1) + 1,
-                        int((bbox["max_lon"] - bbox["min_lon"]) / 0.1) + 1,
-                    )
-                ),
-                dims=["lat", "lon"],
-            )
+            raise DataUnavailableError("GPM accumulation unavailable")
 
         accum.name = f"rainfall_{days}d_mm"
         accum.attrs["description"] = f"{days}-day accumulated rainfall (mm)"
@@ -323,7 +320,9 @@ class GFSIngestion:
 
         if cache_path.exists():
             logger.info(f"GFS: loading cached forecast {cache_path}")
-            return xr.open_dataset(cache_path)
+            return require_observed(
+                xr.open_dataset(cache_path), "cached rainfall/forecast"
+            )
 
         datasets = []
         for fhr in forecast_hours:
@@ -360,8 +359,10 @@ class GFSIngestion:
             except Exception as e:
                 logger.warning(f"GFS: fetch failed for f{fhr:03d}: {e}")
 
-        if not datasets:
-            return self._generate_synthetic_forecast(bbox, forecast_hours)
+        if len(datasets) != len(forecast_hours):
+            raise DataUnavailableError(
+                "GFS forecast unavailable; no sample substitution"
+            )
 
         combined = xr.concat(datasets, dim="forecast_hour")
         combined.to_netcdf(cache_path)
@@ -383,7 +384,7 @@ class GFSIngestion:
             run_time=run_time,
         )
         if ds is None:
-            return self._zero_array(bbox or INDIA_BBOX)
+            raise DataUnavailableError("GFS precipitation forecast unavailable")
 
         try:
             if "tp" in ds:
@@ -391,7 +392,7 @@ class GFSIngestion:
             elif "acpcp" in ds:
                 forecast_24h = ds["acpcp"].sum(dim="forecast_hour")
             else:
-                return self._zero_array(bbox or INDIA_BBOX)
+                raise DataUnavailableError("GFS precipitation forecast unavailable")
 
             forecast_24h.name = "forecast_24h_mm"
             forecast_24h.attrs["description"] = "24h QPF from NOAA GFS (Plan B)"
@@ -399,7 +400,7 @@ class GFSIngestion:
 
         except Exception as e:
             logger.error(f"GFS: could not extract 24h forecast: {e}")
-            return self._zero_array(bbox or INDIA_BBOX)
+            raise DataUnavailableError("GFS precipitation forecast unavailable")
 
     def _generate_synthetic_forecast(
         self, bbox: dict, forecast_hours: list

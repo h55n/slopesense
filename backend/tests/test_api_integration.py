@@ -123,7 +123,7 @@ class TestRiskEndpointContractTests:
             transport=ASGITransport(app=app), base_url="http://test"
         ) as client:
             resp = await client.get("/v1/risk?lat=11.58&lon=76.08")
-        assert resp.status_code == 200
+        assert resp.status_code == 503
 
     async def test_risk_fpi_score_in_bounds(self):
         from backend.api.main import app
@@ -133,17 +133,16 @@ class TestRiskEndpointContractTests:
         ) as client:
             resp = await client.get("/v1/risk?lat=11.58&lon=76.08")
         data = resp.json()
-        assert 0.0 <= data["fpi_score"] <= 1.0
+        assert "fpi_score" not in data
 
     async def test_risk_tier_is_valid_enum(self):
         from backend.api.main import app
 
-        valid_tiers = {"NORMAL", "WATCH", "WARNING", "EMERGENCY", "MONITORING"}
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as client:
             resp = await client.get("/v1/risk?lat=11.58&lon=76.08")
-        assert resp.json()["alert_tier"] in valid_tiers
+        assert "alert_tier" not in resp.json()
 
     async def test_risk_out_of_range_lat_returns_422(self):
         from backend.api.main import app
@@ -180,9 +179,9 @@ class TestRiskEndpointContractTests:
         ) as client:
             resp = await client.get("/v1/risk?lat=11.58&lon=76.08")
         data = resp.json()
-        assert "risk_label" in data
-        assert "risk_color" in data
-        assert "risk_description" in data
+        assert "risk_label" not in data
+        assert "risk_color" not in data
+        assert "risk_description" not in data
 
 
 # ── Alerts Endpoint ───────────────────────────────────────────────────────────
@@ -438,10 +437,8 @@ class TestRetrospectiveContractTests:
             transport=ASGITransport(app=app), base_url="http://test"
         ) as client:
             resp = await client.get("/v1/retrospective/wayanad_2024")
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["event_id"] == "wayanad_2024"
-        assert "fpi_t24" in data
+        assert resp.status_code == 404
+        assert "No audited retrospective" in resp.json()["detail"]
 
     async def test_retrospective_unknown_event_returns_404_or_data(self):
         from backend.api.main import app

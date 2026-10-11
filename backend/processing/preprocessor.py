@@ -1,3 +1,5 @@
+from backend.ingestion.quality import DataUnavailableError, require_observed
+
 """
 SlopeSense — Data Preprocessing Pipeline
 
@@ -124,6 +126,11 @@ class DataPreprocessor:
         if run_time is None:
             run_time = datetime.now(timezone.utc)
 
+        if not Path("data/static/susceptibility_0.1deg.nc").exists():
+            raise DataUnavailableError(
+                "Verified susceptibility raster missing; geographic rectangles are not an official map"
+            )
+
         logger.info(f"Building feature grid for run: {run_time.isoformat()}")
 
         from ..ingestion import (
@@ -144,22 +151,16 @@ class DataPreprocessor:
                 "synthetic", False
             )
         except Exception as e:
-            logger.warning(
-                f"GPM failed ({e}). Falling back to Open-Meteo for historical rainfall..."
-            )
-            from ..ingestion.open_meteo import OpenMeteoIngestion
-
-            om = OpenMeteoIngestion()
-            # Open-Meteo provides 24h forecast, we will use it as a proxy or just synthetic if missing
-            rainfall_3d = om.get_24h_forecast_mm(bbox=self.bbox) * 2.5  # proxy
-            rainfall_1d = rainfall_3d / 3.0
-            rain_synthetic = True
+            raise DataUnavailableError("Observed rainfall unavailable") from e
 
         # ── 2. Forecast (GFS) ─────────────────────────────────────────────────
         logger.info("Fetching GFS forecast...")
         gfs = GFSIngestion()
         forecast_24h = gfs.get_24h_forecast_mm(bbox=self.bbox)
-        forecast_48h = gfs.get_24h_forecast_mm(bbox=self.bbox)  # in prod: use f24–f48
+        forecast_48h = None
+        raise DataUnavailableError(
+            "Verified distinct 24-48h forecast aggregation is not implemented"
+        )
 
         # ── 3. Soil Moisture (SMAP / Fallback to Synthetic) ───────────────────
         logger.info("Fetching SMAP soil moisture...")
@@ -169,11 +170,9 @@ class DataPreprocessor:
             sm_pct = smap.compute_percentile(sm_3d, month=run_time.month)
             smap_synthetic = sm_3d.attrs.get("synthetic", False)
         except Exception as e:
-            logger.warning(f"SMAP failed ({e}). Falling back to synthetic baseline...")
-            # Fall back to synthetic physics baseline logic
-            sm_3d = smap._generate_synthetic(run_time, self.bbox)
-            sm_pct = smap.compute_percentile(sm_3d, month=run_time.month)
-            smap_synthetic = True
+            raise DataUnavailableError(
+                "Observed soil moisture or climatology unavailable"
+            ) from e
 
         # ── 4. DEM (static) ───────────────────────────────────────────────────
         logger.info("Loading DEM slope grid...")
@@ -224,8 +223,7 @@ class DataPreprocessor:
         Handles different source resolutions gracefully.
         """
         try:
-            if da is None:
-                return np.zeros((len(self.target_lats), len(self.target_lons)))
+            require_observed(da, "regrid input")
 
             # Get source coordinates
             src_lats = da.lat.values if "lat" in da.coords else da.y.values
@@ -236,7 +234,8 @@ class DataPreprocessor:
                 src_data = src_data[0]  # take first band if multi-band
 
             # Handle fill values
-            src_data = np.where(np.isfinite(src_data), src_data, 0.0)
+            if not np.isfinite(src_data).all():
+                raise DataUnavailableError("Regrid input has missing cells")
 
             # Sort coordinates (required for interpolator)
             lat_idx = np.argsort(src_lats)
@@ -265,10 +264,7 @@ class DataPreprocessor:
             return result.astype(np.float32)
 
         except Exception as e:
-            logger.warning(f"Regrid failed ({e}), returning zeros")
-            return np.zeros(
-                (len(self.target_lats), len(self.target_lons)), dtype=np.float32
-            )
+            raise DataUnavailableError("Cannot regrid observed data") from e
 
     def _load_susceptibility_map(self) -> np.ndarray:
         """
@@ -289,8 +285,7 @@ class DataPreprocessor:
             ds = xr.open_dataset(susceptibility_path)
             return self._regrid(ds["susceptibility_class"])
 
-        logger.info("Susceptibility: generating from known high-risk zones")
-        return self._generate_susceptibility()
+        raise DataUnavailableError("Verified susceptibility raster is unavailable")
 
     def _generate_susceptibility(self) -> np.ndarray:
         """

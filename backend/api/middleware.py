@@ -8,7 +8,6 @@ from collections import defaultdict, deque
 from typing import Deque, Dict, Iterable, Optional
 
 from fastapi import Request
-from starlette import status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
@@ -97,11 +96,6 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
         configured_keys = set(settings.api_key_list)
 
         if not api_key:
-            if settings.is_production and not configured_keys:
-                return _json_response(
-                    status.HTTP_503_SERVICE_UNAVAILABLE,
-                    "API key authentication is not configured",
-                )
             return _json_response(401, "Missing or invalid API key")
 
         # 1. Check fallback/hardcoded keys first
@@ -111,6 +105,7 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
         # 2. Check Database keys
         from backend.api.database import AsyncSessionLocal
         from backend.models import ApiKey
+        from backend.api.apikeys import key_digest
         from sqlalchemy import select
 
         is_valid = False
@@ -118,7 +113,8 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
             async with AsyncSessionLocal() as session:
                 result = await session.execute(
                     select(ApiKey).where(
-                        ApiKey.key == api_key, ApiKey.is_active == True  # noqa: E712
+                        ApiKey.key.in_([key_digest(api_key), api_key]),
+                        ApiKey.is_active.is_(True),
                     )
                 )
                 db_key = result.scalars().first()
@@ -127,7 +123,8 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
                     # Attach tier to request state for rate limiting
                     request.state.tier = db_key.tier
         except Exception as e:
-            logger.error(f"Error checking API key in DB: {e}")
+            logger.error("API key registry unavailable: %s", type(e).__name__)
+            return _json_response(503, "API key registry unavailable")
 
         if not is_valid:
             return _json_response(401, "Missing or invalid API key")
