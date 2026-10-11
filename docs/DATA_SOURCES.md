@@ -246,8 +246,8 @@ Open-Meteo weather-model rainfall/forecast/shallow soil moisture, at six configu
 representative points. These are not NASA satellite observations, ground truth,
 soil percentiles, district-wide coverage, or FPI inputs. Retrieval and time-window
 checks establish provider provenance and completeness, not real-world accuracy.
-Snapshots refresh every six hours through GitHub Actions (best-effort scheduling),
-are marked stale after 12 hours, and retained for 30 days. Automatic WhatsApp/email
+Snapshots refresh hourly through GitHub Actions (best-effort scheduling),
+are marked stale after 3 hours, and retained for 30 days. Automatic WhatsApp/email
 warning delivery is disabled.
 
 Verified source references:

@@ -41,7 +41,7 @@ async def latest_source_observations(db=Depends(get_db)):
             "source": row.source,
             "source_url": row.source_url,
             "fetched_at": fetched.isoformat(),
-            "stale": (now - fetched).total_seconds() > 12 * 3600,
+            "stale": (now - fetched).total_seconds() > 3 * 3600,
             **row.payload["summary"],
         }
     return {
