@@ -24,7 +24,7 @@ os.environ.setdefault("ENVIRONMENT", "development")
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
-from backend.api.database import engine, AsyncSessionLocal
+from backend.api.database import AsyncSessionLocal
 from backend.alert.alert_engine import AlertEngine
 from backend.model.fpi_engine import FPIEngine
 

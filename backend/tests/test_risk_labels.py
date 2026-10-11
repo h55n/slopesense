@@ -8,7 +8,6 @@ Tests every function added to fpi_engine.py:
 Covers: boundary values, edge cases, monotonicity, completeness.
 """
 
-import pytest
 from backend.model.fpi_engine import (
     get_risk_level,
     get_risk_label,
@@ -108,7 +107,7 @@ class TestRiskColorSemantics:
         # Should be a red color (hex starts with high red component)
         r = int(color[1:3], 16)
         g = int(color[3:5], 16)
-        b = int(color[5:7], 16)
+        b = int(color[5:7], 16)  # noqa: F841
         assert r > 180, f"CRITICAL should be red-dominant, got {color}"
         assert r > g, "Red channel should dominate for CRITICAL"
 

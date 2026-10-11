@@ -18,7 +18,7 @@ from backend.processing.preprocessor import DataPreprocessor
 from backend.model.fpi_engine import FPIEngine
 from backend.alert.alert_engine import AlertEngine
 from backend.alert.dispatcher import AlertDispatcher
-from backend.models import Alert, FPIHistory, PipelineRunLog
+from backend.models import Alert, PipelineRunLog
 from sqlalchemy.future import select
 
 logging.basicConfig(level=logging.INFO)
@@ -130,7 +130,7 @@ async def run():
 
             # 4. Dispatch
             dispatcher = AlertDispatcher(db_session=db)
-            dispatch_result = await dispatcher.dispatch_alerts(new_alerts)
+            await dispatcher.dispatch_alerts(new_alerts)
 
             logger.info(f"Pipeline complete! active_alerts={len(new_alerts)}")
 

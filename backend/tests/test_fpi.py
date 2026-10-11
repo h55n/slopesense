@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import pytest
 import numpy as np
 from datetime import datetime, timezone
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 # ── FPI Engine Tests ──────────────────────────────────────────────────────────
 
@@ -507,8 +507,8 @@ class TestRetrospective:
         kedarnath = next(e for e in HISTORICAL_EVENTS if e["id"] == "kedarnath_2013")
 
         fpi_48h = runner._synthetic_fpi_estimate(kedarnath, 48)
-        fpi_24h = runner._synthetic_fpi_estimate(kedarnath, 24)
-        fpi_12h = runner._synthetic_fpi_estimate(kedarnath, 12)
+        runner._synthetic_fpi_estimate(kedarnath, 24)
+        runner._synthetic_fpi_estimate(kedarnath, 12)
         fpi_0h = runner._synthetic_fpi_estimate(kedarnath, 0)
 
         # Not strictly monotonic but overall trend should be increasing

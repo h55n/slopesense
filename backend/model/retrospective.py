@@ -20,7 +20,7 @@ import logging
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -376,4 +376,4 @@ class RetrospectiveRunner:
 
 
 # Needed for synthetic FPI
-import numpy as np
+import numpy as np  # noqa: E402

@@ -44,7 +44,7 @@ from fastapi import (
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import Response
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -54,12 +54,6 @@ from backend.api.middleware import (
     APIKeyMiddleware,
     RateLimitMiddleware,
     RequestLoggingMiddleware,
-)
-from backend.api.metrics import (
-    ACTIVE_ALERTS,
-    FPI_SCORES,
-    MESSAGES_SENT,
-    MODEL_RUNS,
 )
 from backend.api.reports import generate_district_report
 from backend.api.webhooks import router as webhooks_router
@@ -180,9 +174,6 @@ manager = ConnectionManager()
 
 # ── In-memory state (replace with DB in production) ───────────────────────────
 
-import json
-from pathlib import Path
-
 
 def _normalise_sample_alert(raw: Dict[str, Any]) -> Dict[str, Any]:
     """Make a bundled sample alert look exactly like a database alert, flagged as sample."""
@@ -202,6 +193,9 @@ def _normalise_sample_alert(raw: Dict[str, Any]) -> Dict[str, Any]:
     alert["risk_description"] = get_risk_description(fpi)
     alert["risk_action"] = get_risk_action(fpi)
     alert["risk_color"] = get_risk_color(fpi)
+    for key in ("fpi_score", "fpi_ci_lower", "fpi_ci_upper", "fpi_24h"):
+        if isinstance(alert.get(key), (int, float)):
+            alert[key] = min(1.0, max(0.0, alert[key]))
     alert["is_sample"] = True
     return alert
 
@@ -508,7 +502,7 @@ async def get_active_alerts(
         }
 
     query = """
-        SELECT * FROM alerts 
+        SELECT * FROM alerts
         WHERE is_active = 1 AND is_suppressed = 0 AND fpi_score >= :min_fpi
     """
     params = {"min_fpi": min_fpi}
@@ -1019,7 +1013,7 @@ async def websocket_live(websocket: WebSocket):
             }
         )
         while True:
-            data = await websocket.receive_text()
+            await websocket.receive_text()
             # Echo back with timestamp (keepalive)
             await websocket.send_json(
                 {"type": "pong", "ts": datetime.now(timezone.utc).isoformat()}

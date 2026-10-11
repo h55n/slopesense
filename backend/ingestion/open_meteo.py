@@ -48,7 +48,6 @@ class OpenMeteoIngestion:
         Returns:
             xr.DataArray with dims [lat, lon], values in mm
         """
-        import requests
 
         if end_time is None:
             end_time = datetime.now(timezone.utc)
@@ -116,11 +115,9 @@ class OpenMeteoIngestion:
         Fetch QPF rainfall forecast for next `horizon_hours` hours.
         Returns DataArray on 0.1° grid.
         """
-        import requests
 
         now = datetime.now(timezone.utc)
-        today_str = now.strftime("%Y-%m-%d")
-        next_week = (now + timedelta(days=7)).strftime("%Y-%m-%d")
+        now.strftime("%Y-%m-%d")
 
         lat_step = max(0.5, (bbox["max_lat"] - bbox["min_lat"]) / 4)
         lon_step = max(0.5, (bbox["max_lon"] - bbox["min_lon"]) / 4)

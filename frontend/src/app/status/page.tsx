@@ -37,11 +37,11 @@ const SECURITY_ITEMS = [
 ];
 
 const PIPELINE_MINI = [
-  { icon: <Radio className="h-4 w-4" />, label: 'Ingest',   color: 'rgba(255,255,255,0.7)' },
-  { icon: <Cpu className="h-4 w-4" />, label: 'FPI',      color: 'rgba(255,255,255,0.7)' },
-  { icon: <Target className="h-4 w-4" />, label: 'Classify', color: 'rgba(255,255,255,0.7)' },
-  { icon: <BellRing className="h-4 w-4" />, label: 'Alert',    color: 'rgba(255,255,255,0.7)' },
-  { icon: <MessageCircle className="h-4 w-4" />, label: 'WhatsApp', color: 'rgba(255,255,255,0.7)' },
+  { icon: <Radio className="h-4 w-4" />, label: 'Ingest',   color: '#4a574d' },
+  { icon: <Cpu className="h-4 w-4" />, label: 'FPI',      color: '#4a574d' },
+  { icon: <Target className="h-4 w-4" />, label: 'Classify', color: '#4a574d' },
+  { icon: <BellRing className="h-4 w-4" />, label: 'Alert',    color: '#4a574d' },
+  { icon: <MessageCircle className="h-4 w-4" />, label: 'WhatsApp', color: '#4a574d' },
 ];
 
 // ── Page ─────────────────────────────────────────────────────────────────────
@@ -145,8 +145,8 @@ export default function StatusPage() {
                   <div
                     className="h-9 w-9 rounded-xl flex items-center justify-center text-lg border transition-all"
                     style={{
-                      borderColor: step.color.replace('0.8','0.25').replace('0.9','0.25'),
-                      background:  step.color.replace('0.8','0.06').replace('0.9','0.06'),
+                      borderColor: 'rgba(29,42,33,0.18)',
+                      background:  '#fbf9f3',
                     }}
                   >
                     {step.icon}
@@ -158,7 +158,7 @@ export default function StatusPage() {
                 {i < PIPELINE_MINI.length - 1 && (
                   <div className="shrink-0 flex items-center pb-4">
                     <div className="w-6 h-px" style={{
-                      background: `linear-gradient(90deg, ${step.color}, ${PIPELINE_MINI[i+1].color.replace('0.8','0.3').replace('0.9','0.3')})`
+                      background: `linear-gradient(90deg, ${step.color}, ${'#9db39f'})`
                     }} />
                     <div className="w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[4px]"
                       style={{ borderLeftColor: PIPELINE_MINI[i+1].color }} />

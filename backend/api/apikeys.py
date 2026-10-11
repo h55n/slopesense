@@ -40,7 +40,9 @@ async def generate_api_key(req: ApiKeyRequest, db: AsyncSession = Depends(get_db
     """
     # Check if email already has an active key
     existing = await db.execute(
-        select(ApiKey).where(ApiKey.email == req.email, ApiKey.is_active == True)
+        select(ApiKey).where(
+            ApiKey.email == req.email, ApiKey.is_active == True  # noqa: E712
+        )  # noqa: E712
     )
     if existing.scalars().first():
         raise HTTPException(

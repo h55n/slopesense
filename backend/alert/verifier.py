@@ -63,15 +63,15 @@ class LLMVerifier:
         prompt = f"""
         You are an expert geotechnical auditor verifying a landslide alert system.
         The mathematical model has proposed an alert with the following telemetry:
-        
+
         - Tier: {tier}
         - FPI Score: {fpi*100:.1f}%
         - 3-day Rainfall: {rainfall} mm
         - Soil Moisture Percentile: {soil}th percentile
-        
+
         Rule: A landslide alert generally requires high rainfall (e.g., > 100mm) OR high soil moisture saturation (> 80th percentile).
         If the FPI is high but BOTH rainfall and soil moisture are low, it might be a false positive caused by static geological factors.
-        
+
         Analyze this data and determine if the alert should be approved or suppressed.
         Return ONLY valid JSON in this exact format:
         {{"approved": true/false, "reason": "brief explanation"}}

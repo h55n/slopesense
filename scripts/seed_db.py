@@ -60,16 +60,14 @@ async def create_tables(engine):
         DateTime,
         Text,
         JSON,
-        ForeignKey,
         MetaData,
         Table,
-        Enum as SAEnum,
     )
 
     metadata = MetaData()
 
     # Districts / Blocks reference
-    districts_table = Table(
+    _districts_table = Table(
         "districts",
         metadata,
         Column("id", Integer, primary_key=True, autoincrement=True),
@@ -87,7 +85,7 @@ async def create_tables(engine):
     )
 
     # Current alerts (simplified, no UUID for SQLite compatibility)
-    alerts_table = Table(
+    _alerts_table = Table(
         "alerts",
         metadata,
         Column("id", String(36), primary_key=True),
@@ -119,7 +117,7 @@ async def create_tables(engine):
     )
 
     # FPI history
-    fpi_history_table = Table(
+    _fpi_history_table = Table(
         "fpi_history",
         metadata,
         Column("id", String(36), primary_key=True),
@@ -143,7 +141,7 @@ async def create_tables(engine):
     )
 
     # Landslide events
-    events_table = Table(
+    _events_table = Table(
         "landslide_events",
         metadata,
         Column("id", String(36), primary_key=True),
@@ -169,7 +167,7 @@ async def create_tables(engine):
     )
 
     # Alert contacts
-    contacts_table = Table(
+    _contacts_table = Table(
         "alert_contacts",
         metadata,
         Column("id", String(36), primary_key=True),
@@ -188,7 +186,7 @@ async def create_tables(engine):
     )
 
     # Alert deliveries
-    deliveries_table = Table(
+    _deliveries_table = Table(
         "alert_deliveries",
         metadata,
         Column("id", String(36), primary_key=True),

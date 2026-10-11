@@ -1,0 +1,10 @@
+[flake8]
+max-line-length = 100
+# Black owns line wrapping; E203/W503 conflict with its output.
+extend-ignore = E203, W503, E501
+per-file-ignores =
+    # scripts and tests adjust sys.path before importing project modules
+    scripts/*: E402
+    scripts/seed_db.py: E402, F841
+    backend/tests/*: E402
+    backend/worker.py: E402

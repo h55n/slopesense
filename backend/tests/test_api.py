@@ -5,7 +5,6 @@ Tests the REST API endpoints using httpx async client.
 """
 
 import pytest
-import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from datetime import datetime, timezone
 

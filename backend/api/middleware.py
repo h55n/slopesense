@@ -7,7 +7,7 @@ import uuid
 from collections import defaultdict, deque
 from typing import Deque, Dict, Iterable, Optional
 
-from fastapi import HTTPException, Request
+from fastapi import Request
 from starlette import status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
@@ -82,7 +82,11 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         path = request.url.path
-        requires_key = any(
+        # Report PDFs are built from the same data as the public alert feed.
+        is_public_report = path.startswith("/v1/districts/") and path.endswith(
+            "/report.pdf"
+        )
+        requires_key = not is_public_report and any(
             path.startswith(prefix) for prefix in self.protected_prefixes
         )
 
@@ -114,7 +118,7 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
             async with AsyncSessionLocal() as session:
                 result = await session.execute(
                     select(ApiKey).where(
-                        ApiKey.key == api_key, ApiKey.is_active == True
+                        ApiKey.key == api_key, ApiKey.is_active == True  # noqa: E712
                     )
                 )
                 db_key = result.scalars().first()

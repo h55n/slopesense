@@ -14,7 +14,6 @@ Logic:
 
 import logging
 import uuid
-from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 from backend.alert.verifier import LLMVerifier
 
@@ -198,11 +197,10 @@ class AlertEngine:
 
         # Build signal description
         signals = alert.get("dominant_signals", [])
-        signal_text = ""
         if signals:
             s = signals[0]
             sig_name = s.get("signal", "").replace("_", " ").title()
-            signal_text = f"{sig_name}"
+            f"{sig_name}"
 
         rain_mm = alert.get("rainfall_3d_mm", 0)
         sm_pct = alert.get("soil_moisture_percentile", 0)

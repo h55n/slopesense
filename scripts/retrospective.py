@@ -11,9 +11,7 @@ Usage:
 """
 
 import argparse
-import json
 import logging
-import os
 import sys
 from pathlib import Path
 
@@ -70,7 +68,6 @@ def main():
     if args.event:
         logger.info(f"Running retrospective for: {args.event}")
         result = runner.run_event(args.event, use_synthetic=use_synthetic)
-        from dataclasses import asdict
 
         print("\n" + "=" * 60)
         print(f"EVENT: {result.event_name}")

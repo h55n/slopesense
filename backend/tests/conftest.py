@@ -6,11 +6,9 @@ import os
 import sys
 import pytest
 import pytest_asyncio
-import sqlalchemy
 from sqlalchemy import event
-from sqlalchemy import event
+from sqlalchemy import event  # noqa: F811
 
-import numpy as np
 from datetime import datetime, timezone
 from pathlib import Path
 

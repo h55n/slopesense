@@ -218,7 +218,7 @@ export default function AlertDetailPage() {
                   <XAxis
                     type="number" domain={[0, 100]}
                     tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 600 }}
-                    unit="%" stroke="rgba(255,255,255,0.06)"
+                    unit="%" stroke="rgba(29,42,33,0.12)"
                   />
                   <YAxis
                     type="category" dataKey="name"
@@ -227,20 +227,20 @@ export default function AlertDetailPage() {
                   />
                   <Tooltip
                     contentStyle={{
-                      background: 'rgba(17,17,20,0.92)',
+                      background: '#fbf9f3',
                       backdropFilter: 'blur(16px)',
-                      border: '1px solid rgba(255,255,255,0.08)',
+                      border: '1px solid rgba(29,42,33,0.15)',
                       borderRadius: 12,
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                      boxShadow: '0 8px 24px rgba(29,42,33,0.15)',
                     }}
-                    itemStyle={{ color: '#fff', fontSize: 13, fontWeight: 700 }}
+                    itemStyle={{ color: '#1d2a21', fontSize: 13, fontWeight: 700 }}
                     formatter={(v) => [`${v}%`, 'Signal strength']}
                   />
                   <Bar dataKey="value" radius={[0, 6, 6, 0]} animationDuration={1400}>
                     {signalData.map((_, i) => (
                       <Cell
                         key={i}
-                        fill={i === 0 ? '#f4c95d' : `rgba(244,201,93,${Math.max(0.25, 0.7 - i * 0.2)})`}
+                        fill={i === 0 ? '#2f4a37' : `rgba(47,74,55,${Math.max(0.3, 0.8 - i * 0.2)})`}
                       />
                     ))}
                   </Bar>
@@ -457,7 +457,7 @@ function ArcGauge({ pct, color }: { pct: number; color: string }) {
   return (
     <svg width="108" height="108" viewBox="0 0 108 108" className="shrink-0">
       {/* Track */}
-      <path d={trackPath} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="7" strokeLinecap="round" />
+      <path d={trackPath} fill="none" stroke="rgba(29,42,33,0.09)" strokeWidth="7" strokeLinecap="round" />
       {/* Fill */}
       {fillPath && (
         <motion.path
@@ -481,7 +481,7 @@ function ArcGauge({ pct, color }: { pct: number; color: string }) {
             key={threshold}
             x1={inner.x} y1={inner.y}
             x2={outer.x} y2={outer.y}
-            stroke="rgba(255,255,255,0.2)"
+            stroke="rgba(29,42,33,0.3)"
             strokeWidth="1.5"
             strokeLinecap="round"
           />

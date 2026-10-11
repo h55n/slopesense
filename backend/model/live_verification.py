@@ -105,7 +105,7 @@ class LiveVerificationEngine:
                     "date": dt,
                     "lat": round(lat, 4),
                     "lon": round(lon, 4),
-                    "title": f"Reported Ground Failure (Synthetic Validation)",
+                    "title": "Reported Ground Failure (Synthetic Validation)",
                 }
             )
 

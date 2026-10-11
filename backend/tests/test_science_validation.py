@@ -285,7 +285,7 @@ class TestCAPXMLGeneration:
         # CAP severity must be one of the standard values
         valid_severities = {"Extreme", "Severe", "Moderate", "Minor", "Unknown"}
         has_severity = any(sev in xml_str for sev in valid_severities)
-        assert has_severity, f"CAP XML missing standard severity element"
+        assert has_severity, "CAP XML missing standard severity element"
 
     def test_cap_xml_emergency_produces_extreme_severity(
         self, alert_engine, sample_alert
@@ -419,7 +419,7 @@ class TestFeatureGridProcessing:
 
     def test_full_grid_computation_returns_cell_list(self, mock_feature_grid):
         """compute_grid() must return a list of CellFPI objects."""
-        from backend.model.fpi_engine import FPIEngine, CellFPI
+        from backend.model.fpi_engine import FPIEngine
 
         engine = FPIEngine()
         cells = engine.compute_grid(mock_feature_grid)

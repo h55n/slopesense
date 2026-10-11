@@ -1,6 +1,5 @@
 """Coverage for cache helpers and worker orchestration."""
 
-import asyncio
 import sys
 import types
 

@@ -1,4 +1,4 @@
-from prometheus_client import Counter, Histogram, Gauge, generate_latest
+from prometheus_client import Counter, Histogram, Gauge
 
 MODEL_RUNS = Counter("slopesense_model_runs_total", "Total model pipeline runs")
 MODEL_RUN_DURATION = Histogram(
