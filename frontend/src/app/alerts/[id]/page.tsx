@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api, Alert, apiUrl, formatFPI, tierBadgeClass, fpiColor, tierColor } from '@/lib/api';
 
@@ -40,7 +40,8 @@ const TIER_GRADIENT: Record<string, string> = {
 
 export default function AlertDetailPage() {
   const params  = useParams();
-  const alertId = params?.id as string;
+  const search  = useSearchParams();
+  const alertId = ((params?.id as string) || search?.get('id') || '') as string;
 
   const [alert,        setAlert]        = useState<Alert | null>(null);
   const [loading,      setLoading]      = useState(true);

@@ -240,7 +240,7 @@ export default function DistrictsPage() {
                       <td className="px-5 py-5">
                         <div className="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
                           <Link
-                            href={`/alerts/${alert.id}`}
+                            href={`/alert?id=${encodeURIComponent(alert.id)}`}
                             className="rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-tiny font-bold uppercase tracking-[0.2em] text-white hover:border-white/40 hover:bg-white/10 transition-all shadow-sm"
                           >
                             Details

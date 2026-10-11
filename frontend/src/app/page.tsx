@@ -417,7 +417,7 @@ function Detail({ alert }: { alert: Alert }) {
         )}
       </div>
 
-      <Link href={`/alerts/${alert.id}`} className="inline-flex items-center gap-1.5 text-[13px] font-medium text-forest hover:text-ink">
+      <Link href={`/alert?id=${encodeURIComponent(alert.id)}`} className="inline-flex items-center gap-1.5 text-[13px] font-medium text-forest hover:text-ink">
         Full alert detail <ArrowUpRight className="h-3.5 w-3.5" />
       </Link>
     </motion.div>
