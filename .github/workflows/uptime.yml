@@ -1,0 +1,28 @@
+name: Production uptime and safety
+on:
+  schedule:
+    - cron: "43 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: production-smoke
+  cancel-in-progress: false
+jobs:
+  public-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Check pages, provider freshness and disabled-warning safety
+        run: python -m scripts.live_smoke_check
+      - name: Preserve check results even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-smoke-results
+          path: smoke-results.json
+          retention-days: 14
