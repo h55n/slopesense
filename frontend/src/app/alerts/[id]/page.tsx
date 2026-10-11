@@ -23,7 +23,7 @@ const WA_TEMPLATES: Record<string, (a: Alert) => string> = {
   mr: (a) => `⚠️ भूस्खलन इशारा — ${a.district_name}\n\nFPI: ${formatFPI(a.fpi_score)}\n\nत्वरित कारवाई करा.`,
   bn: (a) => `⚠️ ভূমিধস সতর্কতা — ${a.district_name}\n\nFPI: ${formatFPI(a.fpi_score)}\n\nতাৎক্ষণিক পদক্ষেপ নিন।`,
   ta: (a) => `⚠️ நிலச்சரிவு எச்சரிக்கை — ${a.district_name}\n\nFPI: ${formatFPI(a.fpi_score)}\n\nஉடனடியாக நடவடிக்கை எடுங்கள்.`,
-  en: (a) => `⚠️ LANDSLIDE ${a.tier} — ${a.district_name}, ${a.state_name}\n\nBlock: ${a.block_name}\nFPI Score: ${formatFPI(a.fpi_score)} (95% CI: ${formatFPI(a.fpi_ci_lower)}–${formatFPI(a.fpi_ci_upper)})\n24h Forecast: ${formatFPI(a.fpi_24h || 0)}\n3-day Rainfall: ${a.rainfall_3d_mm} mm | Soil Moisture: P${a.soil_moisture_percentile}\n\nTemplate preview only. Not sent. Follow official local guidance.`,
+  en: (a) => `⚠️ LANDSLIDE ${a.tier} — ${a.district_name}, ${a.state_name}\n\nBlock: ${a.block_name}\nFPI Score: ${formatFPI(a.fpi_score)} (Score bounds: ${formatFPI(a.fpi_ci_lower)}–${formatFPI(a.fpi_ci_upper)})\n24h Forecast: ${formatFPI(a.fpi_24h || 0)}\n3-day Rainfall: ${a.rainfall_3d_mm} mm | Soil Moisture: P${a.soil_moisture_percentile}\n\nTemplate preview only. Not sent. Follow official local guidance.`,
 };
 
 // ── Tier header gradients ─────────────────────────────────────────────────────
@@ -165,7 +165,7 @@ export default function AlertDetailPage() {
                 </div>
                 <div className="mt-2 text-small font-medium text-white/40">Current FPI</div>
                 <div className="mt-1 font-mono text-tiny text-white/30 tracking-wider">
-                  95% CI: {ciLo}% – {ciHi}%
+                  Score bounds: {ciLo}% – {ciHi}%
                 </div>
                 {alert.is_suppressed && (
                   <div className="mt-2 text-tiny font-bold text-amber-400 bg-amber-500/8 border border-amber-500/20 rounded-full px-3 py-1">

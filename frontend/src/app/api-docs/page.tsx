@@ -112,7 +112,7 @@ export default function ApiDocsPage() {
               <h2 className="mb-4 text-xl font-bold">Authentication</h2>
               <div className="rounded-xl border border-white/10 bg-white/3 p-6 space-y-4">
                 <p className="text-sm text-white/70">
-                  Public endpoints are rate-limited to <strong className="text-white">100 requests/hour</strong> per IP.
+                  Public endpoint limits depend on the deployment. Check response headers for the active limit.
                   API keys use the public tier. Research and paid tiers are not available. Send keys using an <code className="text-forest font-semibold">X-API-Key</code> header.
                 </p>
                 <div className="rounded-lg bg-[#1f3326] p-4 overflow-x-auto">
@@ -128,11 +128,11 @@ export default function ApiDocsPage() {
               <h2 className="mb-4 text-xl font-bold">Rate Limits</h2>
               <div className="rounded-xl border border-white/10 bg-white/3 p-6 space-y-4">
                 <p className="text-sm text-white/70">
-                  API rate limits depend on your tier. Headers <code className="text-forest font-semibold">X-RateLimit-Remaining</code> and <code className="text-forest font-semibold">X-RateLimit-Reset</code> are included in every response.
+                  Rate-limit response headers describe the active deployment. Headers <code className="text-forest font-semibold">X-RateLimit-Remaining</code> and <code className="text-forest font-semibold">X-RateLimit-Reset</code> are included in every response.
                 </p>
                 <div className="grid gap-3 sm:grid-cols-3 text-sm">
                   {[
-                    { tier: 'Public', limit: '100/hour', key: 'No key required' },
+                    { tier: 'Public', limit: 'Deployment-dependent', key: 'No key required' },
                     { tier: 'Research (planned)', limit: 'Not available', key: 'No active research tier' },
                     { tier: 'Paid (planned)', limit: 'Not available', key: 'No paid plan offered' },
                   ].map(t => (

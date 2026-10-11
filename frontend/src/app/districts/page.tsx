@@ -174,7 +174,7 @@ export default function DistrictsPage() {
                   <SortTh label="FPI Score" field="fpi_score" onSort={toggleSort}>
                     <SortIcon field="fpi_score" />
                   </SortTh>
-                  <th className="hidden md:table-cell px-5 py-3 text-left text-xs uppercase tracking-wider text-white/40">95% CI</th>
+                  <th className="hidden md:table-cell px-5 py-3 text-left text-xs uppercase tracking-wider text-white/40">Score bounds</th>
                   <th className="hidden md:table-cell px-5 py-3 text-left text-xs uppercase tracking-wider text-white/40">Rainfall 3d</th>
                   <th className="hidden md:table-cell px-5 py-3 text-left text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Soil Moisture</th>
                   <th className="px-5 py-3 text-left text-xs uppercase tracking-wider text-white/40">Actions</th>

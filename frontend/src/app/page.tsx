@@ -30,7 +30,7 @@ const PIPELINE_STEPS = [
   },
   {
     icon: Cpu, label: 'FPI model', sublabel: 'Physics-based', art: '/art2/p2.webp',
-    detail: 'Weighted multi-signal fusion into a Failure Probability Index (0-100%), with Monte Carlo confidence bounds per cell.',
+    detail: 'Weighted multi-signal fusion into a Failure Probability Index (0-100%), with Monte Carlo heuristic score bounds per cell.',
   },
   {
     icon: Target, label: 'Tier classification', sublabel: 'Block-level', art: '/art2/p3.webp',
@@ -190,7 +190,7 @@ export default function DashboardPage() {
             <Metric label="Active blocks" value={`${stats.total}`} detail="High-risk zones monitored" />
             <Metric label="High risk" value={`${stats.warning}`} detail="Model score in the warning band" tone="#ea580c" />
             <Metric label="Critical" value={`${stats.emergency}`} detail="Model score in the highest band" tone="#dc2626" />
-            <Metric label="Retrospective" value={summary ? `${summary.flagged_at_t24}/${summary.total_events}` : '-'} detail="Illustrative replay, not validated lead time" tone="#2f7a4d" />
+            <Metric label="Retrospective" value={summary ? `${summary.flagged_at_t24}/${summary.total_events}` : '-'} detail="No audited validation available" tone="#2f7a4d" />
           </div>
         </div>
       </section>
@@ -403,7 +403,7 @@ function Detail({ alert }: { alert: Alert }) {
       <div className="grid grid-cols-2 gap-2.5">
         <Stat label="FPI score" value={formatFPI(alert.fpi_score)} strong />
         <Stat label="24 h forecast" value={formatFPI(alert.fpi_24h)} />
-        <Stat label="95% CI" value={`${Math.round(alert.fpi_ci_lower * 100)}-${Math.round(alert.fpi_ci_upper * 100)}%`} />
+        <Stat label="Score bounds" value={`${Math.round(alert.fpi_ci_lower * 100)}-${Math.round(alert.fpi_ci_upper * 100)}%`} />
         <Stat label="Breach fraction" value={`${Math.round(alert.breach_fraction * 100)}%`} />
       </div>
 
@@ -447,6 +447,7 @@ function Bar({ label, value, pct, color }: { label: string; value: string; pct: 
 }
 
 function Audit({ summary }: { summary: ReturnType<typeof useRetrospective>['summary'] }) {
+  if (summary && (summary.total_events === 0 || (summary as any).status === 'not_validated')) return <p className="col-span-full py-10 text-center text-[14px] text-ink/70">No audited real-data retrospective is available. Predictive accuracy and warning lead time are not validated.</p>;
   if (!summary) return <p className="col-span-full py-10 text-center text-[14px] text-ink/50">Retrospective results unavailable. No substitute validation is shown.</p>;
   return (
     <>
