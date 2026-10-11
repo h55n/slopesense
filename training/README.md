@@ -56,3 +56,30 @@ landslide failure probability.
 
 Legacy backend/model/train.py generates synthetic negative features and uses random
 train/test splits. It is not a valid training/calibration route for this workstream.
+
+
+## Historical-weather pilot findings
+
+The candidate GitHub mirror at
+https://github.com/erikanagamine/autonomousdatabase contains 11,033 records,
+1,265 India rows; after rain-trigger/<=5km accuracy/date filters and one exact
+location/date duplicate removal, 544 candidates remain (2007-2016). Mirror file
+commit 6487003c8dbb28baaef1c986287bac7429621cf1; SHA256
+2c4898899dd4f373c4320e121c5b655ebb5394d431fa42e57ec4828d07d48b04.
+This lineage remains UNVERIFIED against official NASA bytes. No exact event-time
+values exist in these candidates. Country/date/source links are dataset claims,
+not independently confirmed event observations.
+
+Pilot ERA5-Land precipitation_sum returned nulls while soil was present; rejected
+without filling. ERA5 explicitly selected instead (0.25 degree, approximately28km).
+It returns real provider reanalysis precipitation+soil. Script caches raw responses
+with URLs/timestamps and rejects invalid/missing coverage. Features end two calendar
+days before the candidate event date, which reduces day/time uncertainty but does
+not prove exact lead time or real-time availability. Calendar event timezone is
+not reliably documented. These are hindsight reanalysis associations only.
+
+Background dates are fixed-seed, within +/-90 days of an event and same calendar
+year, with all India catalog reports used to exclude nearby +/-30day event windows.
+This is a matched case-control design, not population-base-rate calibration. Dates
+without reports may contain unreported landslides. Scores cannot be marketed as
+real-world failure probabilities. No zero-valued or random synthetic feature vectors.
