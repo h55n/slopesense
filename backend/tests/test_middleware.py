@@ -10,7 +10,9 @@ from httpx import AsyncClient, ASGITransport
 async def test_security_headers_present():
     from backend.api.main import app
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
         resp = await client.get("/")
 
     assert resp.headers["x-content-type-options"] == "nosniff"
@@ -22,7 +24,9 @@ async def test_request_logging_contains_request_id(caplog):
     from backend.api.main import app
 
     caplog.set_level(logging.INFO, logger="slopesense.api")
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
         await client.get("/", headers={"x-request-id": "test-request-id"})
 
     assert "test-request-id" in caplog.text
@@ -35,7 +39,9 @@ async def test_api_key_rejects_when_configured(monkeypatch):
     from backend.config import settings
 
     monkeypatch.setattr(settings, "api_keys", "valid-key")
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
         resp = await client.post(
             "/v1/contacts/register",
             json={

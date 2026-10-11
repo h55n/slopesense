@@ -146,6 +146,7 @@ HISTORICAL_EVENTS = [
 @dataclass
 class RetroResult:
     """Result of retrospective validation for one event."""
+
     event_id: str
     event_name: str
     event_date: str
@@ -240,10 +241,14 @@ class RetrospectiveRunner:
                 rainfall_values[label] = round(features["rainfall_3d_mm"], 1)
                 sm_values[label] = round(features["soil_moisture_pct"], 1)
 
-                logger.info(f"  {label}: FPI={fpi:.3f}, rain={features['rainfall_3d_mm']:.1f}mm")
+                logger.info(
+                    f"  {label}: FPI={fpi:.3f}, rain={features['rainfall_3d_mm']:.1f}mm"
+                )
 
             except Exception as e:
-                logger.warning(f"Retrospective: {label} failed ({e}), using synthetic estimate")
+                logger.warning(
+                    f"Retrospective: {label} failed ({e}), using synthetic estimate"
+                )
                 fpi_scores[label] = self._synthetic_fpi_estimate(event, hours_before)
                 dominant_signals[label] = "rainfall_accumulation"
                 data_source = "synthetic"
@@ -337,12 +342,16 @@ class RetrospectiveRunner:
         """
         # Known approximate 3-day rainfall values for each event
         known_rainfall = {
-            "wayanad_2024":   {"t_minus_24h": 183, "t_minus_12h": 220, "t_minus_0h": 280},
-            "malin_2014":     {"t_minus_24h": 195, "t_minus_12h": 240, "t_minus_0h": 350},
-            "kedarnath_2013": {"t_minus_24h": 220, "t_minus_12h": 310, "t_minus_0h": 375},
-            "sikkim_2023":    {"t_minus_24h": 85,  "t_minus_12h": 100, "t_minus_0h": 120},
-            "chamoli_2021":   {"t_minus_24h": 60,  "t_minus_12h": 75,  "t_minus_0h": 90},
-            "joshimath_2023": {"t_minus_24h": 20,  "t_minus_12h": 25,  "t_minus_0h": 30},
+            "wayanad_2024": {"t_minus_24h": 183, "t_minus_12h": 220, "t_minus_0h": 280},
+            "malin_2014": {"t_minus_24h": 195, "t_minus_12h": 240, "t_minus_0h": 350},
+            "kedarnath_2013": {
+                "t_minus_24h": 220,
+                "t_minus_12h": 310,
+                "t_minus_0h": 375,
+            },
+            "sikkim_2023": {"t_minus_24h": 85, "t_minus_12h": 100, "t_minus_0h": 120},
+            "chamoli_2021": {"t_minus_24h": 60, "t_minus_12h": 75, "t_minus_0h": 90},
+            "joshimath_2023": {"t_minus_24h": 20, "t_minus_12h": 25, "t_minus_0h": 30},
         }
 
         event_id = event["id"]
@@ -357,11 +366,11 @@ class RetrospectiveRunner:
         susc_norm = (event.get("susceptibility_class", 4) - 1) / 4.0
 
         fpi = (
-            0.35 * rain_norm +
-            0.25 * sm_norm +
-            0.15 * slope_norm +
-            0.12 * susc_norm +
-            0.15 * rain_norm * sm_norm  # interaction
+            0.35 * rain_norm
+            + 0.25 * sm_norm
+            + 0.15 * slope_norm
+            + 0.12 * susc_norm
+            + 0.15 * rain_norm * sm_norm  # interaction
         )
         return round(float(min(fpi, 0.98)), 4)
 

@@ -61,8 +61,12 @@ class OpenMeteoIngestion:
         lat_step = max(0.5, (bbox["max_lat"] - bbox["min_lat"]) / 4)
         lon_step = max(0.5, (bbox["max_lon"] - bbox["min_lon"]) / 4)
 
-        sample_lats = np.arange(bbox["min_lat"], bbox["max_lat"] + lat_step * 0.1, lat_step)
-        sample_lons = np.arange(bbox["min_lon"], bbox["max_lon"] + lon_step * 0.1, lon_step)
+        sample_lats = np.arange(
+            bbox["min_lat"], bbox["max_lat"] + lat_step * 0.1, lat_step
+        )
+        sample_lons = np.arange(
+            bbox["min_lon"], bbox["max_lon"] + lon_step * 0.1, lon_step
+        )
 
         # Clip to at least 2 points per axis for interpolation
         if len(sample_lats) < 2:
@@ -88,7 +92,9 @@ class OpenMeteoIngestion:
 
         for i, tlat in enumerate(target_lats):
             for j, tlon in enumerate(target_lons):
-                grid[i, j] = self._bilinear_interp(tlat, tlon, sample_lats, sample_lons, point_data)
+                grid[i, j] = self._bilinear_interp(
+                    tlat, tlon, sample_lats, sample_lons, point_data
+                )
 
         da = xr.DataArray(
             grid,
@@ -118,8 +124,12 @@ class OpenMeteoIngestion:
 
         lat_step = max(0.5, (bbox["max_lat"] - bbox["min_lat"]) / 4)
         lon_step = max(0.5, (bbox["max_lon"] - bbox["min_lon"]) / 4)
-        sample_lats = np.arange(bbox["min_lat"], bbox["max_lat"] + lat_step * 0.1, lat_step)
-        sample_lons = np.arange(bbox["min_lon"], bbox["max_lon"] + lon_step * 0.1, lon_step)
+        sample_lats = np.arange(
+            bbox["min_lat"], bbox["max_lat"] + lat_step * 0.1, lat_step
+        )
+        sample_lons = np.arange(
+            bbox["min_lon"], bbox["max_lon"] + lon_step * 0.1, lon_step
+        )
 
         if len(sample_lats) < 2:
             sample_lats = np.array([bbox["min_lat"], bbox["max_lat"]])
@@ -133,7 +143,9 @@ class OpenMeteoIngestion:
                     fc = self._fetch_forecast_point(lat, lon, horizon_hours)
                     point_data[(lat, lon)] = fc
                 except Exception as e:
-                    logger.warning(f"Open-Meteo forecast: failed for ({lat:.2f},{lon:.2f}): {e}")
+                    logger.warning(
+                        f"Open-Meteo forecast: failed for ({lat:.2f},{lon:.2f}): {e}"
+                    )
                     point_data[(lat, lon)] = 0.0
 
         target_lats = np.arange(bbox["min_lat"], bbox["max_lat"] + 0.1, 0.1)
@@ -142,7 +154,9 @@ class OpenMeteoIngestion:
 
         for i, tlat in enumerate(target_lats):
             for j, tlon in enumerate(target_lons):
-                grid[i, j] = self._bilinear_interp(tlat, tlon, sample_lats, sample_lons, point_data)
+                grid[i, j] = self._bilinear_interp(
+                    tlat, tlon, sample_lats, sample_lons, point_data
+                )
 
         da = xr.DataArray(
             grid,
@@ -161,8 +175,12 @@ class OpenMeteoIngestion:
         """
         lat_step = max(0.5, (bbox["max_lat"] - bbox["min_lat"]) / 4)
         lon_step = max(0.5, (bbox["max_lon"] - bbox["min_lon"]) / 4)
-        sample_lats = np.arange(bbox["min_lat"], bbox["max_lat"] + lat_step * 0.1, lat_step)
-        sample_lons = np.arange(bbox["min_lon"], bbox["max_lon"] + lon_step * 0.1, lon_step)
+        sample_lats = np.arange(
+            bbox["min_lat"], bbox["max_lat"] + lat_step * 0.1, lat_step
+        )
+        sample_lons = np.arange(
+            bbox["min_lon"], bbox["max_lon"] + lon_step * 0.1, lon_step
+        )
 
         if len(sample_lats) < 2:
             sample_lats = np.array([bbox["min_lat"], bbox["max_lat"]])
@@ -176,7 +194,9 @@ class OpenMeteoIngestion:
                     sm = self._fetch_soil_moisture_point(lat, lon)
                     point_data[(lat, lon)] = sm
                 except Exception as e:
-                    logger.warning(f"Open-Meteo soil moisture: failed for ({lat:.2f},{lon:.2f}): {e}")
+                    logger.warning(
+                        f"Open-Meteo soil moisture: failed for ({lat:.2f},{lon:.2f}): {e}"
+                    )
                     point_data[(lat, lon)] = 0.3  # default ~30% volumetric
 
         target_lats = np.arange(bbox["min_lat"], bbox["max_lat"] + 0.1, 0.1)
@@ -185,7 +205,9 @@ class OpenMeteoIngestion:
 
         for i, tlat in enumerate(target_lats):
             for j, tlon in enumerate(target_lons):
-                grid[i, j] = self._bilinear_interp(tlat, tlon, sample_lats, sample_lons, point_data)
+                grid[i, j] = self._bilinear_interp(
+                    tlat, tlon, sample_lats, sample_lons, point_data
+                )
 
         da = xr.DataArray(
             grid,
@@ -202,6 +224,7 @@ class OpenMeteoIngestion:
     def _fetch_point(self, lat: float, lon: float, start: str, end: str) -> float:
         """Fetch accumulated rainfall for a single point from Open-Meteo."""
         import requests
+
         url = (
             f"{OPEN_METEO_BASE}/archive"
             f"?latitude={lat:.4f}&longitude={lon:.4f}"
@@ -217,9 +240,12 @@ class OpenMeteoIngestion:
         total = sum(v for v in precip if v is not None)
         return float(total)
 
-    def _fetch_forecast_point(self, lat: float, lon: float, horizon_hours: int) -> float:
+    def _fetch_forecast_point(
+        self, lat: float, lon: float, horizon_hours: int
+    ) -> float:
         """Fetch accumulated forecast rainfall for next N hours for a single point."""
         import requests
+
         url = (
             f"{OPEN_METEO_BASE}/forecast"
             f"?latitude={lat:.4f}&longitude={lon:.4f}"
@@ -239,8 +265,11 @@ class OpenMeteoIngestion:
     def _fetch_soil_moisture_point(self, lat: float, lon: float) -> float:
         """Fetch today's average soil moisture (top 10cm) for a single point."""
         import requests
+
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        yesterday = (datetime.now(timezone.utc) - timedelta(days=3)).strftime("%Y-%m-%d")
+        yesterday = (datetime.now(timezone.utc) - timedelta(days=3)).strftime(
+            "%Y-%m-%d"
+        )
         url = (
             f"{OPEN_METEO_BASE}/archive"
             f"?latitude={lat:.4f}&longitude={lon:.4f}"
@@ -257,7 +286,8 @@ class OpenMeteoIngestion:
 
     def _bilinear_interp(
         self,
-        tlat: float, tlon: float,
+        tlat: float,
+        tlon: float,
         sample_lats: np.ndarray,
         sample_lons: np.ndarray,
         point_data: Dict[Tuple[float, float], float],

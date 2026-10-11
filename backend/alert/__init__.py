@@ -1,4 +1,5 @@
 """SlopeSense alert package."""
+
 from .alert_engine import AlertEngine
 from .dispatcher import AlertDispatcher, WhatsAppDispatcher, EmailDispatcher
 

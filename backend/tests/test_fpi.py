@@ -7,15 +7,16 @@ Run: pytest backend/tests/ -v --cov=backend
 
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 import pytest
 import numpy as np
 from datetime import datetime, timezone
 from unittest.mock import patch, MagicMock
 
-
 # ── FPI Engine Tests ──────────────────────────────────────────────────────────
+
 
 class TestFPIEngine:
     """Tests for the physics-based FPI scoring engine."""
@@ -23,6 +24,7 @@ class TestFPIEngine:
     @pytest.fixture
     def engine(self):
         from backend.model.fpi_engine import FPIEngine
+
         return FPIEngine()
 
     def test_fpi_high_rainfall_high_moisture(self, engine):
@@ -66,20 +68,22 @@ class TestFPIEngine:
     def test_fpi_wayanad_conditions(self, engine):
         """Replicate Wayanad 2024 conditions — should be WARNING/EMERGENCY."""
         features = {
-            "rainfall_3d_mm": 183.0,   # published rainfall figure
+            "rainfall_3d_mm": 183.0,  # published rainfall figure
             "rainfall_24h_mm": 95.0,
             "forecast_24h_mm": 80.0,
             "forecast_48h_mm": 60.0,
             "soil_moisture_pct": 91.0,  # 91st percentile
             "soil_moisture_abs": 0.40,
-            "slope_degrees": 34.0,      # Meppadi slope
+            "slope_degrees": 34.0,  # Meppadi slope
             "aspect_degrees": 270.0,
             "elevation_m": 850.0,
             "ndvi_delta": -0.02,
             "susceptibility_class": 5.0,
         }
         fpi = engine._score_physics(features)
-        assert fpi >= 0.65, f"Wayanad conditions should produce WARNING+ FPI, got {fpi:.3f}"
+        assert (
+            fpi >= 0.65
+        ), f"Wayanad conditions should produce WARNING+ FPI, got {fpi:.3f}"
 
     def test_fpi_bounded_zero_to_one(self, engine):
         """FPI must always be in [0, 1]."""
@@ -108,17 +112,27 @@ class TestFPIEngine:
     def test_confidence_interval_width(self, engine):
         """CI should be wider in middle range and narrower at extremes."""
         mid_features = {
-            "rainfall_3d_mm": 100.0, "rainfall_24h_mm": 40.0,
-            "forecast_24h_mm": 30.0, "forecast_48h_mm": 20.0,
-            "soil_moisture_pct": 60.0, "soil_moisture_abs": 0.25,
-            "slope_degrees": 20.0, "aspect_degrees": 90.0,
-            "elevation_m": 500.0, "ndvi_delta": 0.0, "susceptibility_class": 3.0,
+            "rainfall_3d_mm": 100.0,
+            "rainfall_24h_mm": 40.0,
+            "forecast_24h_mm": 30.0,
+            "forecast_48h_mm": 20.0,
+            "soil_moisture_pct": 60.0,
+            "soil_moisture_abs": 0.25,
+            "slope_degrees": 20.0,
+            "aspect_degrees": 90.0,
+            "elevation_m": 500.0,
+            "ndvi_delta": 0.0,
+            "susceptibility_class": 3.0,
         }
         fpi_mid = engine._score_physics(mid_features)
         ci_lo, ci_hi = engine._compute_confidence_interval(fpi_mid, mid_features)
         ci_width_mid = ci_hi - ci_lo
 
-        high_features = {**mid_features, "rainfall_3d_mm": 300.0, "soil_moisture_pct": 98.0}
+        high_features = {
+            **mid_features,
+            "rainfall_3d_mm": 300.0,
+            "soil_moisture_pct": 98.0,
+        }
         fpi_high = engine._score_physics(high_features)
         ci_lo_h, ci_hi_h = engine._compute_confidence_interval(fpi_high, high_features)
         ci_width_high = ci_hi_h - ci_lo_h
@@ -151,7 +165,9 @@ class TestFPIEngine:
         }
         fpi_now = engine._score_physics(features)
         fpi_24h = engine._score_cell_forecast(features, 24)
-        assert fpi_24h >= fpi_now * 0.9, "24h forecast should be >= current (with more rain)"
+        assert (
+            fpi_24h >= fpi_now * 0.9
+        ), "24h forecast should be >= current (with more rain)"
 
     def test_dominant_signal_identification(self, engine):
         """Should correctly identify rainfall as dominant when it's the driving signal."""
@@ -169,10 +185,13 @@ class TestFPIEngine:
             "susceptibility_class": 1.0,
         }
         dominant, breakdown = engine._identify_dominant_signal(features)
-        assert dominant == "rainfall_accumulation", f"Expected rainfall as dominant, got {dominant}"
+        assert (
+            dominant == "rainfall_accumulation"
+        ), f"Expected rainfall as dominant, got {dominant}"
 
 
 # ── Alert Engine Tests ─────────────────────────────────────────────────────────
+
 
 class TestAlertEngine:
     """Tests for alert threshold and dispatch logic."""
@@ -180,6 +199,7 @@ class TestAlertEngine:
     @pytest.fixture
     def engine(self):
         from backend.alert.alert_engine import AlertEngine
+
         return AlertEngine()
 
     def _make_block_fpi(self, **kwargs):
@@ -213,6 +233,7 @@ class TestAlertEngine:
         # Create a simple object with attributes
         class BlockFPIStub:
             pass
+
         stub = BlockFPIStub()
         for k, v in defaults.items():
             setattr(stub, k, v)
@@ -313,6 +334,7 @@ class TestAlertEngine:
     def test_cap_xml_valid(self, engine):
         """CAP XML output should be well-formed."""
         import xml.etree.ElementTree as ET
+
         alert = {
             "alert_code": "TEST_ALERT_001",
             "tier": "WARNING",
@@ -337,17 +359,20 @@ class TestAlertEngine:
 
 # ── SMAP Tests ────────────────────────────────────────────────────────────────
 
+
 class TestSMAPIngestion:
     """Tests for SMAP soil moisture processing."""
 
     @pytest.fixture
     def smap(self):
         from backend.ingestion.smap import SMAPIngestion
+
         return SMAPIngestion()
 
     def test_percentile_bounds(self, smap):
         """Percentile should always be 0–100."""
         import xarray as xr
+
         sm = xr.DataArray(
             np.array([[0.05, 0.20, 0.35, 0.50]]),
             dims=["lat", "lon"],
@@ -359,6 +384,7 @@ class TestSMAPIngestion:
     def test_high_moisture_high_percentile(self, smap):
         """Very high soil moisture should map to high percentile during monsoon."""
         import xarray as xr
+
         # 0.45 m³/m³ is near saturation in Western Ghats
         sm_high = xr.DataArray(np.array([[0.45]]), dims=["lat", "lon"])
         pct_high = smap.compute_percentile(sm_high, month=7)
@@ -376,10 +402,15 @@ class TestSMAPIngestion:
 
     def test_synthetic_fallback(self, smap):
         """Should return valid data even without credentials."""
-        da = smap._generate_synthetic(datetime(2024, 7, 29), {
-            "min_lat": 11.3, "max_lat": 11.9,
-            "min_lon": 75.7, "max_lon": 76.4,
-        })
+        da = smap._generate_synthetic(
+            datetime(2024, 7, 29),
+            {
+                "min_lat": 11.3,
+                "max_lat": 11.9,
+                "min_lon": 75.7,
+                "max_lon": 76.4,
+            },
+        )
         assert da is not None
         assert float(da.min()) >= 0.0
         assert float(da.max()) <= 1.0
@@ -387,12 +418,14 @@ class TestSMAPIngestion:
 
 # ── GPM Tests ─────────────────────────────────────────────────────────────────
 
+
 class TestGPMIngestion:
     """Tests for GPM rainfall ingestion."""
 
     @pytest.fixture
     def gpm(self):
         from backend.ingestion.gpm import GPMIngestion
+
         return GPMIngestion()
 
     def test_synthetic_data_shape(self, gpm):
@@ -405,11 +438,23 @@ class TestGPMIngestion:
 
     def test_accumulation_nonnegative(self, gpm):
         """3-day rainfall accumulation should always be non-negative."""
-        with patch.object(gpm, 'fetch_halfhourly', side_effect=lambda *a, **kw: gpm._generate_synthetic(a[0], {"min_lat": 11.0, "max_lat": 12.0, "min_lon": 75.0, "max_lon": 77.0})):
+        with patch.object(
+            gpm,
+            "fetch_halfhourly",
+            side_effect=lambda *a, **kw: gpm._generate_synthetic(
+                a[0],
+                {"min_lat": 11.0, "max_lat": 12.0, "min_lon": 75.0, "max_lon": 77.0},
+            ),
+        ):
             accum = gpm.compute_accumulation(
                 datetime(2024, 7, 29),
                 days=3,
-                bbox={"min_lat": 11.0, "max_lat": 12.0, "min_lon": 75.0, "max_lon": 77.0},
+                bbox={
+                    "min_lat": 11.0,
+                    "max_lat": 12.0,
+                    "min_lon": 75.0,
+                    "max_lon": 77.0,
+                },
             )
             assert float(accum.min()) >= 0.0
 
@@ -422,10 +467,13 @@ class TestGPMIngestion:
         # Ghats band (lon 75.5–77.5)
         ghats_mean = float(precip.sel(lon=slice(75.5, 77.5)).mean())
         coast_mean = float(precip.sel(lon=slice(73.0, 75.0)).mean())
-        assert ghats_mean > coast_mean, "Orographic enhancement not detected in synthetic data"
+        assert (
+            ghats_mean > coast_mean
+        ), "Orographic enhancement not detected in synthetic data"
 
 
 # ── Retrospective Tests ───────────────────────────────────────────────────────
+
 
 class TestRetrospective:
     """Tests for retrospective validation logic."""
@@ -433,6 +481,7 @@ class TestRetrospective:
     def test_all_events_defined(self):
         """All 6 historical events should be defined."""
         from backend.model.retrospective import HISTORICAL_EVENTS
+
         assert len(HISTORICAL_EVENTS) == 6
         event_ids = [e["id"] for e in HISTORICAL_EVENTS]
         assert "wayanad_2024" in event_ids
@@ -442,14 +491,18 @@ class TestRetrospective:
     def test_synthetic_fpi_estimate_wayanad(self):
         """Wayanad synthetic estimate should exceed WARNING threshold."""
         from backend.model.retrospective import RetrospectiveRunner, HISTORICAL_EVENTS
+
         runner = RetrospectiveRunner()
         wayanad = next(e for e in HISTORICAL_EVENTS if e["id"] == "wayanad_2024")
         fpi_t24 = runner._synthetic_fpi_estimate(wayanad, 24)
-        assert fpi_t24 >= 0.65, f"Wayanad T-24h estimate should be WARNING+, got {fpi_t24}"
+        assert (
+            fpi_t24 >= 0.65
+        ), f"Wayanad T-24h estimate should be WARNING+, got {fpi_t24}"
 
     def test_synthetic_fpi_estimate_increases_toward_event(self):
         """FPI should generally increase as event approaches."""
         from backend.model.retrospective import RetrospectiveRunner, HISTORICAL_EVENTS
+
         runner = RetrospectiveRunner()
         kedarnath = next(e for e in HISTORICAL_EVENTS if e["id"] == "kedarnath_2013")
 
@@ -464,27 +517,34 @@ class TestRetrospective:
 
 # ── Preprocessor Tests ────────────────────────────────────────────────────────
 
+
 class TestDataPreprocessor:
     """Tests for data regridding and alignment."""
 
     @pytest.fixture
     def preprocessor(self):
         from backend.processing.preprocessor import DataPreprocessor
-        return DataPreprocessor(bbox={
-            "min_lat": 11.3, "max_lat": 11.9,
-            "min_lon": 75.7, "max_lon": 76.4,
-        })
+
+        return DataPreprocessor(
+            bbox={
+                "min_lat": 11.3,
+                "max_lat": 11.9,
+                "min_lon": 75.7,
+                "max_lon": 76.4,
+            }
+        )
 
     def test_regrid_simple_array(self, preprocessor):
         """Regrid should produce output matching target grid dimensions."""
         import xarray as xr
+
         src = xr.DataArray(
             np.random.rand(10, 10),
             dims=["lat", "lon"],
             coords={
                 "lat": np.linspace(11.0, 12.5, 10),
                 "lon": np.linspace(75.5, 76.9, 10),
-            }
+            },
         )
         result = preprocessor._regrid(src)
         expected_lats = len(preprocessor.target_lats)
@@ -504,13 +564,14 @@ class TestDataPreprocessor:
     def test_regrid_nan_handling(self, preprocessor):
         """Regrid should handle NaN values without crashing."""
         import xarray as xr
+
         src = xr.DataArray(
             np.array([[1.0, np.nan], [np.nan, 2.0]]),
             dims=["lat", "lon"],
             coords={
                 "lat": np.array([11.3, 11.6]),
                 "lon": np.array([75.7, 76.1]),
-            }
+            },
         )
         result = preprocessor._regrid(src)
         assert result is not None
@@ -518,6 +579,7 @@ class TestDataPreprocessor:
 
 
 # ── Integration: Alert message contains correct FPI info ──────────────────────
+
 
 class TestIntegration:
     """End-to-end integration tests using synthetic data."""

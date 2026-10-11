@@ -32,7 +32,15 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import Depends, FastAPI, HTTPException, Query, Request, WebSocket, WebSocketDisconnect
+from fastapi import (
+    Depends,
+    FastAPI,
+    HTTPException,
+    Query,
+    Request,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
@@ -42,16 +50,27 @@ from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.api.database import get_db
-from backend.api.middleware import APIKeyMiddleware, RateLimitMiddleware, RequestLoggingMiddleware
+from backend.api.middleware import (
+    APIKeyMiddleware,
+    RateLimitMiddleware,
+    RequestLoggingMiddleware,
+)
 from backend.api.metrics import (
-    ACTIVE_ALERTS, FPI_SCORES, MESSAGES_SENT, MODEL_RUNS,
+    ACTIVE_ALERTS,
+    FPI_SCORES,
+    MESSAGES_SENT,
+    MODEL_RUNS,
 )
 from backend.api.reports import generate_district_report
 from backend.api.webhooks import router as webhooks_router
 from backend.api.apikeys import router as apikeys_router
 from backend.config import settings
 from backend.model.fpi_engine import (
-    get_risk_label, get_risk_description, get_risk_color, get_risk_action, get_risk_short
+    get_risk_label,
+    get_risk_description,
+    get_risk_color,
+    get_risk_action,
+    get_risk_short,
 )
 from backend.models import Alert, AlertContact, AlertTier, FPIHistory
 
@@ -122,15 +141,21 @@ async def security_headers(request: Request, call_next):
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Permissions-Policy"] = "geolocation=(), microphone=()"
     if settings.is_production:
-        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Strict-Transport-Security"] = (
+            "max-age=31536000; includeSubDomains"
+        )
     return response
+
 
 @app.get("/metrics")
 async def prometheus_metrics():
     from prometheus_client import generate_latest
+
     return Response(generate_latest(), media_type="text/plain")
 
+
 # ── WebSocket connection manager ──────────────────────────────────────────────
+
 
 class ConnectionManager:
     def __init__(self):
@@ -150,6 +175,7 @@ class ConnectionManager:
             except Exception:
                 self.disconnect(ws)
 
+
 manager = ConnectionManager()
 
 # ── In-memory state (replace with DB in production) ───────────────────────────
@@ -157,20 +183,44 @@ manager = ConnectionManager()
 import json
 from pathlib import Path
 
+
+def _normalise_sample_alert(raw: Dict[str, Any]) -> Dict[str, Any]:
+    """Make a bundled sample alert look exactly like a database alert, flagged as sample."""
+    alert = dict(raw)
+    signals = alert.get("dominant_signals")
+    if isinstance(signals, str):
+        try:
+            signals = json.loads(signals)
+        except ValueError:
+            signals = []
+    alert["dominant_signals"] = signals or []
+    alert["is_active"] = bool(alert.get("is_active", 1))
+    alert["is_suppressed"] = bool(alert.get("is_suppressed", 0))
+    fpi = alert.get("fpi_score", 0.0) or 0.0
+    alert["risk_label"] = get_risk_label(fpi)
+    alert["risk_short"] = get_risk_short(fpi)
+    alert["risk_description"] = get_risk_description(fpi)
+    alert["risk_action"] = get_risk_action(fpi)
+    alert["risk_color"] = get_risk_color(fpi)
+    alert["is_sample"] = True
+    return alert
+
+
 _current_alerts: List[Dict] = []
 try:
     demo_path = Path(__file__).parent.parent / "demo_alerts.json"
     if demo_path.exists():
         with open(demo_path) as f:
-            _current_alerts = json.load(f)
-except Exception as e:
-    pass
+            _current_alerts = [_normalise_sample_alert(a) for a in json.load(f)]
+except Exception as exc:  # pragma: no cover - bundled file is optional
+    logging.getLogger(__name__).warning("Sample alerts unavailable: %s", exc)
 _retrospective_cache: Dict = {}
 _fpi_grid_cache: Optional[Dict] = None
 _last_run: Optional[datetime] = None
 
 
 # ── Pydantic schemas ──────────────────────────────────────────────────────────
+
 
 class RiskResponse(BaseModel):
     model_config = {"protected_namespaces": ()}
@@ -194,11 +244,16 @@ class RiskResponse(BaseModel):
     slope_degrees: Optional[float]
     run_timestamp: str
     model_version: str = "v0.1"
+    data_quality: str = "live"
+    synthetic_inputs: List[str] = Field(default_factory=list)
 
 
 class ContactRegistration(BaseModel):
     name: str
-    role: str = Field(..., description="district_collector | gram_pradhan | sdma_officer | aapda_mitra")
+    role: str = Field(
+        ...,
+        description="district_collector | gram_pradhan | sdma_officer | aapda_mitra",
+    )
     organization: Optional[str] = None
     whatsapp_number: str = Field(..., description="E.164 format: +919876543210")
     email: Optional[str] = None
@@ -227,7 +282,16 @@ class ContactRegistration(BaseModel):
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
+
+def _data_mode(alerts: List[Dict[str, Any]]) -> str:
+    """'sample' when every alert served comes from the bundled sample set."""
+    if alerts and all(a.get("is_sample") for a in alerts):
+        return "sample"
+    return "live" if alerts else "idle"
+
+
 @app.get("/", tags=["Health"])
+@app.get("/health", tags=["Health"])
 async def health():
     """Health check endpoint. Returns system status, version, and active alert count."""
     active_alerts = await _active_alert_count()
@@ -238,7 +302,38 @@ async def health():
         "environment": settings.environment,
         "last_model_run": _last_run.isoformat() if _last_run else None,
         "active_alerts": active_alerts,
-        "database": "connected",
+        "data_mode": _data_mode(_current_alerts),
+    }
+
+
+@app.get("/v1/status", tags=["Health"])
+async def system_status():
+    """Machine-readable system status used by the public status page."""
+    return {
+        "status": "healthy",
+        "version": "1.0.0",
+        "model_version": "v0.1",
+        "environment": settings.environment,
+        "checked_at": datetime.now(timezone.utc).isoformat(),
+        "last_model_run": _last_run.isoformat() if _last_run else None,
+        "run_interval_hours": 6,
+        "active_alerts": await _active_alert_count(),
+        "data_mode": _data_mode(_current_alerts),
+        "data_mode_note": (
+            "Sample alerts bundled with the API are being served because no model "
+            "run has been stored yet."
+            if _data_mode(_current_alerts) == "sample"
+            else None
+        ),
+        "services": {
+            "rest_api": "operational",
+            "cap_feed": "operational",
+            "fpi_engine": "operational",
+            "websocket": "operational",
+            "whatsapp_dispatch": (
+                "dry_run" if not settings.is_production else "configured"
+            ),
+        },
     }
 
 
@@ -261,19 +356,31 @@ async def get_risk_point(
                 score = cell.get("fpi_24h", score)
             elif hours_ahead == 48:
                 score = cell.get("fpi_48h", score)
-            
+
             from backend.model.fpi_engine import get_risk_level
+
             level = get_risk_level(score)
-            return RiskResponse(**{
-                **cell, 
-                "fpi_score": score,
-                "risk_label": level["label"],
-                "risk_color": level["color"],
-                "risk_description": level["description"]
-            })
+            return RiskResponse(
+                **{
+                    **cell,
+                    "fpi_score": score,
+                    "risk_label": level["label"],
+                    "risk_color": level["color"],
+                    "risk_description": level["description"],
+                }
+            )
 
     # Run model on-demand for the point (hackathon mode)
-    return await _compute_point_fpi(lat, lon, hours_ahead)
+    try:
+        return await _compute_point_fpi(lat, lon, hours_ahead)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("Point risk computation failed")
+        raise HTTPException(
+            status_code=503,
+            detail="Risk model is temporarily unavailable for this point. Try again shortly.",
+        ) from exc
 
 
 @app.get("/v1/districts/{state_code}", tags=["FPI"])
@@ -285,7 +392,8 @@ async def get_state_districts(
     """Get all districts in a state with current FPI summary."""
     current_alerts = await _get_active_alerts(db)
     alerts = [
-        a for a in current_alerts
+        a
+        for a in current_alerts
         if a.get("state_code", "").lower() == state_code.lower()
         and a["fpi_score"] >= min_fpi
     ]
@@ -306,7 +414,8 @@ async def get_district_blocks(
     """Get all blocks in a district with current FPI."""
     current_alerts = await _get_active_alerts(db)
     alerts = [
-        a for a in current_alerts
+        a
+        for a in current_alerts
         if a.get("district_code", "").lower() == district_code.lower()
         and a["fpi_score"] >= min_fpi
     ]
@@ -322,7 +431,8 @@ async def get_district_summary(district_code: str, db: AsyncSession = Depends(ge
     """Protected district summary used by government/research dashboards."""
     current_alerts = await _get_active_alerts(db)
     alerts = [
-        a for a in current_alerts
+        a
+        for a in current_alerts
         if a.get("district_code", "").lower() == district_code.lower()
         and a.get("is_active", True)
     ]
@@ -332,30 +442,43 @@ async def get_district_summary(district_code: str, db: AsyncSession = Depends(ge
         "active_alerts": len(alerts),
         "max_fpi": max_fpi,
         "run_timestamp": _last_run.isoformat() if _last_run else None,
-        "alerts": sorted(alerts, key=lambda item: item.get("fpi_score", 0), reverse=True),
+        "alerts": sorted(
+            alerts, key=lambda item: item.get("fpi_score", 0), reverse=True
+        ),
     }
 
 
 @app.get("/v1/districts/{district_code}/report.pdf", tags=["Reports"])
-async def download_district_report(district_code: str, db: AsyncSession = Depends(get_db)):
+async def download_district_report(
+    district_code: str, db: AsyncSession = Depends(get_db)
+):
     """Generate an official PDF report for a district."""
     current_alerts = await _get_active_alerts(db)
     alerts = [
-        a for a in current_alerts
+        a
+        for a in current_alerts
         if a.get("district_code", "").lower() == district_code.lower()
         and a.get("is_active", True)
     ]
     if not alerts and district_code.upper() in {"WYD", "KL_WYD", "WAYANAD"}:
         alerts = _synthetic_report_alerts()
 
-    district_name = alerts[0].get("district_name", district_code.upper()) if alerts else district_code.upper()
+    district_name = (
+        alerts[0].get("district_name", district_code.upper())
+        if alerts
+        else district_code.upper()
+    )
     run_timestamp = _last_run or datetime.now(timezone.utc)
-    pdf_bytes = await generate_district_report(district_code, district_name, alerts, run_timestamp)
+    pdf_bytes = await generate_district_report(
+        district_code, district_name, alerts, run_timestamp
+    )
     today = datetime.now(timezone.utc).date().isoformat()
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
-        headers={"Content-Disposition": f"attachment; filename=slopesense_{district_code}_{today}.pdf"},
+        headers={
+            "Content-Disposition": f"attachment; filename=slopesense_{district_code}_{today}.pdf"
+        },
     )
 
 
@@ -369,37 +492,42 @@ async def get_active_alerts(
     """Get all currently active alerts for high-risk blocks."""
     from sqlalchemy import text
     import json
-    
+
     if db is None:
         filtered = [
-            a for a in _current_alerts
+            a
+            for a in _current_alerts
             if a.get("fpi_score", 0) >= min_fpi
             and (not tier or a.get("tier") == tier)
             and (not state or a.get("state_code") == state)
         ]
-        return {"count": len(filtered), "alerts": filtered, "run_timestamp": datetime.now(timezone.utc).isoformat()}
+        return {
+            "count": len(filtered),
+            "alerts": filtered,
+            "run_timestamp": datetime.now(timezone.utc).isoformat(),
+        }
 
     query = """
         SELECT * FROM alerts 
         WHERE is_active = 1 AND is_suppressed = 0 AND fpi_score >= :min_fpi
     """
     params = {"min_fpi": min_fpi}
-    
+
     if tier:
         query += " AND tier = :tier"
         params["tier"] = tier
     if state:
         query += " AND state_code = :state"
         params["state"] = state
-        
+
     query += " ORDER BY fpi_score DESC LIMIT 200"
-    
+
     try:
         result = await db.execute(text(query), params)
         rows = result.fetchall()
     except Exception:
         rows = []
-    
+
     table_empty = False
     if not rows:
         try:
@@ -413,7 +541,8 @@ async def get_active_alerts(
     if not rows and table_empty and len(_current_alerts) > 0:
         # Demo fallback must honour the same filters as the database query.
         rows = [
-            a for a in _current_alerts
+            a
+            for a in _current_alerts
             if a.get("fpi_score", 0) >= min_fpi
             and (not tier or a.get("tier") == tier)
             and (not state or a.get("state_code") == state)
@@ -421,10 +550,12 @@ async def get_active_alerts(
 
     alerts = []
     for row in rows:
-        alert_dict = dict(row._mapping) if hasattr(row, '_mapping') else dict(row)
+        alert_dict = dict(row._mapping) if hasattr(row, "_mapping") else dict(row)
         if isinstance(alert_dict.get("dominant_signals"), str):
             try:
-                alert_dict["dominant_signals"] = json.loads(alert_dict["dominant_signals"])
+                alert_dict["dominant_signals"] = json.loads(
+                    alert_dict["dominant_signals"]
+                )
             except Exception:
                 alert_dict["dominant_signals"] = []
         # Enrich with human-readable risk fields
@@ -435,17 +566,18 @@ async def get_active_alerts(
         alert_dict["risk_action"] = get_risk_action(fpi)
         alert_dict["risk_color"] = get_risk_color(fpi)
         alerts.append(alert_dict)
-        
+
     # Get last run timestamp from DB
     last_run = None
     if alerts:
         last_run = alerts[0].get("issued_at")
         if isinstance(last_run, datetime):
             last_run = last_run.isoformat()
-            
+
     return {
         "count": len(alerts),
         "alerts": alerts,
+        "data_mode": _data_mode(alerts),
         "run_timestamp": last_run or datetime.now(timezone.utc).isoformat(),
     }
 
@@ -453,7 +585,9 @@ async def get_active_alerts(
 @app.get("/v1/alerts/{alert_id}", tags=["Alerts"])
 async def get_alert_detail(alert_id: str, db: AsyncSession = Depends(get_db)):
     """Get detail for a specific alert including signal breakdown."""
-    alert = next((a for a in await _get_active_alerts(db) if a.get("id") == alert_id), None)
+    alert = next(
+        (a for a in await _get_active_alerts(db) if a.get("id") == alert_id), None
+    )
     if not alert:
         raise HTTPException(status_code=404, detail="Alert not found")
     return alert
@@ -492,7 +626,10 @@ async def get_historical_fpi(
             "features": [
                 {
                     "type": "Feature",
-                    "geometry": {"type": "Point", "coordinates": [row["lon"], row["lat"]]},
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [row["lon"], row["lat"]],
+                    },
                     "properties": {
                         key: value
                         for key, value in row.items()
@@ -501,7 +638,11 @@ async def get_historical_fpi(
                 }
                 for row in rows
             ],
-            "metadata": {"date": str(date), "district_code": district_code.upper(), "count": len(rows)},
+            "metadata": {
+                "date": str(date),
+                "district_code": district_code.upper(),
+                "count": len(rows),
+            },
         }
 
     return {
@@ -521,7 +662,7 @@ async def get_retrospective_summary(
     Run retrospective analysis on historical landslide events to validate FPI model.
     """
     from sqlalchemy import text
-    
+
     if db is None:
         return _synthetic_retrospective_summary()
 
@@ -536,10 +677,10 @@ async def get_retrospective_summary(
         rows = result.fetchall()
     except Exception:
         rows = []
-    
+
     if not rows:
         return _synthetic_retrospective_summary()
-        
+
     results = []
     flagged_count = 0
     for row in rows:
@@ -547,21 +688,27 @@ async def get_retrospective_summary(
         flagged = bool(mapping.get("was_flagged_24h"))
         if flagged:
             flagged_count += 1
-            
-        results.append({
-            "event_id": mapping.get("event_id"),
-            "event_name": mapping.get("event_name"),
-            "event_date": mapping.get("event_date").isoformat() if isinstance(mapping.get("event_date"), datetime) else mapping.get("event_date"),
-            "district": mapping.get("district_code"),
-            "deaths": mapping.get("deaths") or 0,
-            "fpi_t24": mapping.get("fpi_at_t24"),
-            "target_fpi": mapping.get("fpi_target_t24"),
-            "flagged_at_t24": flagged,
-            "lead_time_hours": 24 if flagged else None,
-            "notes": mapping.get("description"),
-            "data_source": "historical",
-        })
-        
+
+        results.append(
+            {
+                "event_id": mapping.get("event_id"),
+                "event_name": mapping.get("event_name"),
+                "event_date": (
+                    mapping.get("event_date").isoformat()
+                    if isinstance(mapping.get("event_date"), datetime)
+                    else mapping.get("event_date")
+                ),
+                "district": mapping.get("district_code"),
+                "deaths": mapping.get("deaths") or 0,
+                "fpi_t24": mapping.get("fpi_at_t24"),
+                "target_fpi": mapping.get("fpi_target_t24"),
+                "flagged_at_t24": flagged,
+                "lead_time_hours": 24 if flagged else None,
+                "notes": mapping.get("description"),
+                "data_source": "historical",
+            }
+        )
+
     return {
         "run_at": datetime.now(timezone.utc).isoformat(),
         "model_version": "v0.1",
@@ -584,11 +731,14 @@ async def get_retrospective_event(event_id: str):
     # Compute on demand
     try:
         from backend.model.retrospective import RetrospectiveRunner
+
         runner = RetrospectiveRunner()
         result = runner.run_event(event_id, use_synthetic=True)
         return asdict(result)
     except Exception as e:
-        raise HTTPException(status_code=404, detail=f"Event not found or compute failed: {e}")
+        raise HTTPException(
+            status_code=404, detail=f"Event not found or compute failed: {e}"
+        )
 
 
 @app.get("/v1/cap/feed", tags=["CAP"])
@@ -604,6 +754,7 @@ async def get_cap_feed(
     Example: GET /v1/cap/feed?state=KL&min_fpi=0.65
     """
     from backend.alert.alert_engine import AlertEngine
+
     engine = AlertEngine()
 
     if db is None:
@@ -612,7 +763,8 @@ async def get_cap_feed(
         alerts = await _get_active_alerts(db)
 
     alerts = [
-        a for a in alerts
+        a
+        for a in alerts
         if a.get("is_active")
         and a.get("fpi_score", 0) >= min_fpi
         and (not state or a.get("state_code", "").lower() == state.lower())
@@ -634,7 +786,9 @@ async def get_cap_feed(
             xml = re.sub(r"^\s*<\?xml[^>]*\?>\s*", "", xml)
             alert_xmls.append(xml)
         except Exception as e:
-            logger.warning(f"CAP XML generation failed for {alert.get('alert_code')}: {e}")
+            logger.warning(
+                f"CAP XML generation failed for {alert.get('alert_code')}: {e}"
+            )
 
     feed_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="urn:oasis:names:tc:emergency:cap:1.2">
@@ -655,10 +809,10 @@ async def get_fpi_geojson(
 ):
     """Returns current block-level FPI scores as GeoJSON points."""
     from sqlalchemy import text
-    
+
     if db is None:
         return {"type": "FeatureCollection", "features": _synthetic_wayanad_geojson()}
-        
+
     query = """
         SELECT block_code, block_name, district_name, state_code,
                lat, lon, fpi_score, fpi_24h, tier,
@@ -670,42 +824,46 @@ async def get_fpi_geojson(
     if state:
         query += " AND state_code = :state"
         params["state"] = state
-        
+
     try:
         result = await db.execute(text(query), params)
         rows = result.fetchall()
     except Exception:
         rows = []
-    
+
     features = []
     for row in rows:
         mapping = dict(row._mapping)
         if not mapping.get("lat") or not mapping.get("lon"):
             continue
-            
-        features.append({
-            "type": "Feature",
-            "geometry": {
-                "type": "Point",
-                "coordinates": [mapping["lon"], mapping["lat"]]
-            },
-            "properties": {
-                "fpi": mapping["fpi_score"],
-                "fpi_pct": round(mapping["fpi_score"] * 100),
-                "fpi_24h": mapping["fpi_24h"],
-                "tier": mapping["tier"],
-                "district": mapping["district_name"],
-                "block": mapping["block_name"],
-                "block_code": mapping["block_code"],
-                "state_code": mapping["state_code"],
-                "rainfall_3d_mm": mapping["rainfall_3d_mm"],
-                "soil_moisture_pct": mapping["soil_moisture_percentile"],
-                "risk_label": get_risk_label(mapping["fpi_score"] or 0.0),
-                "risk_short": get_risk_short(mapping["fpi_score"] or 0.0),
-                "risk_color": get_risk_color(mapping["fpi_score"] or 0.0),
-                "risk_description": get_risk_description(mapping["fpi_score"] or 0.0),
+
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [mapping["lon"], mapping["lat"]],
+                },
+                "properties": {
+                    "fpi": mapping["fpi_score"],
+                    "fpi_pct": round(mapping["fpi_score"] * 100),
+                    "fpi_24h": mapping["fpi_24h"],
+                    "tier": mapping["tier"],
+                    "district": mapping["district_name"],
+                    "block": mapping["block_name"],
+                    "block_code": mapping["block_code"],
+                    "state_code": mapping["state_code"],
+                    "rainfall_3d_mm": mapping["rainfall_3d_mm"],
+                    "soil_moisture_pct": mapping["soil_moisture_percentile"],
+                    "risk_label": get_risk_label(mapping["fpi_score"] or 0.0),
+                    "risk_short": get_risk_short(mapping["fpi_score"] or 0.0),
+                    "risk_color": get_risk_color(mapping["fpi_score"] or 0.0),
+                    "risk_description": get_risk_description(
+                        mapping["fpi_score"] or 0.0
+                    ),
+                },
             }
-        })
+        )
 
     return {"type": "FeatureCollection", "features": features}
 
@@ -748,30 +906,34 @@ async def get_districts_geojson(
         if not m.get("lat") or not m.get("lon"):
             continue
         fpi = m["max_fpi"] or 0.0
-        features.append({
-            "type": "Feature",
-            "geometry": {"type": "Point", "coordinates": [m["lon"], m["lat"]]},
-            "properties": {
-                "district_code": m["district_code"],
-                "district_name": m["district_name"],
-                "state_code": m["state_code"],
-                "state_name": m["state_name"],
-                "max_fpi": round(fpi, 4),
-                "max_fpi_pct": round(fpi * 100),
-                "max_fpi_24h": round(m["max_fpi_24h"] or 0.0, 4),
-                "block_count": m["block_count"],
-                "risk_label": get_risk_label(fpi),
-                "risk_short": get_risk_short(fpi),
-                "risk_color": get_risk_color(fpi),
-                "risk_description": get_risk_description(fpi),
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [m["lon"], m["lat"]]},
+                "properties": {
+                    "district_code": m["district_code"],
+                    "district_name": m["district_name"],
+                    "state_code": m["state_code"],
+                    "state_name": m["state_name"],
+                    "max_fpi": round(fpi, 4),
+                    "max_fpi_pct": round(fpi * 100),
+                    "max_fpi_24h": round(m["max_fpi_24h"] or 0.0, 4),
+                    "block_count": m["block_count"],
+                    "risk_label": get_risk_label(fpi),
+                    "risk_short": get_risk_short(fpi),
+                    "risk_color": get_risk_color(fpi),
+                    "risk_description": get_risk_description(fpi),
+                },
             }
-        })
+        )
 
     return {"type": "FeatureCollection", "features": features}
 
 
 @app.get("/v1/geojson/alerts", tags=["GeoJSON"])
-async def get_alerts_geojson(min_fpi: float = Query(0.40), db: AsyncSession = Depends(get_db)):
+async def get_alerts_geojson(
+    min_fpi: float = Query(0.40), db: AsyncSession = Depends(get_db)
+):
     """GeoJSON of active alerts for overlay on dashboard map."""
     features = []
     for alert in await _get_active_alerts(db):
@@ -780,17 +942,28 @@ async def get_alerts_geojson(min_fpi: float = Query(0.40), db: AsyncSession = De
         lat = alert.get("lat")
         lon = alert.get("lon")
         fpi = alert.get("fpi_score", 0.0) or 0.0
-        props = {**alert, "risk_label": get_risk_label(fpi), "risk_color": get_risk_color(fpi)}
-        features.append({
-            "type": "Feature",
-            "geometry": {"type": "Point", "coordinates": [lon or 76.0, lat or 11.5]},
-            "properties": props,
-        })
+        props = {
+            **alert,
+            "risk_label": get_risk_label(fpi),
+            "risk_color": get_risk_color(fpi),
+        }
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [lon or 76.0, lat or 11.5],
+                },
+                "properties": props,
+            }
+        )
     return {"type": "FeatureCollection", "features": features}
 
 
 @app.post("/v1/contacts/register", tags=["Contacts"])
-async def register_contact(contact: ContactRegistration, db: AsyncSession = Depends(get_db)):
+async def register_contact(
+    contact: ContactRegistration, db: AsyncSession = Depends(get_db)
+):
     """Register for WhatsApp/email alert delivery."""
     record_id = str(uuid.uuid4())
     try:
@@ -801,11 +974,15 @@ async def register_contact(contact: ContactRegistration, db: AsyncSession = Depe
             organization=contact.organization,
             language=contact.language,
             state_code=contact.state_code.upper(),
-            district_code=contact.district_code.upper() if contact.district_code else None,
+            district_code=(
+                contact.district_code.upper() if contact.district_code else None
+            ),
             block_code=contact.block_code.upper() if contact.block_code else None,
             whatsapp_number=contact.whatsapp_number,
             email=contact.email,
-            min_tier_for_whatsapp=_alert_tier_or_default(contact.min_tier, AlertTier.WARNING),
+            min_tier_for_whatsapp=_alert_tier_or_default(
+                contact.min_tier, AlertTier.WARNING
+            ),
             is_active=True,
         )
         db.add(contact_row)
@@ -815,8 +992,12 @@ async def register_contact(contact: ContactRegistration, db: AsyncSession = Depe
         if settings.is_production:
             logger.exception("Contact registration failed")
             raise HTTPException(status_code=503, detail="Contact registry unavailable")
-        logger.warning("Contact registry unavailable, returning transient registration id: %s", exc)
-    logger.info(f"Contact registered: {contact.name} ({contact.role}) → {contact.whatsapp_number}")
+        logger.warning(
+            "Contact registry unavailable, returning transient registration id: %s", exc
+        )
+    logger.info(
+        f"Contact registered: {contact.name} ({contact.role}) → {contact.whatsapp_number}"
+    )
     return {
         "status": "registered",
         "id": record_id,
@@ -830,20 +1011,25 @@ async def websocket_live(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         # Send current state on connect
-        await websocket.send_json({
-            "type": "init",
-            "alerts": _current_alerts[:20],
-            "last_run": _last_run.isoformat() if _last_run else None,
-        })
+        await websocket.send_json(
+            {
+                "type": "init",
+                "alerts": _current_alerts[:20],
+                "last_run": _last_run.isoformat() if _last_run else None,
+            }
+        )
         while True:
             data = await websocket.receive_text()
             # Echo back with timestamp (keepalive)
-            await websocket.send_json({"type": "pong", "ts": datetime.now(timezone.utc).isoformat()})
+            await websocket.send_json(
+                {"type": "pong", "ts": datetime.now(timezone.utc).isoformat()}
+            )
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
 
 # ── Scheduler trigger (called by cron/APScheduler) ────────────────────────────
+
 
 @app.post("/internal/trigger-run", tags=["Internal"])
 async def trigger_model_run(request: Request, token: str = Query(...)):
@@ -851,12 +1037,23 @@ async def trigger_model_run(request: Request, token: str = Query(...)):
     Trigger a model run. Called by the scheduler every 6 hours.
     Protected by internal token.
     """
-    expected = settings.internal_trigger_token or os.environ.get("INTERNAL_TRIGGER_TOKEN", "dev-token")
+    expected = settings.internal_trigger_token or os.environ.get(
+        "INTERNAL_TRIGGER_TOKEN", "dev-token"
+    )
     if token != expected:
         raise HTTPException(status_code=403, detail="Invalid token")
     client_host = request.client.host if request.client else ""
-    if settings.is_production and client_host not in {"127.0.0.1", "::1", "api", "scheduler"}:
-        if not (client_host.startswith("10.") or client_host.startswith("172.") or client_host.startswith("192.168.")):
+    if settings.is_production and client_host not in {
+        "127.0.0.1",
+        "::1",
+        "api",
+        "scheduler",
+    }:
+        if not (
+            client_host.startswith("10.")
+            or client_host.startswith("172.")
+            or client_host.startswith("192.168.")
+        ):
             raise HTTPException(status_code=403, detail="Internal network only")
 
     try:
@@ -869,6 +1066,7 @@ async def trigger_model_run(request: Request, token: str = Query(...)):
 
 
 # ── Helper functions ──────────────────────────────────────────────────────────
+
 
 async def _run_model_pipeline() -> Dict:
     """Execute full pipeline: ingest → preprocess → FPI → alert → dispatch."""
@@ -902,7 +1100,9 @@ async def _run_model_pipeline() -> Dict:
     _current_alerts = new_alerts
     _last_run = run_time
     _fpi_grid_cache = {
-        "cells": [vars(c) if hasattr(c, "__dict__") else c.__dict__ for c in cell_fpis[:5000]],
+        "cells": [
+            vars(c) if hasattr(c, "__dict__") else c.__dict__ for c in cell_fpis[:5000]
+        ],
         "run_timestamp": run_time.isoformat(),
     }
 
@@ -940,6 +1140,7 @@ async def _compute_point_fpi(lat: float, lon: float, hours_ahead: int) -> RiskRe
     engine = FPIEngine()
 
     import numpy as np
+
     lat_idx = int(np.argmin(np.abs(grid.lats - lat)))
     lon_idx = int(np.argmin(np.abs(grid.lons - lon)))
     features = engine._extract_cell_features(grid, lat_idx, lon_idx)
@@ -951,6 +1152,16 @@ async def _compute_point_fpi(lat: float, lon: float, hours_ahead: int) -> RiskRe
     tier = engine._classify_tier(fpi, (ci_hi - ci_lo) > 0.30)
     dominant, _ = engine._identify_dominant_signal(features)
 
+    synthetic_inputs = [
+        name
+        for name, flag in (
+            ("rainfall", getattr(grid, "rainfall_synthetic", False)),
+            ("soil_moisture", getattr(grid, "smap_synthetic", False)),
+            ("terrain", getattr(grid, "dem_synthetic", False)),
+        )
+        if flag
+    ]
+
     score = fpi
     if hours_ahead == 24:
         score = fpi_24h
@@ -958,12 +1169,15 @@ async def _compute_point_fpi(lat: float, lon: float, hours_ahead: int) -> RiskRe
         score = fpi_48h
 
     from backend.model.fpi_engine import get_risk_level
+
     level = get_risk_level(score)
 
     return RiskResponse(
-        lat=lat, lon=lon,
+        lat=lat,
+        lon=lon,
         cell_id=f"{lat:.2f}_{lon:.2f}",
-        district=None, block=None,
+        district=None,
+        block=None,
         fpi_score=round(score, 4),
         fpi_ci_lower=round(ci_lo, 4),
         fpi_ci_upper=round(ci_hi, 4),
@@ -978,6 +1192,8 @@ async def _compute_point_fpi(lat: float, lon: float, hours_ahead: int) -> RiskRe
         soil_moisture_pct=round(features["soil_moisture_pct"], 1),
         slope_degrees=round(features["slope_degrees"], 1),
         run_timestamp=datetime.now(timezone.utc).isoformat(),
+        data_quality="estimated" if synthetic_inputs else "live",
+        synthetic_inputs=synthetic_inputs,
     )
 
 
@@ -986,6 +1202,7 @@ def _find_nearest_cell(cells: List[Dict], lat: float, lon: float) -> Optional[Di
     if not cells:
         return None
     import numpy as np
+
     lats = [c.get("lat", 0) for c in cells]
     lons = [c.get("lon", 0) for c in cells]
     dists = [(lat - la) ** 2 + (lon - lo) ** 2 for la, lo in zip(lats, lons)]
@@ -1004,7 +1221,9 @@ async def _get_active_alerts(db: Optional[AsyncSession]) -> List[Dict[str, Any]]
             if rows:
                 return [_alert_row_to_dict(row) for row in rows]
         except Exception as exc:
-            logger.warning("Active alert database query failed, using cache fallback: %s", exc)
+            logger.warning(
+                "Active alert database query failed, using cache fallback: %s", exc
+            )
     return [a for a in _current_alerts if a.get("is_active")]
 
 
@@ -1048,11 +1267,17 @@ def _parse_bbox(bbox: Optional[str]) -> Optional[tuple[float, float, float, floa
     if not bbox:
         return None
     try:
-        min_lon, min_lat, max_lon, max_lat = [float(part.strip()) for part in bbox.split(",")]
+        min_lon, min_lat, max_lon, max_lat = [
+            float(part.strip()) for part in bbox.split(",")
+        ]
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail="bbox must be minLon,minLat,maxLon,maxLat") from exc
+        raise HTTPException(
+            status_code=422, detail="bbox must be minLon,minLat,maxLon,maxLat"
+        ) from exc
     if min_lon > max_lon or min_lat > max_lat:
-        raise HTTPException(status_code=422, detail="bbox minimums must be less than maximums")
+        raise HTTPException(
+            status_code=422, detail="bbox minimums must be less than maximums"
+        )
     if not (
         -180 <= min_lon <= 180
         and -180 <= max_lon <= 180
@@ -1076,7 +1301,9 @@ def _history_row_to_dict(row: FPIHistory) -> Dict[str, Any]:
         "fpi_ci_upper": row.fpi_ci_upper,
         "fpi_24h": row.fpi_24h,
         "fpi_48h": row.fpi_48h,
-        "alert_tier": row.alert_tier.value if hasattr(row.alert_tier, "value") else row.alert_tier,
+        "alert_tier": (
+            row.alert_tier.value if hasattr(row.alert_tier, "value") else row.alert_tier
+        ),
         "rainfall_3d_mm": row.rainfall_3d_mm,
         "soil_moisture_percentile": row.soil_moisture_percentile,
         "slope_degrees": row.slope_degrees,
@@ -1118,7 +1345,9 @@ def _tier_for_score(score: float) -> str:
     return "NORMAL"
 
 
-def _synthetic_historical_rows(date_value: str, district_code: str) -> List[Dict[str, Any]]:
+def _synthetic_historical_rows(
+    date_value: str, district_code: str
+) -> List[Dict[str, Any]]:
     blocks = [
         ("MEP", 11.583, 76.083, 0.73),
         ("VYT", 11.520, 76.010, 0.61),
@@ -1186,12 +1415,54 @@ def _synthetic_retrospective_summary() -> Dict:
         "passed": True,
         "note": "Synthetic results — run scripts/retrospective.py for real validation",
         "results": [
-            {"event_id": "wayanad_2024", "event_name": "Wayanad 2024", "fpi_t24": 0.73, "flagged_at_t24": True, "deaths": 420, "lead_time_hours": 24},
-            {"event_id": "kedarnath_2013", "event_name": "Kedarnath 2013", "fpi_t24": 0.81, "flagged_at_t24": True, "deaths": 5700, "lead_time_hours": 48},
-            {"event_id": "malin_2014", "event_name": "Malin 2014", "fpi_t24": 0.69, "flagged_at_t24": True, "deaths": 151, "lead_time_hours": 24},
-            {"event_id": "chamoli_2021", "event_name": "Chamoli 2021", "fpi_t24": 0.47, "flagged_at_t24": True, "deaths": 204, "lead_time_hours": 24},
-            {"event_id": "sikkim_2023", "event_name": "Sikkim 2023", "fpi_t24": 0.41, "flagged_at_t24": False, "deaths": 40, "lead_time_hours": None},
-            {"event_id": "joshimath_2023", "event_name": "Joshimath 2023", "fpi_t24": 0.31, "flagged_at_t24": False, "deaths": 0, "lead_time_hours": None},
+            {
+                "event_id": "wayanad_2024",
+                "event_name": "Wayanad 2024",
+                "fpi_t24": 0.73,
+                "flagged_at_t24": True,
+                "deaths": 420,
+                "lead_time_hours": 24,
+            },
+            {
+                "event_id": "kedarnath_2013",
+                "event_name": "Kedarnath 2013",
+                "fpi_t24": 0.81,
+                "flagged_at_t24": True,
+                "deaths": 5700,
+                "lead_time_hours": 48,
+            },
+            {
+                "event_id": "malin_2014",
+                "event_name": "Malin 2014",
+                "fpi_t24": 0.69,
+                "flagged_at_t24": True,
+                "deaths": 151,
+                "lead_time_hours": 24,
+            },
+            {
+                "event_id": "chamoli_2021",
+                "event_name": "Chamoli 2021",
+                "fpi_t24": 0.47,
+                "flagged_at_t24": True,
+                "deaths": 204,
+                "lead_time_hours": 24,
+            },
+            {
+                "event_id": "sikkim_2023",
+                "event_name": "Sikkim 2023",
+                "fpi_t24": 0.41,
+                "flagged_at_t24": False,
+                "deaths": 40,
+                "lead_time_hours": None,
+            },
+            {
+                "event_id": "joshimath_2023",
+                "event_name": "Joshimath 2023",
+                "fpi_t24": 0.31,
+                "flagged_at_t24": False,
+                "deaths": 0,
+                "lead_time_hours": None,
+            },
         ],
     }
 
@@ -1199,6 +1470,7 @@ def _synthetic_retrospective_summary() -> Dict:
 def _synthetic_wayanad_geojson() -> List[Dict]:
     """Synthetic Wayanad GeoJSON for demo."""
     import random
+
     random.seed(42)
     features = []
     blocks = [
@@ -1210,25 +1482,32 @@ def _synthetic_wayanad_geojson() -> List[Dict]:
         ("Ambalavayal", 11.62, 76.19, 0.48),
     ]
     for name, lat, lon, fpi in blocks:
-        tier = "EMERGENCY" if fpi > 0.80 else "WARNING" if fpi > 0.65 else "WATCH" if fpi > 0.40 else "NORMAL"
-        features.append({
-            "type": "Feature",
-            "geometry": {"type": "Point", "coordinates": [lon, lat]},
-            "properties": {
-                "fpi": fpi,
-                "fpi_24h": min(fpi * 1.1, 0.99),
-                "tier": tier,
-                "district": "Wayanad",
-                "block": name,
-                "rainfall_3d_mm": random.uniform(80, 200),
-                "soil_moisture_pct": random.uniform(65, 95),
-            },
-        })
+        tier = (
+            "EMERGENCY"
+            if fpi > 0.80
+            else "WARNING" if fpi > 0.65 else "WATCH" if fpi > 0.40 else "NORMAL"
+        )
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [lon, lat]},
+                "properties": {
+                    "fpi": fpi,
+                    "fpi_24h": min(fpi * 1.1, 0.99),
+                    "tier": tier,
+                    "district": "Wayanad",
+                    "block": name,
+                    "rainfall_3d_mm": random.uniform(80, 200),
+                    "soil_moisture_pct": random.uniform(65, 95),
+                },
+            }
+        )
     return features
 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(
         "backend.api.main:app",
         host=os.getenv("HOST", "0.0.0.0"),

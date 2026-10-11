@@ -15,7 +15,7 @@ export default function DevelopersPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('http://localhost:8000/v1/apikeys/generate', {
+      const res = await fetch('/api/v1/apikeys/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -106,7 +106,7 @@ export default function DevelopersPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-slope-accent hover:bg-[#f3ead8] text-slope-bg font-medium py-3 rounded-lg shadow-lg hover:shadow-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-forest hover:bg-forest-deep text-paper font-medium py-3 rounded-lg shadow-lg hover:shadow-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Generating...' : 'Generate API Key'}
               </button>
@@ -144,7 +144,7 @@ export default function DevelopersPage() {
                 </button>
                 <Link
                   href="/api-docs"
-                  className="flex-1 bg-slope-accent hover:bg-[#f3ead8] text-slope-bg text-center py-3 rounded-lg font-medium transition-colors"
+                  className="flex-1 bg-forest hover:bg-forest-deep text-paper text-center py-3 rounded-lg font-medium transition-colors"
                 >
                   Go to API Docs
                 </Link>

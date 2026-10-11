@@ -26,12 +26,12 @@ INDIA_BBOX = {"min_lat": 6.0, "max_lat": 38.0, "min_lon": 66.0, "max_lon": 98.0}
 class DEMProcessor:
     """
     Downloads and processes Copernicus GLO-30 DEM.
-    
+
     Derived products used in FPI:
     - slope_degrees: terrain steepness (key failure predictor)
     - aspect: slope orientation (affects drainage and sun exposure)
     - curvature: concave slopes accumulate water → higher risk
-    
+
     DEM is static — processed once and cached indefinitely.
     """
 
@@ -49,10 +49,10 @@ class DEMProcessor:
     ) -> xr.Dataset:
         """
         Return slope and aspect grids for the given bbox.
-        
+
         Resamples DEM from 30m to ~1km to match FPI grid.
         Uses GDAL-based slope computation.
-        
+
         Returns:
             Dataset with slope_degrees and aspect_degrees variables
         """
@@ -75,15 +75,21 @@ class DEMProcessor:
         # Compute slope and aspect
         slope, aspect = self._compute_slope_aspect(dem)
 
-        ds = xr.Dataset({
-            "slope_degrees": slope,
-            "aspect_degrees": aspect,
-            "elevation_m": dem,
-        })
+        ds = xr.Dataset(
+            {
+                "slope_degrees": slope,
+                "aspect_degrees": aspect,
+                "elevation_m": dem,
+            }
+        )
 
         # Resample to target resolution
-        ds = ds.coarsen(lat=max(1, int(target_resolution_deg / 0.0002778)), boundary="trim").mean()
-        ds = ds.coarsen(lon=max(1, int(target_resolution_deg / 0.0002778)), boundary="trim").mean()
+        ds = ds.coarsen(
+            lat=max(1, int(target_resolution_deg / 0.0002778)), boundary="trim"
+        ).mean()
+        ds = ds.coarsen(
+            lon=max(1, int(target_resolution_deg / 0.0002778)), boundary="trim"
+        ).mean()
 
         ds.to_netcdf(cache_path)
         logger.info(f"DEM: slope grid cached to {cache_path}")
@@ -124,7 +130,12 @@ class DEMProcessor:
                 headers={"Authorization": f"Bearer {token}"},
                 json={
                     "collections": [self.COLLECTION],
-                    "bbox": [bbox["min_lon"], bbox["min_lat"], bbox["max_lon"], bbox["max_lat"]],
+                    "bbox": [
+                        bbox["min_lon"],
+                        bbox["min_lat"],
+                        bbox["max_lon"],
+                        bbox["max_lat"],
+                    ],
                     "limit": 100,
                 },
                 timeout=30,
@@ -157,6 +168,7 @@ class DEMProcessor:
 
             # Mosaic
             from rioxarray.merge import merge_arrays
+
             mosaic = merge_arrays(tile_arrays)
             mosaic.name = "elevation_m"
             return mosaic
@@ -170,16 +182,18 @@ class DEMProcessor:
     ) -> Tuple[xr.DataArray, xr.DataArray]:
         """
         Compute slope (degrees) and aspect from DEM using finite differences.
-        
+
         Slope formula: arctan(√(dz/dx² + dz/dy²)) × 180/π
         """
         try:
             data = dem.values.astype(float)
-            
+
             # Resolution in meters (approximate for India lat range)
             lat_spacing_m = 111_000 * abs(float(dem.lat[1] - dem.lat[0]))
-            lon_spacing_m = 111_000 * abs(float(dem.lon[1] - dem.lon[0])) * np.cos(
-                np.radians(float(dem.lat.mean()))
+            lon_spacing_m = (
+                111_000
+                * abs(float(dem.lon[1] - dem.lon[0]))
+                * np.cos(np.radians(float(dem.lat.mean())))
             )
 
             # Gradients
@@ -207,7 +221,9 @@ class DEMProcessor:
             zeros = xr.zeros_like(dem)
             return zeros.rename("slope_degrees"), zeros.rename("aspect_degrees")
 
-    def _generate_synthetic_dem(self, bbox: dict, resolution: float = 0.01) -> xr.DataArray:
+    def _generate_synthetic_dem(
+        self, bbox: dict, resolution: float = 0.01
+    ) -> xr.DataArray:
         """
         Synthetic DEM for development.
         Mimics Western Ghats topography: steep escarpment on west side.
@@ -243,7 +259,7 @@ class DEMProcessor:
     def classify_slope_risk(self, slope_degrees: float) -> float:
         """
         Map slope angle to FPI contribution weight.
-        
+
         Based on NDMA and GSI landslide susceptibility research for India:
         - <15°: very low slope risk
         - 15–25°: moderate
@@ -266,10 +282,10 @@ class DEMProcessor:
 class Sentinel2Ingestion:
     """
     Fetches Sentinel-2 NDVI to detect vegetation cover change.
-    
+
     Vegetation loss (clear-cutting, previous slide disturbance) reduces
     root cohesion and increases surface runoff → raises failure probability.
-    
+
     We compute 10-day NDVI composite (2 acquisitions averaged) and
     compare to 30-day baseline to detect change.
     """
@@ -289,9 +305,9 @@ class Sentinel2Ingestion:
     ) -> xr.DataArray:
         """
         Compute NDVI change between current 10-day window and 30-day baseline.
-        
+
         Negative delta (vegetation loss) → increases FPI.
-        
+
         Returns:
             DataArray with NDVI delta values (-1 to +1)
         """
@@ -356,7 +372,12 @@ class Sentinel2Ingestion:
                 headers={"Authorization": f"Bearer {token}"},
                 json={
                     "collections": ["SENTINEL-2"],
-                    "bbox": [bbox["min_lon"], bbox["min_lat"], bbox["max_lon"], bbox["max_lat"]],
+                    "bbox": [
+                        bbox["min_lon"],
+                        bbox["min_lat"],
+                        bbox["max_lon"],
+                        bbox["max_lat"],
+                    ],
                     "datetime": f"{start_date.strftime('%Y-%m-%dT00:00:00Z')}/{end_date.strftime('%Y-%m-%dT23:59:59Z')}",
                     "query": {"eo:cloud_cover": {"lt": 30}},
                     "limit": 5,
@@ -380,8 +401,16 @@ class Sentinel2Ingestion:
                     if not b4_href or not b8_href:
                         continue
 
-                    b4 = rioxarray.open_rasterio(b4_href, masked=True).squeeze().astype(float)
-                    b8 = rioxarray.open_rasterio(b8_href, masked=True).squeeze().astype(float)
+                    b4 = (
+                        rioxarray.open_rasterio(b4_href, masked=True)
+                        .squeeze()
+                        .astype(float)
+                    )
+                    b8 = (
+                        rioxarray.open_rasterio(b8_href, masked=True)
+                        .squeeze()
+                        .astype(float)
+                    )
 
                     ndvi = (b8 - b4) / (b8 + b4 + 1e-10)
                     ndvi = ndvi.clip(-1, 1)
@@ -400,7 +429,9 @@ class Sentinel2Ingestion:
             logger.error(f"Sentinel-2 fetch failed: {e}")
             return self._generate_synthetic_ndvi(bbox)
 
-    def _generate_synthetic_ndvi(self, bbox: dict, resolution: float = 0.01) -> xr.DataArray:
+    def _generate_synthetic_ndvi(
+        self, bbox: dict, resolution: float = 0.01
+    ) -> xr.DataArray:
         """Synthetic NDVI — dense forest in Western Ghats (0.7–0.9 typical)."""
         lats = np.arange(bbox["min_lat"], bbox["max_lat"] + resolution, resolution)
         lons = np.arange(bbox["min_lon"], bbox["max_lon"] + resolution, resolution)

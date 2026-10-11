@@ -109,9 +109,9 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="editorial-shell min-h-screen bg-slope-bg text-white overflow-hidden">
-      <header className="border-b border-white/10 px-6 py-8 relative z-10 bg-black/20 backdrop-blur-md">
-        <div className="mx-auto max-w-2xl">
+    <div className="editorial-shell overflow-hidden">
+      <header className="border-b border-white/10  py-8 relative z-10 bg-black/20 backdrop-blur-md">
+        <div className="mx-auto max-w-2xl px-6">
           <nav className="mb-4 flex items-center gap-2 text-small font-bold uppercase tracking-[0.2em] text-white/40">
             <Link href="/" className="hover:text-white transition-colors">SlopeSense</Link>
             <span>/</span>

@@ -24,7 +24,9 @@ async def run_checks():
                 marker = "OK" if resp.status_code < 400 else "FAIL"
                 if resp.status_code >= 400:
                     failed += 1
-                print(f"{marker} {name}: HTTP {resp.status_code} ({len(resp.content)} bytes)")
+                print(
+                    f"{marker} {name}: HTTP {resp.status_code} ({len(resp.content)} bytes)"
+                )
             except Exception as exc:
                 print(f"FAIL {name}: {exc}")
                 failed += 1
@@ -33,5 +35,9 @@ async def run_checks():
 
 if __name__ == "__main__":
     failed_count = asyncio.run(run_checks())
-    print("\nALL CHECKS PASSED" if failed_count == 0 else f"\n{failed_count} CHECKS FAILED")
+    print(
+        "\nALL CHECKS PASSED"
+        if failed_count == 0
+        else f"\n{failed_count} CHECKS FAILED"
+    )
     sys.exit(0 if failed_count == 0 else 1)

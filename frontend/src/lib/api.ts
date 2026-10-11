@@ -144,7 +144,7 @@ async function fetchJSON<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  health: () => fetchJSON<{ status: string; active_alerts: number; last_model_run: string | null }>('/'),
+  health: () => fetchJSON<{ status: string; active_alerts: number; last_model_run: string | null; data_mode?: string }>('/health'),
 
   activeAlerts: (params?: { min_fpi?: number; tier?: string; state?: string }) => {
     const qs = new URLSearchParams();

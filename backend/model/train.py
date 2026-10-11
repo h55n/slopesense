@@ -23,19 +23,23 @@ class ModelTrainer:
         lat_col = "latitude" if "latitude" in df.columns else "lat"
         lon_col = "longitude" if "longitude" in df.columns else "lon"
         date_col = "event_date" if "event_date" in df.columns else "date"
-        india = df[
-            df[lat_col].between(6, 38)
-            & df[lon_col].between(66, 98)
-        ].copy()
+        india = df[df[lat_col].between(6, 38) & df[lon_col].between(66, 98)].copy()
         india["event_date"] = pd.to_datetime(india[date_col], errors="coerce", utc=True)
         india = india.dropna(subset=[lat_col, lon_col, "event_date"])
         india = india.rename(columns={lat_col: "lat", lon_col: "lon"})
         return india[["lat", "lon", "event_date"]].reset_index(drop=True)
 
-    def extract_features_for_event(self, lat: float, lon: float, event_date: datetime) -> dict:
+    def extract_features_for_event(
+        self, lat: float, lon: float, event_date: datetime
+    ) -> dict:
         """Extract feature values for the grid cell nearest an event at T-24h."""
         run_time = event_date - timedelta(hours=24)
-        bbox = {"min_lat": lat - 0.15, "max_lat": lat + 0.15, "min_lon": lon - 0.15, "max_lon": lon + 0.15}
+        bbox = {
+            "min_lat": lat - 0.15,
+            "max_lat": lat + 0.15,
+            "min_lon": lon - 0.15,
+            "max_lon": lon + 0.15,
+        }
         grid = DataPreprocessor(bbox=bbox).build_feature_grid(run_time=run_time)
         i = int(np.argmin(np.abs(grid.lats - lat)))
         j = int(np.argmin(np.abs(grid.lons - lon)))
@@ -56,7 +60,9 @@ class ModelTrainer:
         """Build positive event rows plus random synthetic non-event negatives."""
         rows = []
         for event in events.itertuples(index=False):
-            features = self.extract_features_for_event(event.lat, event.lon, event.event_date.to_pydatetime())
+            features = self.extract_features_for_event(
+                event.lat, event.lon, event.event_date.to_pydatetime()
+            )
             features["label"] = 1
             rows.append(features)
 
@@ -76,13 +82,22 @@ class ModelTrainer:
         df = pd.DataFrame(rows)
         return df[list(FEATURE_WEIGHTS.keys())].fillna(0), df["label"].astype(int)
 
-    def train_and_evaluate(self, X: pd.DataFrame, y: pd.Series, epochs: int = 300) -> dict:
+    def train_and_evaluate(
+        self, X: pd.DataFrame, y: pd.Series, epochs: int = 300
+    ) -> dict:
         """Train LightGBM, cross-validate once, and return operating metrics."""
         import lightgbm as lgb
-        from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score
+        from sklearn.metrics import (
+            f1_score,
+            precision_score,
+            recall_score,
+            roc_auc_score,
+        )
         from sklearn.model_selection import train_test_split
 
-        X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+        X_train, X_val, y_train, y_val = train_test_split(
+            X, y, test_size=0.2, random_state=42, stratify=y
+        )
         model = lgb.LGBMClassifier(
             n_estimators=epochs,
             learning_rate=0.05,
@@ -105,7 +120,9 @@ class ModelTrainer:
             "n_val": int(len(X_val)),
         }
 
-    def save_model(self, model, metrics: dict, output_dir: Path = Path("data/model")) -> Path:
+    def save_model(
+        self, model, metrics: dict, output_dir: Path = Path("data/model")
+    ) -> Path:
         """Save model plus metadata."""
         import joblib
 
@@ -124,10 +141,16 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="SlopeSense Model Trainer")
-    parser.add_argument("--download", action="store_true", help="Download NASA GLC events")
+    parser.add_argument(
+        "--download", action="store_true", help="Download NASA GLC events"
+    )
     parser.add_argument("--epochs", type=int, default=300, help="LightGBM epochs")
-    parser.add_argument("--negative-ratio", type=int, default=5, help="Negative sample ratio")
-    parser.add_argument("--output", type=str, default="data/model", help="Output directory")
+    parser.add_argument(
+        "--negative-ratio", type=int, default=5, help="Negative sample ratio"
+    )
+    parser.add_argument(
+        "--output", type=str, default="data/model", help="Output directory"
+    )
     args = parser.parse_args()
 
     trainer = ModelTrainer()
@@ -139,16 +162,28 @@ def main():
         if len(events) < 10:
             print("  Too few events — building training set from synthetic defaults")
             import pandas as pd
-            events = pd.DataFrame({
-                "lat": [11.583, 10.15, 13.05, 9.58, 12.92],
-                "lon": [76.083, 77.15, 80.25, 76.25, 75.55],
-                "event_date": pd.to_datetime([
-                    "2024-07-30", "2023-08-15", "2021-12-18", "2019-08-08", "2024-06-22",
-                ], utc=True),
-            })
+
+            events = pd.DataFrame(
+                {
+                    "lat": [11.583, 10.15, 13.05, 9.58, 12.92],
+                    "lon": [76.083, 77.15, 80.25, 76.25, 75.55],
+                    "event_date": pd.to_datetime(
+                        [
+                            "2024-07-30",
+                            "2023-08-15",
+                            "2021-12-18",
+                            "2019-08-08",
+                            "2024-06-22",
+                        ],
+                        utc=True,
+                    ),
+                }
+            )
 
         print("Building training dataset...")
-        X, y = trainer.build_training_dataset(events, negative_ratio=args.negative_ratio)
+        X, y = trainer.build_training_dataset(
+            events, negative_ratio=args.negative_ratio
+        )
         print(f"  X: {X.shape}, y: {y.sum()} positives / {(y == 0).sum()} negatives")
 
         print("Training LightGBM model...")
@@ -158,7 +193,9 @@ def main():
         print(f"  Recall@0.65: {metrics['recall_at_065']:.4f}")
         print(f"  F1@0.65: {metrics['f1_at_065']:.4f}")
 
-        output_path = trainer.save_model(metrics["model"], metrics, output_dir=Path(args.output))
+        output_path = trainer.save_model(
+            metrics["model"], metrics, output_dir=Path(args.output)
+        )
         print(f"  Model saved to: {output_path}")
     else:
         parser.print_help()

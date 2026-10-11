@@ -1,4 +1,5 @@
 """SlopeSense ingestion package — satellite data fetchers."""
+
 from .gpm import GPMIngestion, GFSIngestion
 from .smap import SMAPIngestion
 from .copernicus import DEMProcessor, Sentinel2Ingestion

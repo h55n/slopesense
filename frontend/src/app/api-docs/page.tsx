@@ -27,9 +27,9 @@ interface EndpointGroup {
 
 export default function ApiDocsPage() {
   return (
-    <div className="min-h-screen bg-slope-bg text-white">
-      <header className="border-b border-white/10 px-6 py-5">
-        <div className="mx-auto max-w-6xl">
+    <div className="">
+      <header className="border-b border-white/10  py-5">
+        <div className="mx-auto max-w-6xl px-6">
           <nav className="mb-3 flex items-center gap-2 text-xs text-white/40">
             <Link href="/" className="hover:text-white transition-colors">SlopeSense</Link>
             <span>/</span>
@@ -46,7 +46,7 @@ export default function ApiDocsPage() {
             </div>
             <Link
               href="/developers"
-              className="shrink-0 bg-slope-accent hover:bg-[#f3ead8] text-slope-bg font-medium py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-colors flex items-center gap-2"
+              className="shrink-0 bg-forest hover:bg-forest-deep text-paper font-medium py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-colors flex items-center gap-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
               Get API Key
@@ -117,7 +117,7 @@ export default function ApiDocsPage() {
                 </p>
                 <div className="rounded-lg bg-black/50 p-4">
                   <code className="text-sm text-green-400">
-                    curl -H &quot;X-API-Key: your_key&quot; https://api.slopesense.in/v1/alerts/active
+                    curl -H &quot;X-API-Key: your_key&quot; https://slopesense-olive.vercel.app/api/v1/alerts/active
                   </code>
                 </div>
               </div>
@@ -380,7 +380,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         id: 'ep-ws', method: 'WS', path: '/ws/live', auth: 'Public',
         description: 'WebSocket endpoint for live FPI updates on the dashboard. Sends init state on connect, then pushes on each model run.',
         example: `// JavaScript
-const ws = new WebSocket("wss://api.slopesense.in/ws/live");
+const ws = new WebSocket("wss://YOUR-API-HOST/ws/live");
 ws.onmessage = (e) => console.log(JSON.parse(e.data));`,
       },
     ],

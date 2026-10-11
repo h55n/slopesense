@@ -130,13 +130,26 @@ class TestRiskLevelsDataIntegrity:
     def test_risk_levels_ordered_descending(self):
         """min_fpi values must be strictly decreasing."""
         fpis = [level["min_fpi"] for level in RISK_LEVELS]
-        assert fpis == sorted(fpis, reverse=True), "RISK_LEVELS must be ordered high→low FPI"
+        assert fpis == sorted(
+            fpis, reverse=True
+        ), "RISK_LEVELS must be ordered high→low FPI"
 
     def test_lowest_level_has_min_fpi_zero(self):
-        assert RISK_LEVELS[-1]["min_fpi"] == 0.0, "Last level must start at 0.0 to catch all scores"
+        assert (
+            RISK_LEVELS[-1]["min_fpi"] == 0.0
+        ), "Last level must start at 0.0 to catch all scores"
 
     def test_all_required_keys_present(self):
-        required = {"min_fpi", "label", "short", "description", "action", "color", "bg_color", "emoji"}
+        required = {
+            "min_fpi",
+            "label",
+            "short",
+            "description",
+            "action",
+            "color",
+            "bg_color",
+            "emoji",
+        }
         for level in RISK_LEVELS:
             missing = required - set(level.keys())
             assert not missing, f"Level {level.get('label')} missing keys: {missing}"

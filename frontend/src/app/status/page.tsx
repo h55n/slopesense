@@ -11,6 +11,7 @@ interface SystemStatus {
   api:           'ok' | 'error' | 'loading';
   lastModelRun:  string | null;
   activeAlerts:  number;
+  dataMode:      string;
   retrospective: { total: number; flagged: number; passed: boolean } | null;
 }
 
@@ -47,20 +48,21 @@ const PIPELINE_MINI = [
 
 export default function StatusPage() {
   const [status, setStatus] = useState<SystemStatus>({
-    api: 'loading', lastModelRun: null, activeAlerts: 0, retrospective: null,
+    api: 'loading', lastModelRun: null, activeAlerts: 0, dataMode: 'idle', retrospective: null,
   });
 
   useEffect(() => {
     async function checkStatus() {
       try {
         const [health, retro] = await Promise.all([
-          fetch(`${API_BASE}/`).then(r => r.json()),
+          fetch(`${API_BASE}/health`).then(r => { if (!r.ok) throw new Error('health'); return r.json(); }),
           fetch(`${API_BASE}/v1/retrospective`).then(r => r.json()),
         ]);
         setStatus({
           api:           'ok',
           lastModelRun:  health.last_model_run,
           activeAlerts:  health.active_alerts ?? 0,
+          dataMode:      health.data_mode ?? 'idle',
           retrospective: retro
             ? { total: retro.total_events ?? 6, flagged: retro.flagged_at_t24 ?? 4, passed: retro.passed ?? true }
             : null,
@@ -85,11 +87,11 @@ export default function StatusPage() {
   ];
 
   return (
-    <div className="editorial-shell min-h-screen bg-slope-bg text-white overflow-hidden">
+    <div className="editorial-shell overflow-hidden">
 
       {/* ── Header ── */}
-      <header className="border-b border-white/6 px-6 py-8 bg-black/20 backdrop-blur-md">
-        <div className="mx-auto max-w-4xl">
+      <header className="border-b border-white/6  py-8 bg-black/20 backdrop-blur-md">
+        <div className="mx-auto max-w-4xl px-6">
           <nav className="mb-4 flex items-center gap-2 text-tiny font-bold uppercase tracking-[0.22em] text-white/30">
             <Link href="/" className="hover:text-slope-accent hover:underline transition-all cursor-pointer">SlopeSense</Link>
             <span className="text-white/15">/</span>
@@ -118,7 +120,7 @@ export default function StatusPage() {
                 status.api === 'loading' ? 'bg-amber-400   animate-pulse' :
                                            'bg-red-400'
               }`} />
-              {status.api === 'ok'      ? 'All Systems Operational' :
+              {status.api === 'ok'      ? (status.dataMode === 'sample' ? 'API online · sample data' : 'All systems operational') :
                status.api === 'loading' ? 'Checking…'              :
                                           'API Unreachable'}
             </motion.div>
@@ -210,7 +212,7 @@ export default function StatusPage() {
               value={status.lastModelRun ? new Date(status.lastModelRun).toLocaleTimeString('en-IN') : '—'}
               sub={status.lastModelRun ? new Date(status.lastModelRun).toLocaleDateString('en-IN') : 'Not yet run'}
             />
-            <InfoCard label="Active Alerts"   value={String(status.activeAlerts)} sub="Current model run" />
+            <InfoCard label="Active Alerts"   value={String(status.activeAlerts)} sub={status.dataMode === 'sample' ? 'Bundled sample alerts' : 'Current model run'} />
             <InfoCard label="Run Interval"    value="6 hours" sub="Scheduled via APScheduler" />
           </div>
         </motion.section>
@@ -307,7 +309,7 @@ export default function StatusPage() {
                 <span className={`text-micro font-bold uppercase tracking-[0.2em] ${
                   src.status === 'active' ? 'text-emerald-400' : 'text-white/25'
                 }`}>
-                  {src.status === 'active' ? 'Active' : 'Optional'}
+                  {src.status === 'active' ? 'Configured' : 'Optional'}
                 </span>
               </motion.div>
             ))}

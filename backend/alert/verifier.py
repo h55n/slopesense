@@ -1,7 +1,7 @@
 """
 SlopeSense — Agentic LLM Verifier
 
-Agent 2 (Auditor): Reviews the mathematical FPI model's (Agent 1) proposed alerts 
+Agent 2 (Auditor): Reviews the mathematical FPI model's (Agent 1) proposed alerts
 to suppress false positives by analyzing contextual telemetry.
 """
 
@@ -11,6 +11,7 @@ import os
 from typing import Dict, Tuple
 
 logger = logging.getLogger(__name__)
+
 
 class LLMVerifier:
     """
@@ -25,11 +26,14 @@ class LLMVerifier:
         if self.api_key:
             try:
                 import google.generativeai as genai
+
                 genai.configure(api_key=self.api_key)
-                self.model = genai.GenerativeModel('gemini-1.5-pro')
+                self.model = genai.GenerativeModel("gemini-1.5-pro")
                 self.has_llm = True
             except ImportError:
-                logger.warning("google-generativeai not installed. Using dummy verifier.")
+                logger.warning(
+                    "google-generativeai not installed. Using dummy verifier."
+                )
                 self.has_llm = False
         else:
             logger.info("No GEMINI_API_KEY provided. Using dummy verifier.")
@@ -41,16 +45,19 @@ class LLMVerifier:
         Returns:
             (is_approved: bool, reason: str)
         """
-        fpi = block_data.get('fpi_score', 0)
-        rainfall = block_data.get('rainfall_3d_mm', 0)
-        soil = block_data.get('soil_moisture_percentile', 0)
-        tier = block_data.get('tier', 'UNKNOWN')
+        fpi = block_data.get("fpi_score", 0)
+        rainfall = block_data.get("rainfall_3d_mm", 0)
+        soil = block_data.get("soil_moisture_percentile", 0)
+        tier = block_data.get("tier", "UNKNOWN")
 
         if not self.has_llm:
             # Fallback heuristic if no LLM is available
             # Suppress high alerts if there's very little rain and low soil moisture
             if fpi > 0.65 and rainfall < 50 and soil < 60:
-                return False, "Suppressed by heuristic: High FPI but insufficient rainfall and soil moisture."
+                return (
+                    False,
+                    "Suppressed by heuristic: High FPI but insufficient rainfall and soil moisture.",
+                )
             return True, "Approved by heuristic (No LLM available)."
 
         prompt = f"""
@@ -77,9 +84,11 @@ class LLMVerifier:
                 text = text[7:-3]
             elif text.startswith("```"):
                 text = text[3:-3]
-                
+
             data = json.loads(text)
-            return data.get("approved", True), data.get("reason", "LLM review complete.")
+            return data.get("approved", True), data.get(
+                "reason", "LLM review complete."
+            )
         except Exception as e:
             logger.error(f"LLM Verification failed: {e}")
             return True, f"Verification failed, defaulting to approve: {str(e)}"

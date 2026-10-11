@@ -57,7 +57,9 @@ async def get_cache():
     try:
         import redis.asyncio as redis
 
-        client = redis.from_url(settings.redis_url, encoding="utf-8", decode_responses=True)
+        client = redis.from_url(
+            settings.redis_url, encoding="utf-8", decode_responses=True
+        )
         await client.ping()
         _cache = RedisCache(client)
     except Exception as exc:

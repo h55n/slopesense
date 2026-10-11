@@ -303,8 +303,7 @@ def run_migration():
     import psycopg2
 
     db_url = os.environ.get(
-        "DATABASE_URL",
-        "postgresql://slopesense:slopesense@localhost:5432/slopesense"
+        "DATABASE_URL", "postgresql://slopesense:slopesense@localhost:5432/slopesense"
     )
 
     logger.info(f"Connecting to: {db_url.split('@')[1] if '@' in db_url else db_url}")

@@ -82,17 +82,22 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         path = request.url.path
-        requires_key = any(path.startswith(prefix) for prefix in self.protected_prefixes)
-        
+        requires_key = any(
+            path.startswith(prefix) for prefix in self.protected_prefixes
+        )
+
         if not requires_key:
             return await call_next(request)
 
         api_key = request.headers.get("x-api-key")
         configured_keys = set(settings.api_key_list)
-        
+
         if not api_key:
             if settings.is_production and not configured_keys:
-                return _json_response(status.HTTP_503_SERVICE_UNAVAILABLE, "API key authentication is not configured")
+                return _json_response(
+                    status.HTTP_503_SERVICE_UNAVAILABLE,
+                    "API key authentication is not configured",
+                )
             return _json_response(401, "Missing or invalid API key")
 
         # 1. Check fallback/hardcoded keys first
@@ -103,11 +108,15 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
         from backend.api.database import AsyncSessionLocal
         from backend.models import ApiKey
         from sqlalchemy import select
-        
+
         is_valid = False
         try:
             async with AsyncSessionLocal() as session:
-                result = await session.execute(select(ApiKey).where(ApiKey.key == api_key, ApiKey.is_active == True))
+                result = await session.execute(
+                    select(ApiKey).where(
+                        ApiKey.key == api_key, ApiKey.is_active == True
+                    )
+                )
                 db_key = result.scalars().first()
                 if db_key:
                     is_valid = True
@@ -115,7 +124,7 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
                     request.state.tier = db_key.tier
         except Exception as e:
             logger.error(f"Error checking API key in DB: {e}")
-            
+
         if not is_valid:
             return _json_response(401, "Missing or invalid API key")
 
@@ -125,7 +134,9 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
 class RateLimitMiddleware(BaseHTTPMiddleware):
     """Redis-backed sliding window rate limiter with in-memory fallback."""
 
-    def __init__(self, app, redis_url: Optional[str] = None, window_seconds: int = 3600):
+    def __init__(
+        self, app, redis_url: Optional[str] = None, window_seconds: int = 3600
+    ):
         super().__init__(app)
         self.redis_url = redis_url
         self.window_seconds = window_seconds
@@ -139,7 +150,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         try:
             import redis.asyncio as redis
 
-            self.redis = redis.from_url(self.redis_url, encoding="utf-8", decode_responses=True)
+            self.redis = redis.from_url(
+                self.redis_url, encoding="utf-8", decode_responses=True
+            )
             await self.redis.ping()
             return self.redis
         except Exception as exc:
@@ -176,7 +189,11 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         return len(window) <= limit
 
     async def dispatch(self, request: Request, call_next):
-        if request.method == "OPTIONS" or request.url.path in {"/", "/docs", "/openapi.json"}:
+        if request.method == "OPTIONS" or request.url.path in {
+            "/",
+            "/docs",
+            "/openapi.json",
+        }:
             return await call_next(request)
 
         now = time.time()

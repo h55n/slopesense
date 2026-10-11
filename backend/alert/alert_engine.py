@@ -52,8 +52,8 @@ TIER_ACTIONS = {
 }
 
 TIER_EMOJI = {
-    "WATCH":     "🟡",
-    "WARNING":   "🔴",
+    "WATCH": "🟡",
+    "WARNING": "🔴",
     "EMERGENCY": "🆘",
     "MONITORING": "🔵",
 }
@@ -99,10 +99,12 @@ class AlertEngine:
             if tier in ("NORMAL", "MONITORING"):
                 # If there was a previous active alert, expire it
                 if prev and prev.get("is_active"):
-                    expired_alerts.append({
-                        "block_code": block.block_code,
-                        "cleared_at": block.run_timestamp,
-                    })
+                    expired_alerts.append(
+                        {
+                            "block_code": block.block_code,
+                            "cleared_at": block.run_timestamp,
+                        }
+                    )
                 continue
 
             # Temporal persistence check
@@ -115,9 +117,9 @@ class AlertEngine:
 
             # Should WhatsApp fire?
             should_notify = (
-                tier == "EMERGENCY" or  # always immediate
-                (tier == "WARNING" and consecutive >= 2) or
-                (tier == "WATCH" and consecutive >= 3)
+                tier == "EMERGENCY"  # always immediate
+                or (tier == "WARNING" and consecutive >= 2)
+                or (tier == "WATCH" and consecutive >= 3)
             )
 
             alert = {
@@ -148,16 +150,20 @@ class AlertEngine:
                 "issued_at": block.run_timestamp,
                 "should_notify": should_notify,
             }
-            
+
             # AGENT 2: Audit the alert if it's high risk
             if tier in ("WARNING", "EMERGENCY"):
                 approved, reason = await self.verifier.verify(alert)
                 if not approved:
                     alert["is_suppressed"] = True
                     alert["should_notify"] = False
-                    logger.warning(f"Alert {alert['alert_code']} suppressed by Auditor: {reason}")
+                    logger.warning(
+                        f"Alert {alert['alert_code']} suppressed by Auditor: {reason}"
+                    )
                 else:
-                    logger.info(f"Alert {alert['alert_code']} approved by Auditor: {reason}")
+                    logger.info(
+                        f"Alert {alert['alert_code']} approved by Auditor: {reason}"
+                    )
 
             new_alerts.append(alert)
 
@@ -202,9 +208,17 @@ class AlertEngine:
         sm_pct = alert.get("soil_moisture_percentile", 0)
 
         if language == "hi":
-            tier_label = {"WATCH": "मध्यम", "WARNING": "उच्च", "EMERGENCY": "बहुत उच्च"}.get(tier, tier)
+            tier_label = {
+                "WATCH": "मध्यम",
+                "WARNING": "उच्च",
+                "EMERGENCY": "बहुत उच्च",
+            }.get(tier, tier)
             action = TIER_ACTIONS.get(tier, {}).get("hi", "")
-            timestamp = alert["issued_at"].strftime("%d %B, %H:%M IST") if hasattr(alert["issued_at"], "strftime") else str(alert["issued_at"])
+            timestamp = (
+                alert["issued_at"].strftime("%d %B, %H:%M IST")
+                if hasattr(alert["issued_at"], "strftime")
+                else str(alert["issued_at"])
+            )
             msg = (
                 f"{emoji} SLOPESENSE {tier_label.upper()} चेतावनी\n"
                 f"जिला: {alert['district_name']} | ब्लॉक: {alert['block_name']}\n\n"
@@ -216,7 +230,11 @@ class AlertEngine:
                 f"अपडेट: {timestamp}"
             )
         elif language == "ml":
-            tier_label = {"WATCH": "മിതമായ", "WARNING": "ഉയർന്ന", "EMERGENCY": "അതി ഉയർന്ന"}.get(tier, tier)
+            tier_label = {
+                "WATCH": "മിതമായ",
+                "WARNING": "ഉയർന്ന",
+                "EMERGENCY": "അതി ഉയർന്ന",
+            }.get(tier, tier)
             action = TIER_ACTIONS.get(tier, {}).get("ml", "")
             msg = (
                 f"{emoji} SLOPESENSE {tier_label.upper()} മുന്നറിയിപ്പ്\n"
@@ -229,9 +247,17 @@ class AlertEngine:
             )
         else:
             # English default
-            tier_label = {"WATCH": "ELEVATED", "WARNING": "HIGH", "EMERGENCY": "CRITICAL"}.get(tier, tier)
+            tier_label = {
+                "WATCH": "ELEVATED",
+                "WARNING": "HIGH",
+                "EMERGENCY": "CRITICAL",
+            }.get(tier, tier)
             action = TIER_ACTIONS.get(tier, {}).get("en", "")
-            timestamp = alert["issued_at"].strftime("%d %b %Y, %H:%M UTC") if hasattr(alert["issued_at"], "strftime") else str(alert["issued_at"])
+            timestamp = (
+                alert["issued_at"].strftime("%d %b %Y, %H:%M UTC")
+                if hasattr(alert["issued_at"], "strftime")
+                else str(alert["issued_at"])
+            )
             msg = (
                 f"{emoji} SLOPESENSE {tier_label} RISK ALERT\n"
                 f"District: {alert['district_name']} | Block: {alert['block_name']}\n\n"
@@ -245,7 +271,9 @@ class AlertEngine:
 
         return msg
 
-    def format_cap_xml(self, alert: Dict, base_url: str = "https://api.slopesense.in") -> str:
+    def format_cap_xml(
+        self, alert: Dict, base_url: str = "https://api.slopesense.in"
+    ) -> str:
         """
         Format alert as CAP v1.2 XML.
         Compatible with NDMA Sachet app and any CAP consumer.
@@ -254,11 +282,27 @@ class AlertEngine:
 
         tier = alert["tier"]
         fpi_pct = int(alert["fpi_score"] * 100)
-        urgency = {"WATCH": "Future", "WARNING": "Expected", "EMERGENCY": "Immediate"}.get(tier, "Unknown")
-        severity = {"WATCH": "Minor", "WARNING": "Moderate", "EMERGENCY": "Extreme"}.get(tier, "Unknown")
-        certainty = {"WATCH": "Possible", "WARNING": "Likely", "EMERGENCY": "Observed"}.get(tier, "Unknown")
+        urgency = {
+            "WATCH": "Future",
+            "WARNING": "Expected",
+            "EMERGENCY": "Immediate",
+        }.get(tier, "Unknown")
+        severity = {
+            "WATCH": "Minor",
+            "WARNING": "Moderate",
+            "EMERGENCY": "Extreme",
+        }.get(tier, "Unknown")
+        certainty = {
+            "WATCH": "Possible",
+            "WARNING": "Likely",
+            "EMERGENCY": "Observed",
+        }.get(tier, "Unknown")
 
-        issued = alert["issued_at"].strftime("%Y-%m-%dT%H:%M:%S+00:00") if hasattr(alert["issued_at"], "strftime") else str(alert["issued_at"])
+        issued = (
+            alert["issued_at"].strftime("%Y-%m-%dT%H:%M:%S+00:00")
+            if hasattr(alert["issued_at"], "strftime")
+            else str(alert["issued_at"])
+        )
 
         xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <alert xmlns="urn:oasis:names:tc:emergency:cap:1.2">

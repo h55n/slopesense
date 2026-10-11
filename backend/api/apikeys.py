@@ -39,9 +39,13 @@ async def generate_api_key(req: ApiKeyRequest, db: AsyncSession = Depends(get_db
     Generate a new SlopeSense API Key.
     """
     # Check if email already has an active key
-    existing = await db.execute(select(ApiKey).where(ApiKey.email == req.email, ApiKey.is_active == True))
+    existing = await db.execute(
+        select(ApiKey).where(ApiKey.email == req.email, ApiKey.is_active == True)
+    )
     if existing.scalars().first():
-        raise HTTPException(status_code=400, detail="An active API key already exists for this email.")
+        raise HTTPException(
+            status_code=400, detail="An active API key already exists for this email."
+        )
 
     # Create new key
     new_key = generate_secure_key()
@@ -59,5 +63,5 @@ async def generate_api_key(req: ApiKeyRequest, db: AsyncSession = Depends(get_db
 
     return ApiKeyResponse(
         key=new_key,
-        message="Please copy this key and store it safely. It will not be shown again."
+        message="Please copy this key and store it safely. It will not be shown again.",
     )

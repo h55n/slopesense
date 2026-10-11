@@ -24,17 +24,16 @@ from sqlalchemy.future import select
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 async def run():
     import time
+
     start_time = time.time()
     run_time = datetime.now(timezone.utc)
     logger.info(f"Pipeline: starting scheduled run at {run_time.isoformat()}")
 
     async with AsyncSessionLocal() as db:
-        run_log = PipelineRunLog(
-            run_timestamp=run_time,
-            status="RUNNING"
-        )
+        run_log = PipelineRunLog(run_timestamp=run_time, status="RUNNING")
         db.add(run_log)
         await db.commit()
         await db.refresh(run_log)
@@ -61,12 +60,14 @@ async def run():
                     "block_code": r.block_code,
                     "tier": r.tier.value if hasattr(r.tier, "value") else r.tier,
                     "consecutive_cycles": r.consecutive_cycles,
-                    "is_active": r.is_active
+                    "is_active": r.is_active,
                 }
 
             # 3. Alert Engine
             alert_engine = AlertEngine(db_session=db)
-            new_alerts, expired = await alert_engine.evaluate_blocks(block_fpis, prev_alerts)
+            new_alerts, expired = await alert_engine.evaluate_blocks(
+                block_fpis, prev_alerts
+            )
 
             # Deactivate expired alerts
             for exp in expired:
@@ -79,7 +80,14 @@ async def run():
             # Insert/Update new alerts
             for na in new_alerts:
                 # If there's an existing active alert for this block, update it
-                existing = next((a for a in prev_rows if a.block_code == na["block_code"] and a.is_active), None)
+                existing = next(
+                    (
+                        a
+                        for a in prev_rows
+                        if a.block_code == na["block_code"] and a.is_active
+                    ),
+                    None,
+                )
                 if existing:
                     existing.fpi_score = na["fpi_score"]
                     existing.fpi_ci_lower = na["fpi_ci_lower"]
@@ -91,29 +99,32 @@ async def run():
                     existing.soil_moisture_percentile = na["soil_moisture_percentile"]
                 else:
                     import uuid
-                    db.add(Alert(
-                        id=uuid.UUID(na["id"]),
-                        alert_code=na["alert_code"],
-                        state_code=na["state_code"],
-                        state_name=na["state_name"],
-                        district_code=na["district_code"],
-                        district_name=na["district_name"],
-                        block_code=na["block_code"],
-                        block_name=na["block_name"],
-                        lat=na["lat"],
-                        lon=na["lon"],
-                        fpi_score=na["fpi_score"],
-                        fpi_ci_lower=na["fpi_ci_lower"],
-                        fpi_ci_upper=na["fpi_ci_upper"],
-                        fpi_24h=na["fpi_24h"],
-                        tier=na["tier"],
-                        is_active=na["is_active"],
-                        is_suppressed=na["is_suppressed"],
-                        consecutive_cycles=na["consecutive_cycles"],
-                        issued_at=na["issued_at"],
-                        rainfall_3d_mm=na["rainfall_3d_mm"],
-                        soil_moisture_percentile=na["soil_moisture_percentile"]
-                    ))
+
+                    db.add(
+                        Alert(
+                            id=uuid.UUID(na["id"]),
+                            alert_code=na["alert_code"],
+                            state_code=na["state_code"],
+                            state_name=na["state_name"],
+                            district_code=na["district_code"],
+                            district_name=na["district_name"],
+                            block_code=na["block_code"],
+                            block_name=na["block_name"],
+                            lat=na["lat"],
+                            lon=na["lon"],
+                            fpi_score=na["fpi_score"],
+                            fpi_ci_lower=na["fpi_ci_lower"],
+                            fpi_ci_upper=na["fpi_ci_upper"],
+                            fpi_24h=na["fpi_24h"],
+                            tier=na["tier"],
+                            is_active=na["is_active"],
+                            is_suppressed=na["is_suppressed"],
+                            consecutive_cycles=na["consecutive_cycles"],
+                            issued_at=na["issued_at"],
+                            rainfall_3d_mm=na["rainfall_3d_mm"],
+                            soil_moisture_percentile=na["soil_moisture_percentile"],
+                        )
+                    )
 
             await db.commit()
 
@@ -136,6 +147,7 @@ async def run():
             run_log.duration_seconds = time.time() - start_time
             db.add(run_log)
             await db.commit()
+
 
 if __name__ == "__main__":
     asyncio.run(run())

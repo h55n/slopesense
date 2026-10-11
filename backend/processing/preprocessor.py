@@ -34,20 +34,21 @@ class FeatureGrid:
     Preprocessed feature set ready for FPI model inference.
     All arrays aligned to the same 0.1° grid.
     """
+
     # Coordinates
     lats: np.ndarray
     lons: np.ndarray
     run_timestamp: datetime
 
     # Rainfall features
-    rainfall_3d_mm: np.ndarray         # 3-day accumulated rainfall (GPM)
-    rainfall_24h_mm: np.ndarray        # last 24h rainfall
-    forecast_24h_mm: np.ndarray        # GFS/IMD QPF forecast next 24h
-    forecast_48h_mm: np.ndarray        # GFS/IMD QPF forecast next 48h
+    rainfall_3d_mm: np.ndarray  # 3-day accumulated rainfall (GPM)
+    rainfall_24h_mm: np.ndarray  # last 24h rainfall
+    forecast_24h_mm: np.ndarray  # GFS/IMD QPF forecast next 24h
+    forecast_48h_mm: np.ndarray  # GFS/IMD QPF forecast next 48h
 
     # Soil moisture
-    soil_moisture_pct: np.ndarray      # percentile (0–100)
-    soil_moisture_abs: np.ndarray      # volumetric (m³/m³)
+    soil_moisture_pct: np.ndarray  # percentile (0–100)
+    soil_moisture_abs: np.ndarray  # volumetric (m³/m³)
 
     # Terrain (static)
     slope_degrees: np.ndarray
@@ -55,10 +56,10 @@ class FeatureGrid:
     elevation_m: np.ndarray
 
     # Vegetation
-    ndvi_delta: np.ndarray             # 10-day NDVI change
+    ndvi_delta: np.ndarray  # 10-day NDVI change
 
     # Static susceptibility (NDMA NLSM)
-    susceptibility_class: np.ndarray   # 1 (low) – 5 (very high)
+    susceptibility_class: np.ndarray  # 1 (low) – 5 (very high)
 
     # Data quality flags
     rainfall_synthetic: bool = False
@@ -87,15 +88,17 @@ class FeatureGrid:
 class DataPreprocessor:
     """
     Orchestrates ingestion and preprocessing of all data sources.
-    
+
     Produces a FeatureGrid ready for the FPI model.
     Handles missing data gracefully with synthetic fallbacks.
     """
 
     def __init__(self, bbox: Optional[dict] = None):
         self.bbox = bbox or {
-            "min_lat": 6.0, "max_lat": 38.0,
-            "min_lon": 66.0, "max_lon": 98.0,
+            "min_lat": 6.0,
+            "max_lat": 38.0,
+            "min_lon": 66.0,
+            "max_lon": 98.0,
         }
         self.target_lats = np.arange(
             self.bbox["min_lat"],
@@ -111,10 +114,10 @@ class DataPreprocessor:
     def build_feature_grid(self, run_time: Optional[datetime] = None) -> FeatureGrid:
         """
         Main entry point: fetch all data sources and build feature grid.
-        
+
         Args:
             run_time: timestamp for this model run (defaults to now)
-            
+
         Returns:
             FeatureGrid with all features aligned to 0.1° grid
         """
@@ -124,8 +127,11 @@ class DataPreprocessor:
         logger.info(f"Building feature grid for run: {run_time.isoformat()}")
 
         from ..ingestion import (
-            GPMIngestion, GFSIngestion, SMAPIngestion,
-            DEMProcessor, Sentinel2Ingestion,
+            GPMIngestion,
+            GFSIngestion,
+            SMAPIngestion,
+            DEMProcessor,
+            Sentinel2Ingestion,
         )
 
         # ── 1. Rainfall (GPM / Fallback to Open-Meteo) ────────────────────────
@@ -134,13 +140,18 @@ class DataPreprocessor:
             gpm = GPMIngestion()
             rainfall_3d = gpm.compute_accumulation(run_time, days=3, bbox=self.bbox)
             rainfall_1d = gpm.compute_accumulation(run_time, days=1, bbox=self.bbox)
-            rain_synthetic = getattr(rainfall_3d.attrs, "get", lambda k, d: d)("synthetic", False)
+            rain_synthetic = getattr(rainfall_3d.attrs, "get", lambda k, d: d)(
+                "synthetic", False
+            )
         except Exception as e:
-            logger.warning(f"GPM failed ({e}). Falling back to Open-Meteo for historical rainfall...")
+            logger.warning(
+                f"GPM failed ({e}). Falling back to Open-Meteo for historical rainfall..."
+            )
             from ..ingestion.open_meteo import OpenMeteoIngestion
+
             om = OpenMeteoIngestion()
             # Open-Meteo provides 24h forecast, we will use it as a proxy or just synthetic if missing
-            rainfall_3d = om.get_24h_forecast_mm(bbox=self.bbox) * 2.5 # proxy
+            rainfall_3d = om.get_24h_forecast_mm(bbox=self.bbox) * 2.5  # proxy
             rainfall_1d = rainfall_3d / 3.0
             rain_synthetic = True
 
@@ -185,22 +196,17 @@ class DataPreprocessor:
             lats=self.target_lats,
             lons=self.target_lons,
             run_timestamp=run_time,
-
             rainfall_3d_mm=self._regrid(rainfall_3d),
             rainfall_24h_mm=self._regrid(rainfall_1d),
             forecast_24h_mm=self._regrid(forecast_24h),
             forecast_48h_mm=self._regrid(forecast_48h),
-
             soil_moisture_pct=self._regrid(sm_pct),
             soil_moisture_abs=self._regrid(sm_3d),
-
             slope_degrees=self._regrid(dem_ds["slope_degrees"]),
             aspect_degrees=self._regrid(dem_ds["aspect_degrees"]),
             elevation_m=self._regrid(dem_ds["elevation_m"]),
-
             ndvi_delta=self._regrid(ndvi_delta),
             susceptibility_class=susceptibility,
-
             rainfall_synthetic=bool(rain_synthetic),
             smap_synthetic=bool(smap_synthetic),
             dem_synthetic=bool(dem_synthetic),
@@ -260,18 +266,20 @@ class DataPreprocessor:
 
         except Exception as e:
             logger.warning(f"Regrid failed ({e}), returning zeros")
-            return np.zeros((len(self.target_lats), len(self.target_lons)), dtype=np.float32)
+            return np.zeros(
+                (len(self.target_lats), len(self.target_lons)), dtype=np.float32
+            )
 
     def _load_susceptibility_map(self) -> np.ndarray:
         """
         Load NDMA National Landslide Susceptibility Map.
-        
+
         Map classifies every cell 1–5:
         1 = Very Low, 2 = Low, 3 = Moderate, 4 = High, 5 = Very High
-        
+
         Source: NDMA NLSM (1:50,000 scale shapefile)
         License: Government of India Open Data (OGDL)
-        
+
         For hackathon: uses parameterized map based on known high-risk zones.
         Production: loads from shapefile rasterized to 0.1° grid.
         """
@@ -287,7 +295,7 @@ class DataPreprocessor:
     def _generate_susceptibility(self) -> np.ndarray:
         """
         Parameterized susceptibility based on NDMA-published high-risk zones.
-        
+
         High-risk zones (class 4–5):
         - Western Ghats: Kerala (8.5°–12.5°N, 75.5°–77°E)
         - Uttarakhand: (28.7°–31.5°N, 77.6°–81°E)

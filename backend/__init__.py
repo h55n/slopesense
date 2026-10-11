@@ -47,7 +47,8 @@ def configure_logging():
             ),
         ]
         structlog.configure(
-            processors=shared_processors + [
+            processors=shared_processors
+            + [
                 structlog.processors.dict_tracebacks,
                 structlog.processors.JSONRenderer(),
             ],
@@ -59,7 +60,8 @@ def configure_logging():
     else:
         handlers = [logging.StreamHandler()]
         structlog.configure(
-            processors=shared_processors + [
+            processors=shared_processors
+            + [
                 structlog.dev.ConsoleRenderer(),
             ],
             wrapper_class=structlog.stdlib.BoundLogger,
@@ -78,7 +80,6 @@ def configure_logging():
     if is_prod:
         for logger_name in ("uvicorn.access", "httpx", "urllib3", "botocore", "s3fs"):
             logging.getLogger(logger_name).setLevel(logging.WARNING)
-
 
 
 configure_logging()

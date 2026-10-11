@@ -15,7 +15,13 @@ async def generate_district_report(
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.styles import getSampleStyleSheet
-    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from reportlab.platypus import (
+        Paragraph,
+        SimpleDocTemplate,
+        Spacer,
+        Table,
+        TableStyle,
+    )
 
     buffer = BytesIO()
     doc = SimpleDocTemplate(
@@ -31,10 +37,23 @@ async def generate_district_report(
     story = []
 
     story.append(Paragraph("National Disaster Management Authority", styles["Title"]))
-    story.append(Paragraph("SlopeSense District Landslide Risk Intelligence Report", styles["Heading2"]))
+    story.append(
+        Paragraph(
+            "SlopeSense District Landslide Risk Intelligence Report", styles["Heading2"]
+        )
+    )
     story.append(Spacer(1, 12))
-    story.append(Paragraph(f"District: <b>{district_name}</b> ({district_code.upper()})", styles["Normal"]))
-    story.append(Paragraph(f"Generated: {datetime.now(timezone.utc).isoformat()}", styles["Normal"]))
+    story.append(
+        Paragraph(
+            f"District: <b>{district_name}</b> ({district_code.upper()})",
+            styles["Normal"],
+        )
+    )
+    story.append(
+        Paragraph(
+            f"Generated: {datetime.now(timezone.utc).isoformat()}", styles["Normal"]
+        )
+    )
     story.append(Paragraph(f"Model run: {run_timestamp.isoformat()}", styles["Normal"]))
     story.append(Paragraph("Model version: v0.1", styles["Normal"]))
     story.append(Spacer(1, 12))
@@ -48,7 +67,9 @@ async def generate_district_report(
     )
 
     rows = [["Block", "Tier", "FPI", "95% CI", "Dominant Signal"]]
-    for alert in sorted(alerts, key=lambda item: item.get("fpi_score", 0), reverse=True)[:20]:
+    for alert in sorted(
+        alerts, key=lambda item: item.get("fpi_score", 0), reverse=True
+    )[:20]:
         rows.append(
             [
                 alert.get("block_name") or alert.get("block_code") or "Unknown",
@@ -68,7 +89,12 @@ async def generate_district_report(
                 ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#9ca3af")),
                 ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
                 ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f3f4f6")]),
+                (
+                    "ROWBACKGROUNDS",
+                    (0, 1),
+                    (-1, -1),
+                    [colors.white, colors.HexColor("#f3f4f6")],
+                ),
             ]
         )
     )
@@ -95,7 +121,9 @@ async def generate_district_report(
         )
     )
     story.append(Spacer(1, 24))
-    story.append(Paragraph("Digital signature: ______________________________", styles["Normal"]))
+    story.append(
+        Paragraph("Digital signature: ______________________________", styles["Normal"])
+    )
 
     doc.build(story)
     return buffer.getvalue()

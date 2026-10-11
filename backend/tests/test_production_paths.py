@@ -53,7 +53,9 @@ def test_model_trainer_dataset_and_save(monkeypatch):
     X, y = trainer.build_training_dataset(events, negative_ratio=2)
     output_dir = Path(".test-artifacts/model")
     output_dir.mkdir(parents=True, exist_ok=True)
-    model_path = trainer.save_model(object(), {"model": object(), "auc": 0.9}, output_dir=output_dir)
+    model_path = trainer.save_model(
+        object(), {"model": object(), "auc": 0.9}, output_dir=output_dir
+    )
 
     assert X.shape[0] == 6
     assert int(y.sum()) == 2
@@ -97,7 +99,10 @@ async def test_whatsapp_bulk_skips_missing_numbers():
 
     dispatcher = WhatsAppDispatcher(api_token=None, phone_number_id=None)
     results = await dispatcher.send_bulk(
-        [{"id": "missing"}, {"id": "ok", "whatsapp_number": "+919876543210", "language": "en"}],
+        [
+            {"id": "missing"},
+            {"id": "ok", "whatsapp_number": "+919876543210", "language": "en"},
+        ],
         lambda contact, language: f"hello {language}",
         delay_between_ms=0,
     )
@@ -133,7 +138,9 @@ def test_copernicus_synthetic_fallbacks(monkeypatch):
 
     temp_root = Path(".test-artifacts/copernicus")
     monkeypatch.setattr(copernicus.DEMProcessor, "DATA_DIR", temp_root / "dem")
-    monkeypatch.setattr(copernicus.Sentinel2Ingestion, "DATA_DIR", temp_root / "sentinel2")
+    monkeypatch.setattr(
+        copernicus.Sentinel2Ingestion, "DATA_DIR", temp_root / "sentinel2"
+    )
     bbox = {"min_lat": 11.3, "max_lat": 11.34, "min_lon": 75.7, "max_lon": 75.74}
 
     dem_processor = copernicus.DEMProcessor()
@@ -157,7 +164,9 @@ def test_worker_configuration_and_lightweight_tasks(monkeypatch):
         def run_all(self, use_synthetic=True):
             return {"flagged_at_t24": 6}
 
-    monkeypatch.setattr("backend.model.retrospective.RetrospectiveRunner", lambda: Runner())
+    monkeypatch.setattr(
+        "backend.model.retrospective.RetrospectiveRunner", lambda: Runner()
+    )
 
     assert "model-run-00z" in worker.celery_app.conf.beat_schedule
     assert worker.send_whatsapp_alert.run("alert-1", "contact-1") is None

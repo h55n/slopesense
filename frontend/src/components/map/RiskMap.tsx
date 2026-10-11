@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import Map, { Marker, Popup, NavigationControl } from 'react-map-gl/maplibre';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import Map, { Marker, Popup, NavigationControl, MapRef } from 'react-map-gl/maplibre';
+import type { StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Alert, tierColor } from '@/lib/api';
 
@@ -9,6 +10,10 @@ interface RiskMapProps {
   alerts: Alert[];
   selectedAlert: Alert | null;
   onAlertClick: (alert: Alert) => void;
+  /** True when the live API is unreachable and the alerts shown are sample data. */
+  isSample?: boolean;
+  /** Fly to the selected alert only after the visitor has chosen one. */
+  userSelected?: boolean;
 }
 
 const BLOCK_COORDS: Record<string, [number, number]> = {
@@ -20,129 +25,234 @@ const BLOCK_COORDS: Record<string, [number, number]> = {
   MH_PUN_AMB: [73.65, 19.05],
 };
 
-const INDIA_CENTER: [number, number] = [80.0, 22.0];
-const INDIA_ZOOM = 4.5;
+const INDIA_CENTER: [number, number] = [80.5, 22.5];
+const POSITRON = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
 
-export default function RiskMap({ alerts, selectedAlert, onAlertClick }: RiskMapProps) {
-  const [viewState, setViewState] = useState({
-    longitude: INDIA_CENTER[0],
-    latitude: INDIA_CENTER[1],
-    zoom: INDIA_ZOOM,
-    pitch: 55,
-    bearing: -15
-  });
+function coordsFor(a: Alert): [number, number] | null {
+  if (a.lat && a.lon) return [a.lon, a.lat];
+  return BLOCK_COORDS[a.block_code] ?? null;
+}
 
-  const handleAlertClick = (e: any, alert: Alert, coords: [number, number]) => {
-    e.originalEvent.stopPropagation();
-    onAlertClick(alert);
-    setViewState((prev) => ({
-      ...prev,
-      longitude: coords[0],
-      latitude: coords[1],
-      zoom: 10,
-      pitch: 65,
-      bearing: (Math.random() - 0.5) * 60
-    }));
+/**
+ * CARTO Positron restyled to the site palette (paper land, sage vegetation,
+ * pale-blue water) with real SRTM-derived hillshade from the open Terrarium
+ * elevation tiles, so the relief that drives landslide risk is visible.
+ */
+function paperStyle(base: any): StyleSpecification {
+  const s = JSON.parse(JSON.stringify(base));
+  s.sources['terrain-dem'] = {
+    type: 'raster-dem',
+    encoding: 'terrarium',
+    tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+    tileSize: 256,
+    maxzoom: 13,
+    attribution: 'Terrain: Mapzen / SRTM',
+  };
+  const layers: any[] = [];
+  for (const l of s.layers) {
+    const id: string = l.id;
+    l.paint = l.paint || {};
+    if (l.type === 'background') l.paint['background-color'] = '#f0ebdc';
+    if (['landcover', 'park_national_park', 'park_nature_reserve', 'landuse'].includes(id)) {
+      l.paint['fill-color'] = 'rgba(150, 182, 146, 0.42)';
+    }
+    if (id === 'landuse_residential') l.paint['fill-color'] = 'rgba(214, 205, 180, 0.4)';
+    if (id === 'water') l.paint['fill-color'] = '#cddfe2';
+    if (id === 'waterway') l.paint['line-color'] = '#b9d0d5';
+    if (id === 'boundary_state' || id === 'boundary_county') {
+      l.paint['line-color'] = 'rgba(47, 74, 55, 0.35)';
+    }
+    if (id.startsWith('boundary_country')) {
+      if (id === 'boundary_country_outline') l.paint['line-color'] = 'rgba(244,241,232,0.6)';
+      else l.paint['line-color'] = 'rgba(47, 74, 55, 0.6)';
+    }
+    if (l.type === 'symbol') {
+      l.paint['text-color'] = id.startsWith('watername') || id === 'waterway_label' ? '#6f95a0' : '#3d4a40';
+      l.paint['text-halo-color'] = 'rgba(244,241,232,0.9)';
+      l.paint['text-halo-width'] = 1.4;
+      if (id === 'place_state') {
+        l.paint['text-color'] = '#6f7a71';
+        l.paint['text-halo-width'] = 1.2;
+      }
+    }
+    layers.push(l);
+    if (id === 'landuse') {
+      layers.push({
+        id: 'hillshade',
+        type: 'hillshade',
+        source: 'terrain-dem',
+        paint: {
+          'hillshade-exaggeration': 0.55,
+          'hillshade-shadow-color': 'rgba(38, 62, 46, 0.55)',
+          'hillshade-highlight-color': 'rgba(255, 250, 232, 0.9)',
+          'hillshade-accent-color': 'rgba(47, 74, 55, 0.25)',
+        },
+      });
+    }
+  }
+  s.layers = layers;
+  return s as StyleSpecification;
+}
+
+const LEGEND = [
+  { tier: 'EMERGENCY', label: 'Emergency', range: '>80%' },
+  { tier: 'WARNING', label: 'Warning', range: '65-80%' },
+  { tier: 'WATCH', label: 'Watch', range: '40-65%' },
+  { tier: 'NORMAL', label: 'Normal', range: '<40%' },
+];
+
+export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample, userSelected }: RiskMapProps) {
+  const mapRef = useRef<MapRef>(null);
+  const [style, setStyle] = useState<StyleSpecification | string>(POSITRON);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(POSITRON)
+      .then((r) => r.json())
+      .then((j) => !cancelled && setStyle(paperStyle(j)))
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const bounds = useMemo(() => {
+    const pts = alerts.map(coordsFor).filter(Boolean) as [number, number][];
+    if (!pts.length) return null;
+    const lons = pts.map((p) => p[0]);
+    const lats = pts.map((p) => p[1]);
+    return [
+      [Math.min(...lons), Math.min(...lats)],
+      [Math.max(...lons), Math.max(...lats)],
+    ] as [[number, number], [number, number]];
+  }, [alerts]);
+
+  const fitAll = () => {
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+    if (bounds) map.fitBounds(bounds, { padding: { top: 70, bottom: 110, left: 50, right: 50 }, maxZoom: 6, duration: 900, pitch: 0, bearing: 0 });
+    else map.easeTo({ center: INDIA_CENTER, zoom: 4, duration: 900 });
   };
 
-  return (
-    <div className="relative h-[600px] w-full lg:h-full lg:min-h-[500px]">
-      <Map
-        {...viewState}
-        onMove={(evt) => setViewState(evt.viewState)}
-        mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
-        attributionControl={false}
-      >
-        <NavigationControl position="top-right" />
-        
-        {alerts.map((alert) => {
-          const coords = (alert.lat && alert.lon) 
-            ? [alert.lon, alert.lat] as [number, number]
-            : (BLOCK_COORDS[alert.block_code] || [80 + (Math.random() - 0.5) * 20, 22 + (Math.random() - 0.5) * 15]);
-          const color = tierColor(alert.tier);
-          const size = alert.tier === 'EMERGENCY' ? 28 : alert.tier === 'WARNING' ? 22 : 18;
-          const isSelected = selectedAlert?.id === alert.id;
+  useEffect(() => {
+    if (ready) fitAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, bounds?.[0]?.[0], bounds?.[1]?.[1]]);
 
+  useEffect(() => {
+    if (!ready || !selectedAlert || !userSelected) return;
+    const c = coordsFor(selectedAlert);
+    if (c) mapRef.current?.getMap().flyTo({ center: c, zoom: 8.2, duration: 1100, essential: true });
+  }, [selectedAlert?.id, ready]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const sel = selectedAlert ? coordsFor(selectedAlert) : null;
+
+  return (
+    <div className="relative h-full min-h-[460px] w-full">
+      <Map
+        ref={mapRef}
+        initialViewState={{ longitude: INDIA_CENTER[0], latitude: INDIA_CENTER[1], zoom: 3.8 }}
+        mapStyle={style as any}
+        attributionControl={true}
+        onLoad={() => setReady(true)}
+        minZoom={3}
+        maxPitch={0}
+        dragRotate={false}
+        touchPitch={false}
+        cooperativeGestures={false}
+      >
+        <NavigationControl position="top-right" showCompass={false} />
+
+        {alerts.map((alert) => {
+          const coords = coordsFor(alert);
+          if (!coords) return null;
+          const color = tierColor(alert.tier);
+          const hot = alert.tier === 'EMERGENCY' || alert.tier === 'WARNING';
+          const isSelected = selectedAlert?.id === alert.id;
+          const size = isSelected ? 38 : hot ? 32 : 28;
           return (
-            <Marker 
+            <Marker
               key={alert.id}
-              longitude={coords[0]} 
+              longitude={coords[0]}
               latitude={coords[1]}
               anchor="center"
-              onClick={(e) => handleAlertClick(e, alert, coords)}
+              onClick={(e) => {
+                e.originalEvent.stopPropagation();
+                onAlertClick(alert);
+              }}
               style={{ cursor: 'pointer', zIndex: isSelected ? 10 : 1 }}
             >
-              <div 
-                style={{
-                  width: isSelected ? size + 6 : size,
-                  height: isSelected ? size + 6 : size,
-                  background: color,
-                  border: `2px solid ${isSelected ? '#f4c95d' : '#ffffff'}`,
-                  borderRadius: '9999px',
-                  boxShadow: `0 0 ${isSelected ? 18 : 8}px ${color}66`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '10px',
-                  fontWeight: 700,
-                  color: '#ffffff',
-                  animation: alert.tier === 'EMERGENCY' ? 'pulse-red 1.5s ease-in-out infinite' : 'none'
-                }}
-              >
-                {Math.round(alert.fpi_score * 100)}
+              <div className="relative" style={{ width: size, height: size }} role="button" aria-label={`${alert.block_name}, ${alert.tier}, FPI ${Math.round(alert.fpi_score * 100)}%`}>
+                {hot && (
+                  <span
+                    className="absolute inset-0 rounded-full"
+                    style={{ background: color, animation: 'pulse-ring 2.4s ease-out infinite' }}
+                  />
+                )}
+                <span
+                  className="relative flex h-full w-full items-center justify-center rounded-full text-[11px] font-semibold text-white"
+                  style={{
+                    background: color,
+                    color: '#fff',
+                    border: `${isSelected ? 3 : 2}px solid #fbf9f3`,
+                    boxShadow: isSelected ? `0 0 0 2px ${color}, 0 6px 16px rgba(29,42,33,0.3)` : '0 3px 10px rgba(29,42,33,0.28)',
+                    transition: 'all .2s ease',
+                  }}
+                >
+                  {Math.round(alert.fpi_score * 100)}
+                </span>
               </div>
             </Marker>
           );
         })}
 
-        {selectedAlert && (selectedAlert.lat || BLOCK_COORDS[selectedAlert.block_code]) && (
-          <Popup
-            longitude={selectedAlert.lon || BLOCK_COORDS[selectedAlert.block_code][0]}
-            latitude={selectedAlert.lat || BLOCK_COORDS[selectedAlert.block_code][1]}
-            closeButton={false}
-            closeOnClick={false}
-            offset={15}
-            className="slope-popup"
-          >
-            <div style={{ background: 'transparent', padding: '4px', minWidth: '160px', color: '#ffffff' }}>
-              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginBottom: '2px', letterSpacing: '0.18em', textTransform: 'uppercase' }}>{selectedAlert.state_name}</div>
-              <div style={{ fontWeight: 700, fontSize: '13px', fontFamily: 'Georgia,serif' }}>{selectedAlert.district_name}</div>
-              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.75)' }}>{selectedAlert.block_name}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '4px', background: tierColor(selectedAlert.tier) }}></div>
-                <div style={{ fontSize: '12px', fontWeight: 600, color: tierColor(selectedAlert.tier) }}>{selectedAlert.tier}</div>
+        {selectedAlert && sel && (
+          <Popup longitude={sel[0]} latitude={sel[1]} closeButton={false} closeOnClick={false} offset={26} maxWidth="240px">
+            <div style={{ minWidth: 170 }}>
+              <div className="eyebrow">{selectedAlert.state_name}</div>
+              <div className="mt-0.5 font-serif text-[20px] leading-tight text-ink">{selectedAlert.block_name}</div>
+              <div className="text-[12px] text-ink/60">{selectedAlert.district_name} district</div>
+              <div className="mt-2 flex items-center gap-2 text-[12px] font-medium" style={{ color: tierColor(selectedAlert.tier) }}>
+                <span className="h-2 w-2 rounded-full" style={{ background: tierColor(selectedAlert.tier) }} />
+                {selectedAlert.tier.charAt(0) + selectedAlert.tier.slice(1).toLowerCase()} · FPI {Math.round(selectedAlert.fpi_score * 100)}%
               </div>
             </div>
           </Popup>
         )}
       </Map>
 
-      <div className="absolute bottom-6 left-4 z-10 rounded-xl border border-white/10 bg-black/70 p-3 text-xs text-white backdrop-blur-md">
-        <div className="mb-2 font-semibold uppercase tracking-[0.2em] text-white/45">Failure Probability Index</div>
-        <div className="space-y-1.5">
-          {[
-            { color: '#f4c95d', label: 'EMERGENCY >80%' },
-            { color: '#ef4444', label: 'WARNING 65-80%' },
-            { color: '#f59e0b', label: 'WATCH 40-65%' },
-            { color: '#10b981', label: 'NORMAL <40%' },
-          ].map(({ color, label }) => (
-            <div key={label} className="flex items-center gap-2">
-              <div className="h-3 w-3 flex-shrink-0 rounded-full" style={{ background: color }} />
-              <span className="text-white/75">{label}</span>
-            </div>
+      {/* legend */}
+      <div className="absolute bottom-8 left-3 z-10 rounded-2xl border border-ink/10 bg-paper-card/95 px-4 py-3 shadow-glass backdrop-blur sm:bottom-9">
+        <div className="eyebrow mb-2">Failure probability</div>
+        <ul className="space-y-1.5">
+          {LEGEND.map(({ tier, label, range }) => (
+            <li key={tier} className="flex items-center gap-2.5 text-[12px] text-ink/80">
+              <span className="h-2.5 w-2.5 flex-shrink-0 rounded-full" style={{ background: tierColor(tier) }} />
+              <span className="w-[68px]">{label}</span>
+              <span className="tabular-nums text-ink/50">{range}</span>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
 
-      <div className="absolute left-3 top-3 z-10 rounded-lg border border-white/10 bg-black/60 px-2.5 py-1 text-xs font-medium text-white/60 backdrop-blur-md">
-        NASA GPM · SMAP · NOAA GFS · Copernicus DEM
+      {/* source chip */}
+      <div className="absolute left-3 top-3 z-10 flex max-w-[calc(100%-70px)] flex-wrap gap-2">
+        <span className="rounded-full border border-ink/10 bg-paper-card/95 px-3 py-1.5 text-[11px] font-medium text-ink/70 shadow-glass backdrop-blur">
+          NASA GPM · SMAP · NOAA GFS · Copernicus DEM
+        </span>
+        {isSample && (
+          <span className="rounded-full border border-saffron-deep/30 bg-saffron-soft px-3 py-1.5 text-[11px] font-medium text-saffron-deep shadow-glass">
+            Sample data · no live model run yet
+          </span>
+        )}
       </div>
 
       <button
-        onClick={() => setViewState({ longitude: INDIA_CENTER[0], latitude: INDIA_CENTER[1], zoom: INDIA_ZOOM, pitch: 55, bearing: -15 })}
-        className="absolute right-3 top-12 z-10 mt-20 rounded-lg border border-white/10 bg-black/60 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/70 backdrop-blur-md transition-colors hover:border-lime-400 hover:bg-lime-300 hover:text-black"
+        onClick={fitAll}
+        className="focus-ring absolute right-3 top-[88px] z-10 rounded-xl border border-ink/10 bg-paper-card px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink/70 shadow-glass transition-colors hover:text-ink"
       >
-        India ↺
+        Reset view
       </button>
     </div>
   );

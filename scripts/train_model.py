@@ -8,8 +8,12 @@ from backend.model.train import ModelTrainer
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--download-glc", action="store_true", help="Download NASA GLC India events")
-    parser.add_argument("--events-csv", type=Path, help="Local CSV with lat, lon, event_date")
+    parser.add_argument(
+        "--download-glc", action="store_true", help="Download NASA GLC India events"
+    )
+    parser.add_argument(
+        "--events-csv", type=Path, help="Local CSV with lat, lon, event_date"
+    )
     parser.add_argument("--epochs", type=int, default=300)
     parser.add_argument("--output", type=Path, default=Path("data/model"))
     args = parser.parse_args()

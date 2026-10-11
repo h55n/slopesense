@@ -45,11 +45,13 @@ _engine_kwargs = {
 }
 # SQLite does not support connection pooling parameters
 if not _db_url.startswith("sqlite"):
-    _engine_kwargs.update({
-        "pool_size": 10,       # base pool size
-        "max_overflow": 20,    # extra connections above pool_size
-        "pool_recycle": 3600,  # recycle connections every hour
-    })
+    _engine_kwargs.update(
+        {
+            "pool_size": 10,  # base pool size
+            "max_overflow": 20,  # extra connections above pool_size
+            "pool_recycle": 3600,  # recycle connections every hour
+        }
+    )
 
 engine = create_async_engine(_db_url, **_engine_kwargs)
 

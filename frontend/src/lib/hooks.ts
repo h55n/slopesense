@@ -11,12 +11,14 @@ export function useAlerts() {
   const [lastRun, setLastRun] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [dataMode, setDataMode] = useState<string>('idle');
   const backoffRef = useRef(POLL_INTERVAL);
 
   const fetchAlerts = useCallback(async () => {
     try {
       const data = await api.activeAlerts({ min_fpi: 0.0 });
       setAlerts(data.alerts || []);
+      setDataMode((data as any).data_mode ?? (data.alerts?.some((a: any) => a.is_sample) ? 'sample' : 'live'));
       setLastRun(data.run_timestamp || null);
       setStats({
         total: data.count || 0,
@@ -30,6 +32,7 @@ export function useAlerts() {
       // Exponential backoff on errors to avoid hammering the API
       backoffRef.current = Math.min(backoffRef.current * 2, MAX_BACKOFF);
       setError(err.message);
+      setDataMode('sample');
       // Load synthetic demo data on error
       if (alerts.length === 0) {
         setAlerts(DEMO_ALERTS);
@@ -46,7 +49,8 @@ export function useAlerts() {
     return () => clearInterval(interval);
   }, [fetchAlerts]);
 
-  return { alerts, stats, lastRun, loading, error, refetch: fetchAlerts };
+  const isSample = dataMode === 'sample' || !!error;
+  return { alerts, stats, lastRun, loading, error, isSample, refetch: fetchAlerts };
 }
 
 

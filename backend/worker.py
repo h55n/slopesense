@@ -36,7 +36,6 @@ celery_app.conf.update(
     task_track_started=True,
     task_acks_late=True,
     worker_prefetch_multiplier=1,
-
     # Beat schedule — 6-hourly model runs aligned to GFS runs (00Z, 06Z, 12Z, 18Z)
     beat_schedule={
         "model-run-00z": {
@@ -64,7 +63,9 @@ def run_model_pipeline(self):
     Full pipeline task: ingest → preprocess → FPI → alert → dispatch.
     Runs every 6 hours.
     """
-    logger.info(f"Worker: starting model pipeline run at {datetime.now(timezone.utc).isoformat()}")
+    logger.info(
+        f"Worker: starting model pipeline run at {datetime.now(timezone.utc).isoformat()}"
+    )
     try:
         import httpx
 
@@ -82,7 +83,9 @@ def run_model_pipeline(self):
             logger.info(f"Worker: pipeline complete — {result}")
             return result
         else:
-            raise Exception(f"Pipeline trigger failed: HTTP {resp.status_code} — {resp.text}")
+            raise Exception(
+                f"Pipeline trigger failed: HTTP {resp.status_code} — {resp.text}"
+            )
 
     except Exception as exc:
         logger.error(f"Worker: pipeline failed: {exc}")
@@ -121,11 +124,15 @@ def run_retrospective():
     logger.info("Worker: running retrospective validation")
     try:
         import sys
+
         sys.path.insert(0, "/app")
         from backend.model.retrospective import RetrospectiveRunner
+
         runner = RetrospectiveRunner()
         summary = runner.run_all(use_synthetic=True)
-        logger.info(f"Worker: retrospective complete — {summary['flagged_at_t24']}/6 flagged")
+        logger.info(
+            f"Worker: retrospective complete — {summary['flagged_at_t24']}/6 flagged"
+        )
         return summary
     except Exception as e:
         logger.error(f"Worker: retrospective failed: {e}")
@@ -133,6 +140,7 @@ def run_retrospective():
 
 
 # ── Standalone scheduler (APScheduler, used without Celery in dev) ────────────
+
 
 def start_apscheduler():
     """
@@ -145,6 +153,7 @@ def start_apscheduler():
 
     async def _trigger_pipeline():
         import httpx
+
         token = os.environ.get("INTERNAL_TRIGGER_TOKEN", "dev-token")
         try:
             async with httpx.AsyncClient() as client:

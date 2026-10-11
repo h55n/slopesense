@@ -39,7 +39,7 @@ export default function DistrictsPage() {
         // Fallback to all demo alerts across states if API is down
         const allDemos = Object.values(DEMO_DISTRICTS).flat();
         setAlerts(allDemos);
-        setError('Using cached data — API unavailable');
+        setError('Live feed offline. Showing sample data.');
       })
       .finally(() => setLoading(false));
   }, []);
@@ -75,10 +75,10 @@ export default function DistrictsPage() {
     sortField === field ? (sortDir === 'desc' ? ' ↓' : ' ↑') : ' ↕';
 
   return (
-    <div className="editorial-shell min-h-screen bg-slope-bg text-white overflow-hidden">
+    <div className="editorial-shell overflow-hidden">
       {/* Header */}
-      <header className="border-b border-white/10 px-6 py-8 relative z-10 bg-black/20 backdrop-blur-md">
-        <div className="mx-auto max-w-7xl">
+      <header className="border-b border-white/10  py-8 relative z-10 bg-black/20 backdrop-blur-md">
+        <div className="mx-auto max-w-7xl px-6">
           <nav className="mb-4 flex items-center gap-2 text-small font-bold uppercase tracking-[0.2em] text-white/40">
             <Link href="/" className="hover:text-slope-accent hover:underline transition-all cursor-pointer">SlopeSense</Link>
             <span>/</span>
@@ -193,7 +193,7 @@ export default function DistrictsPage() {
                     >
                       <td className="px-5 py-5">
                         <div className="font-serif text-lg font-medium text-white">{alert.district_name}</div>
-                        <div className="text-tiny font-bold uppercase tracking-[0.2em] text-white/40 mt-1">{alert.district_code} — {alert.block_name}</div>
+                        <div className="text-tiny font-bold uppercase tracking-[0.2em] text-white/40 mt-1">{alert.block_name || alert.district_code}</div>
                       </td>
                       <td className="px-5 py-5">
                         <span className="text-base-sm font-medium text-white/80">{STATE_NAMES[alert.state_code] || alert.state_code}</span>
@@ -235,7 +235,7 @@ export default function DistrictsPage() {
                         {alert.rainfall_3d_mm != null ? `${alert.rainfall_3d_mm} mm` : '—'}
                       </td>
                       <td className="px-5 py-5 text-base-sm font-medium text-white/80">
-                        {alert.soil_moisture_percentile != null ? `${alert.soil_moisture_percentile}th %ile` : '—'}
+                        {alert.soil_moisture_percentile != null ? `P${Math.round(alert.soil_moisture_percentile)}` : '—'}
                       </td>
                       <td className="px-5 py-5">
                         <div className="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
@@ -245,12 +245,6 @@ export default function DistrictsPage() {
                           >
                             Details
                           </Link>
-                          <button
-                            onClick={() => window.alert("PDF generation in progress — downloading shortly")}
-                            className="rounded-full border border-white/10 px-4 py-1.5 text-tiny font-bold uppercase tracking-[0.2em] text-white/50 hover:text-white hover:bg-white/5 transition-all"
-                          >
-                            PDF
-                          </button>
                         </div>
                       </td>
                     </motion.tr>

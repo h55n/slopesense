@@ -41,16 +41,16 @@ REGIONS = {
 class GPMIngestion:
     """
     Handles fetching and processing of NASA GPM IMERG Early Run data.
-    
+
     GPM IMERG provides near-real-time precipitation estimates at 0.1° × 0.1°
     resolution, 30-minute temporal resolution, with ~4 hour latency.
-    
+
     We accumulate into:
     - 24-hour totals (for current conditions)
     - 3-day rolling totals (antecedent rainfall — key FPI signal)
     """
 
-    PRODUCT_SHORT_NAME = "GPM_3IMERGHHE"   # Half-hourly Early run
+    PRODUCT_SHORT_NAME = "GPM_3IMERGHHE"  # Half-hourly Early run
     VERSION = "07"
     DATA_DIR = Path("data/gpm")
 
@@ -63,6 +63,7 @@ class GPMIngestion:
         """Authenticate with NASA Earthdata. Returns earthaccess auth object."""
         try:
             import earthaccess
+
             auth = earthaccess.login(
                 strategy="environment" if self.username else "netrc"
             )
@@ -76,19 +77,16 @@ class GPMIngestion:
             raise
 
     def fetch_halfhourly(
-        self,
-        date: datetime,
-        bbox: Optional[dict] = None,
-        save_local: bool = True
+        self, date: datetime, bbox: Optional[dict] = None, save_local: bool = True
     ) -> Optional[xr.Dataset]:
         """
         Fetch all 48 half-hourly granules for a given UTC date.
-        
+
         Args:
             date: UTC date to fetch
             bbox: bounding box dict with min/max lat/lon (defaults to full India)
             save_local: cache to disk
-            
+
         Returns:
             xarray Dataset with precipitation variable, or None on failure
         """
@@ -168,11 +166,11 @@ class GPMIngestion:
     ) -> xr.DataArray:
         """
         Compute N-day rainfall accumulation ending at end_date.
-        
+
         This is the primary input to the FPI model:
         - 3-day accumulation = antecedent rainfall signal
         - 1-day accumulation = current trigger signal
-        
+
         Returns:
             DataArray with shape (lat, lon), units mm
         """
@@ -187,7 +185,9 @@ class GPMIngestion:
             ds = self.fetch_halfhourly(target_date, bbox)
 
             if ds is None:
-                logger.warning(f"GPM: missing data for {target_date.date()}, using zeros")
+                logger.warning(
+                    f"GPM: missing data for {target_date.date()}, using zeros"
+                )
                 continue
 
             # Sum half-hourly (mm/hr × 0.5h = mm per interval)
@@ -202,8 +202,12 @@ class GPMIngestion:
             # Return zeros if all fetches failed
             logger.error("GPM: all fetches failed, returning zero accumulation")
             accum = xr.DataArray(
-                np.zeros((int((bbox["max_lat"] - bbox["min_lat"]) / 0.1) + 1,
-                          int((bbox["max_lon"] - bbox["min_lon"]) / 0.1) + 1)),
+                np.zeros(
+                    (
+                        int((bbox["max_lat"] - bbox["min_lat"]) / 0.1) + 1,
+                        int((bbox["max_lon"] - bbox["min_lon"]) / 0.1) + 1,
+                    )
+                ),
                 dims=["lat", "lon"],
             )
 
@@ -218,7 +222,7 @@ class GPMIngestion:
         """
         Generate synthetic GPM data for development/hackathon use when
         NASA credentials are unavailable. Uses realistic monsoon patterns.
-        
+
         For Wayanad region during active monsoon: 30–80 mm/day typical,
         150–300 mm/day during extreme events.
         """
@@ -226,14 +230,20 @@ class GPMIngestion:
 
         lats = np.arange(bbox["min_lat"], bbox["max_lat"] + 0.1, 0.1)
         lons = np.arange(bbox["min_lon"], bbox["max_lon"] + 0.1, 0.1)
-        times = np.array([(date + timedelta(minutes=30 * i)).replace(tzinfo=None) for i in range(48)], dtype="datetime64[ns]")
+        times = np.array(
+            [
+                (date + timedelta(minutes=30 * i)).replace(tzinfo=None)
+                for i in range(48)
+            ],
+            dtype="datetime64[ns]",
+        )
 
         # Synthetic: monsoon-like precipitation pattern
         # Higher in Western Ghats (lon 75.5–77.5), orographic enhancement
         np.random.seed(int(date.timestamp()) % 2**32)
-        
+
         base = np.random.exponential(scale=2.0, size=(48, len(lats), len(lons)))
-        
+
         # Orographic enhancement near Western Ghats
         for j, lon in enumerate(lons):
             if 75.5 <= lon <= 77.5:
@@ -250,7 +260,7 @@ class GPMIngestion:
 class GFSIngestion:
     """
     Handles fetching NOAA GFS forecast data.
-    
+
     GFS is the Plan B rainfall forecast (Plan A = IMD QPF via MoU).
     Resolution: 0.25° × 0.25°
     Forecast horizon: 384 hours
@@ -287,12 +297,12 @@ class GFSIngestion:
     ) -> Optional[xr.Dataset]:
         """
         Fetch GFS QPF (precipitation forecast) for specified forecast hours.
-        
+
         Args:
             bbox: geographic bounding box
             forecast_hours: list of forecast lead times to fetch (hours)
             run_time: GFS run time (defaults to latest available)
-            
+
         Returns:
             xarray Dataset with APCP (accumulated precipitation) variable
         """
@@ -301,7 +311,9 @@ class GFSIngestion:
         if run_time is None:
             run_time = self.get_latest_run_time()
 
-        logger.info(f"GFS: fetching forecast from {run_time} for hours {forecast_hours}")
+        logger.info(
+            f"GFS: fetching forecast from {run_time} for hours {forecast_hours}"
+        )
 
         import requests
 
@@ -331,7 +343,9 @@ class GFSIngestion:
                     import cfgrib
                     import tempfile
 
-                    with tempfile.NamedTemporaryFile(suffix=".grib2", delete=False) as tmp:
+                    with tempfile.NamedTemporaryFile(
+                        suffix=".grib2", delete=False
+                    ) as tmp:
                         tmp.write(response.content)
                         tmp_path = tmp.name
 
@@ -360,7 +374,7 @@ class GFSIngestion:
     ) -> xr.DataArray:
         """
         Convenience method: return 24-hour accumulated precipitation forecast (mm).
-        
+
         Sums f06 through f24 to get 24h total.
         """
         ds = self.fetch_forecast(

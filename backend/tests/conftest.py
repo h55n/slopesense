@@ -26,20 +26,30 @@ os.environ.setdefault("NASA_EARTHDATA_USERNAME", "")
 os.environ.setdefault("NASA_EARTHDATA_PASSWORD", "")
 os.environ["API_KEYS"] = "test-api-key"
 
+
 @pytest_asyncio.fixture(autouse=True)
 async def setup_db():
     from backend.api.database import engine
     from backend.models import Base
-    
+
     @event.listens_for(engine.sync_engine, "before_cursor_execute", retval=True)
-    def skip_spatialite_functions(conn, cursor, statement, parameters, context, executemany):
-        if any(func in statement for func in [
-            "CheckSpatialIndex", "RecoverGeometryColumn", "DisableSpatialIndex",
-            "CreateSpatialIndex", "AddGeometryColumn", "DiscardGeometryColumn"
-        ]):
+    def skip_spatialite_functions(
+        conn, cursor, statement, parameters, context, executemany
+    ):
+        if any(
+            func in statement
+            for func in [
+                "CheckSpatialIndex",
+                "RecoverGeometryColumn",
+                "DisableSpatialIndex",
+                "CreateSpatialIndex",
+                "AddGeometryColumn",
+                "DiscardGeometryColumn",
+            ]
+        ):
             return "SELECT 1", ()
         return statement, parameters
-    
+
     # Enable SQLite in-memory or file-based tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
@@ -47,6 +57,8 @@ async def setup_db():
     yield
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+
+
 @pytest.fixture
 def wayanad_bbox():
     return {"min_lat": 11.3, "max_lat": 11.9, "min_lon": 75.7, "max_lon": 76.4}

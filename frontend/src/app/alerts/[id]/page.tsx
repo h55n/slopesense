@@ -58,7 +58,7 @@ export default function AlertDetailPage() {
 
   useEffect(() => {
     if (!alert) return;
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/v1/cap/feed?min_fpi=0.0`)
+    fetch(apiUrl("/v1/cap/feed?min_fpi=0.0"))
       .then(r => r.text())
       .then(xml => setCapXml(xml))
       .catch(() => setCapXml(null));
@@ -85,11 +85,11 @@ export default function AlertDetailPage() {
   const gradientKey  = alert.tier in TIER_GRADIENT ? alert.tier : 'NORMAL';
 
   return (
-    <div className="editorial-shell min-h-screen bg-slope-bg text-white">
+    <div className="editorial-shell">
 
       {/* ── Header ── */}
-      <header className={`relative border-b border-white/6 px-6 py-8 bg-gradient-to-b ${TIER_GRADIENT[gradientKey]}`}>
-        <div className="mx-auto max-w-6xl">
+      <header className={`relative border-b border-white/10 py-8 bg-gradient-to-b ${TIER_GRADIENT[gradientKey]}`}>
+        <div className="mx-auto max-w-6xl px-6">
           {/* Breadcrumb */}
           <nav className="mb-5 flex items-center gap-2 text-tiny font-bold uppercase tracking-[0.22em] text-white/30">
             <Link href="/" className="hover:text-slope-accent transition-colors">SlopeSense</Link>
@@ -327,7 +327,7 @@ export default function AlertDetailPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -4 }}
                     transition={{ duration: 0.2 }}
-                    className="inline-block rounded-2xl rounded-tl-sm bg-[#1a1a1a] border border-white/5 px-4 py-3 text-base-sm leading-relaxed text-white/85 whitespace-pre-wrap font-mono max-w-full"
+                    className="inline-block rounded-2xl rounded-tl-sm bg-paper-2 border border-white/5 px-4 py-3 text-base-sm leading-relaxed text-white/85 whitespace-pre-wrap font-mono max-w-full"
                   >
                     {waMessage}
                   </motion.div>

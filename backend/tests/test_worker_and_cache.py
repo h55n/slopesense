@@ -91,7 +91,9 @@ def test_worker_run_model_pipeline_failure(monkeypatch):
 
     fake_httpx = types.SimpleNamespace(post=fake_post)
     monkeypatch.setitem(sys.modules, "httpx", fake_httpx)
-    monkeypatch.setattr(worker.run_model_pipeline, "retry", DummySelf().retry, raising=False)
+    monkeypatch.setattr(
+        worker.run_model_pipeline, "retry", DummySelf().retry, raising=False
+    )
 
     with pytest.raises(RuntimeError, match="retry:300"):
         worker.run_model_pipeline.__wrapped__()
@@ -100,9 +102,15 @@ def test_worker_run_model_pipeline_failure(monkeypatch):
 def test_worker_one_off_tasks_and_scheduler(monkeypatch):
     import backend.worker as worker
 
-    monkeypatch.setitem(sys.modules, "backend.model.retrospective", types.SimpleNamespace(
-        RetrospectiveRunner=lambda: types.SimpleNamespace(run_all=lambda use_synthetic=True: {"flagged_at_t24": 6})
-    ))
+    monkeypatch.setitem(
+        sys.modules,
+        "backend.model.retrospective",
+        types.SimpleNamespace(
+            RetrospectiveRunner=lambda: types.SimpleNamespace(
+                run_all=lambda use_synthetic=True: {"flagged_at_t24": 6}
+            )
+        ),
+    )
 
     assert worker.send_whatsapp_alert.run("a1", "c1") is None
     assert worker.send_daily_digest.run() is None

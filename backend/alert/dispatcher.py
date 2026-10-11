@@ -40,7 +40,9 @@ class WhatsAppDispatcher:
         phone_number_id: Optional[str] = None,
     ):
         self.api_token = api_token or os.environ.get("WHATSAPP_API_TOKEN")
-        self.phone_number_id = phone_number_id or os.environ.get("WHATSAPP_PHONE_NUMBER_ID")
+        self.phone_number_id = phone_number_id or os.environ.get(
+            "WHATSAPP_PHONE_NUMBER_ID"
+        )
         self.base_url = f"{WHATSAPP_API_URL}/{self.phone_number_id}/messages"
         self._dry_run = not (self.api_token and self.phone_number_id)
 
@@ -118,7 +120,12 @@ class WhatsAppDispatcher:
 
         except Exception as e:
             logger.error(f"WhatsApp: exception sending to {to}: {e}")
-            return {"message_id": None, "status": "failed", "error": str(e), "recipient": to}
+            return {
+                "message_id": None,
+                "status": "failed",
+                "error": str(e),
+                "recipient": to,
+            }
 
     async def send_bulk(
         self,
@@ -185,7 +192,9 @@ class EmailDispatcher:
     ) -> bool:
         """Send HTML email digest of current active alerts."""
         if self._dry_run:
-            logger.info(f"Email DRY RUN: would send digest to {len(recipients)} recipients")
+            logger.info(
+                f"Email DRY RUN: would send digest to {len(recipients)} recipients"
+            )
             return True
 
         subject = f"SlopeSense Daily Alert Digest — {run_date.strftime('%d %B %Y')}"
@@ -218,7 +227,11 @@ class EmailDispatcher:
         """Build HTML email digest."""
         rows = ""
         for a in sorted(alerts, key=lambda x: x["fpi_score"], reverse=True):
-            tier_color = {"WATCH": "#f59e0b", "WARNING": "#ef4444", "EMERGENCY": "#7c3aed"}.get(a["tier"], "#6b7280")
+            tier_color = {
+                "WATCH": "#f59e0b",
+                "WARNING": "#ef4444",
+                "EMERGENCY": "#7c3aed",
+            }.get(a["tier"], "#6b7280")
             rows += f"""
             <tr>
               <td style="padding:8px;border-bottom:1px solid #e5e7eb;">{a['state_name']}</td>
@@ -294,6 +307,7 @@ class AlertDispatcher:
             Summary dict with delivery counts
         """
         from .alert_engine import AlertEngine
+
         engine = AlertEngine()
 
         alerts_to_notify = [a for a in alerts if a.get("should_notify")]
@@ -309,15 +323,21 @@ class AlertDispatcher:
             if not district_contacts:
                 # Use test contact in dev mode
                 if os.environ.get("ENVIRONMENT") == "development":
-                    district_contacts = [{
-                        "id": "test",
-                        "whatsapp_number": os.environ.get("TEST_WHATSAPP_NUMBER", "+919000000000"),
-                        "language": "en",
-                        "role": "test",
-                    }]
+                    district_contacts = [
+                        {
+                            "id": "test",
+                            "whatsapp_number": os.environ.get(
+                                "TEST_WHATSAPP_NUMBER", "+919000000000"
+                            ),
+                            "language": "en",
+                            "role": "test",
+                        }
+                    ]
 
             if not district_contacts:
-                logger.debug(f"No contacts for {alert['district_name']} / {alert['block_name']}")
+                logger.debug(
+                    f"No contacts for {alert['district_name']} / {alert['block_name']}"
+                )
                 continue
 
             # Build message function
@@ -355,7 +375,10 @@ class AlertDispatcher:
         matched = []
         for contact in all_contacts:
             # Geographic scope match
-            if contact.get("district_code") and contact["district_code"] != district_code:
+            if (
+                contact.get("district_code")
+                and contact["district_code"] != district_code
+            ):
                 continue
             # Tier threshold
             min_tier = contact.get("min_tier_for_whatsapp", "WARNING")

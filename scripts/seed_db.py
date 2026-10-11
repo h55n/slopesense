@@ -52,14 +52,26 @@ def get_db_url() -> str:
 async def create_tables(engine):
     """Create all tables using SQLAlchemy metadata (SQLite-compatible, no PostGIS)."""
     from sqlalchemy import (
-        Column, Integer, Float, String, Boolean, DateTime,
-        Text, JSON, ForeignKey, MetaData, Table, Enum as SAEnum
+        Column,
+        Integer,
+        Float,
+        String,
+        Boolean,
+        DateTime,
+        Text,
+        JSON,
+        ForeignKey,
+        MetaData,
+        Table,
+        Enum as SAEnum,
     )
 
     metadata = MetaData()
 
     # Districts / Blocks reference
-    districts_table = Table("districts", metadata,
+    districts_table = Table(
+        "districts",
+        metadata,
         Column("id", Integer, primary_key=True, autoincrement=True),
         Column("state_code", String(8), nullable=False),
         Column("state_name", String(64), nullable=False),
@@ -75,7 +87,9 @@ async def create_tables(engine):
     )
 
     # Current alerts (simplified, no UUID for SQLite compatibility)
-    alerts_table = Table("alerts", metadata,
+    alerts_table = Table(
+        "alerts",
+        metadata,
         Column("id", String(36), primary_key=True),
         Column("alert_code", String(64), nullable=False, unique=True, index=True),
         Column("state_code", String(8), nullable=False),
@@ -105,7 +119,9 @@ async def create_tables(engine):
     )
 
     # FPI history
-    fpi_history_table = Table("fpi_history", metadata,
+    fpi_history_table = Table(
+        "fpi_history",
+        metadata,
         Column("id", String(36), primary_key=True),
         Column("cell_id", String(32), nullable=False, index=True),
         Column("run_timestamp", DateTime, nullable=False, index=True),
@@ -127,7 +143,9 @@ async def create_tables(engine):
     )
 
     # Landslide events
-    events_table = Table("landslide_events", metadata,
+    events_table = Table(
+        "landslide_events",
+        metadata,
         Column("id", String(36), primary_key=True),
         Column("event_id", String(64), nullable=False, unique=True, index=True),
         Column("event_name", String(128), nullable=False),
@@ -151,7 +169,9 @@ async def create_tables(engine):
     )
 
     # Alert contacts
-    contacts_table = Table("alert_contacts", metadata,
+    contacts_table = Table(
+        "alert_contacts",
+        metadata,
         Column("id", String(36), primary_key=True),
         Column("name", String(128), nullable=False),
         Column("role", String(64), nullable=False),
@@ -168,7 +188,9 @@ async def create_tables(engine):
     )
 
     # Alert deliveries
-    deliveries_table = Table("alert_deliveries", metadata,
+    deliveries_table = Table(
+        "alert_deliveries",
+        metadata,
         Column("id", String(36), primary_key=True),
         Column("alert_id", String(36), nullable=False, index=True),
         Column("contact_id", String(36), nullable=True),
@@ -195,55 +217,63 @@ async def seed_districts(session: AsyncSession, districts: list):
     for district in districts:
         # Check if district already exists
         result = await session.execute(
-            text("SELECT id FROM districts WHERE district_code = :code AND block_code IS NULL"),
-            {"code": district["district_code"]}
+            text(
+                "SELECT id FROM districts WHERE district_code = :code AND block_code IS NULL"
+            ),
+            {"code": district["district_code"]},
         )
         if not result.fetchone():
             # Insert district-level row (no block_code)
-            await session.execute(text("""
+            await session.execute(
+                text("""
                 INSERT OR IGNORE INTO districts (state_code, state_name, district_code, district_name,
                                        centroid_lat, centroid_lon, is_high_risk, susceptibility, zone)
                 VALUES (:state_code, :state_name, :district_code, :district_name,
                         :lat, :lon, :high_risk, :susc, :zone)
-            """), {
-                "state_code": district["state_code"],
-                "state_name": district["state_name"],
-                "district_code": district["district_code"],
-                "district_name": district["district_name"],
-                "lat": district["centroid_lat"],
-                "lon": district["centroid_lon"],
-                "high_risk": district["is_high_risk"],
-                "susc": district["susceptibility"],
-                "zone": district["zone"],
-            })
+            """),
+                {
+                    "state_code": district["state_code"],
+                    "state_name": district["state_name"],
+                    "district_code": district["district_code"],
+                    "district_name": district["district_name"],
+                    "lat": district["centroid_lat"],
+                    "lon": district["centroid_lon"],
+                    "high_risk": district["is_high_risk"],
+                    "susc": district["susceptibility"],
+                    "zone": district["zone"],
+                },
+            )
             inserted += 1
 
         # Insert block rows
         for block in district.get("blocks", []):
             result2 = await session.execute(
                 text("SELECT id FROM districts WHERE block_code = :code"),
-                {"code": block["block_code"]}
+                {"code": block["block_code"]},
             )
             if not result2.fetchone():
-                await session.execute(text("""
+                await session.execute(
+                    text("""
                     INSERT OR IGNORE INTO districts (state_code, state_name, district_code, district_name,
                                                block_code, block_name, centroid_lat, centroid_lon,
                                                is_high_risk, susceptibility, zone)
                     VALUES (:state_code, :state_name, :district_code, :district_name,
                             :block_code, :block_name, :lat, :lon, :high_risk, :susc, :zone)
-                """), {
-                    "state_code": district["state_code"],
-                    "state_name": district["state_name"],
-                    "district_code": district["district_code"],
-                    "district_name": district["district_name"],
-                    "block_code": block["block_code"],
-                    "block_name": block["block_name"],
-                    "lat": block["lat"],
-                    "lon": block["lon"],
-                    "high_risk": True,
-                    "susc": district["susceptibility"],
-                    "zone": district["zone"],
-                })
+                """),
+                    {
+                        "state_code": district["state_code"],
+                        "state_name": district["state_name"],
+                        "district_code": district["district_code"],
+                        "district_name": district["district_name"],
+                        "block_code": block["block_code"],
+                        "block_name": block["block_name"],
+                        "lat": block["lat"],
+                        "lon": block["lon"],
+                        "high_risk": True,
+                        "susc": district["susceptibility"],
+                        "zone": district["zone"],
+                    },
+                )
 
     await session.commit()
     logger.info(f"✅ Seeded {inserted} new districts (blocks included)")
@@ -257,12 +287,13 @@ async def seed_events(session: AsyncSession, events: list):
     for event in events:
         result = await session.execute(
             text("SELECT id FROM landslide_events WHERE event_id = :eid"),
-            {"eid": event["event_id"]}
+            {"eid": event["event_id"]},
         )
         if result.fetchone():
             continue
 
-        await session.execute(text("""
+        await session.execute(
+            text("""
             INSERT INTO landslide_events
                 (id, event_id, event_name, source, lat, lon,
                  district_code, block_code, event_date,
@@ -275,28 +306,30 @@ async def seed_events(session: AsyncSession, events: list):
                  :deaths, :injuries, :displacement, :trigger,
                  :rainfall_3d_mm, :description, :fpi_target_t24, :fpi_target_t48,
                  :was_flagged_24h, :fpi_at_t24, :created_at)
-        """), {
-            "id": str(uuid.uuid4()),
-            "event_id": event["event_id"],
-            "event_name": event["event_name"],
-            "source": event["source"],
-            "lat": event["lat"],
-            "lon": event["lon"],
-            "district_code": event["district_code"],
-            "block_code": event.get("block_code"),
-            "event_date": datetime.fromisoformat(event["date"]),
-            "deaths": event.get("deaths"),
-            "injuries": event.get("injuries"),
-            "displacement": event.get("displacement"),
-            "trigger": event.get("trigger"),
-            "rainfall_3d_mm": event.get("rainfall_3d_mm"),
-            "description": event.get("description"),
-            "fpi_target_t24": event.get("fpi_target_t24"),
-            "fpi_target_t48": event.get("fpi_target_t48"),
-            "was_flagged_24h": event.get("fpi_target_t24", 0) >= 0.65,
-            "fpi_at_t24": event.get("fpi_target_t24"),
-            "created_at": datetime.now(timezone.utc),
-        })
+        """),
+            {
+                "id": str(uuid.uuid4()),
+                "event_id": event["event_id"],
+                "event_name": event["event_name"],
+                "source": event["source"],
+                "lat": event["lat"],
+                "lon": event["lon"],
+                "district_code": event["district_code"],
+                "block_code": event.get("block_code"),
+                "event_date": datetime.fromisoformat(event["date"]),
+                "deaths": event.get("deaths"),
+                "injuries": event.get("injuries"),
+                "displacement": event.get("displacement"),
+                "trigger": event.get("trigger"),
+                "rainfall_3d_mm": event.get("rainfall_3d_mm"),
+                "description": event.get("description"),
+                "fpi_target_t24": event.get("fpi_target_t24"),
+                "fpi_target_t48": event.get("fpi_target_t48"),
+                "was_flagged_24h": event.get("fpi_target_t24", 0) >= 0.65,
+                "fpi_at_t24": event.get("fpi_target_t24"),
+                "created_at": datetime.now(timezone.utc),
+            },
+        )
         inserted += 1
 
     await session.commit()
@@ -332,7 +365,9 @@ def compute_fpi_for_district(district: dict) -> dict:
 
     susc = district.get("susceptibility", 3)
     # High-risk districts get higher base soil moisture during monsoon
-    soil_moisture = min(98, 50 + (susc * 8) + (20 if is_monsoon else 0) + np.random.normal(0, 5))
+    soil_moisture = min(
+        98, 50 + (susc * 8) + (20 if is_monsoon else 0) + np.random.normal(0, 5)
+    )
     slope = 15 + susc * 4 + np.random.normal(0, 5)  # steeper = higher susceptibility
     forecast_24h = rainfall_3d * 0.6
 
@@ -391,7 +426,7 @@ async def seed_alerts(session: AsyncSession, districts: list):
             alert_code = f"{district['state_code']}_{district['district_code']}_{block['block_code']}_SEED"
             result = await session.execute(
                 text("SELECT id FROM alerts WHERE alert_code = :code"),
-                {"code": alert_code}
+                {"code": alert_code},
             )
             if result.fetchone():
                 continue
@@ -401,14 +436,19 @@ async def seed_alerts(session: AsyncSession, districts: list):
             np.random.seed(hash(block["block_code"]) % (2**31))
             block_fpi = float(np.clip(fpi + np.random.normal(0, 0.04), 0, 0.98))
             block_tier = (
-                "EMERGENCY" if block_fpi >= 0.80 else
-                "WARNING" if block_fpi >= 0.65 else
-                "WATCH" if block_fpi >= 0.40 else "NORMAL"
+                "EMERGENCY"
+                if block_fpi >= 0.80
+                else (
+                    "WARNING"
+                    if block_fpi >= 0.65
+                    else "WATCH" if block_fpi >= 0.40 else "NORMAL"
+                )
             )
             if block_tier == "NORMAL":
                 continue
 
-            await session.execute(text("""
+            await session.execute(
+                text("""
                 INSERT INTO alerts
                     (id, alert_code, state_code, state_name, district_code, district_name,
                      block_code, block_name, fpi_score, fpi_ci_lower, fpi_ci_upper, fpi_24h,
@@ -423,34 +463,40 @@ async def seed_alerts(session: AsyncSession, districts: list):
                      :tier, 1, :is_suppressed, 1,
                      :dominant_signals, :rainfall_3d_mm, :soil_moisture_percentile,
                      :centroid_lat, :centroid_lon, :issued_at)
-            """), {
-                "id": str(uuid.uuid4()),
-                "alert_code": alert_code,
-                "state_code": district["state_code"],
-                "state_name": district["state_name"],
-                "district_code": district["district_code"],
-                "district_name": district["district_name"],
-                "block_code": block["block_code"],
-                "block_name": block["block_name"],
-                "fpi_score": round(block_fpi, 4),
-                "fpi_ci_lower": round(max(0, block_fpi - 0.10), 4),
-                "fpi_ci_upper": round(min(1, block_fpi + 0.10), 4),
-                "fpi_24h": round(min(0.99, block_fpi * 1.05), 4),
-                "cell_count_total": 24,
-                "cell_count_breached": int(24 * 0.4),
-                "breach_fraction": 0.40,
-                "tier": block_tier,
-                "is_suppressed": fpi_data["is_suppressed"],
-                "dominant_signals": json.dumps([{
-                    "signal": fpi_data["dominant_signal"],
-                    "value": round(block_fpi, 3)
-                }]),
-                "rainfall_3d_mm": fpi_data["rainfall_3d_mm"],
-                "soil_moisture_percentile": fpi_data["soil_moisture_pct"],
-                "centroid_lat": block["lat"],
-                "centroid_lon": block["lon"],
-                "issued_at": now,
-            })
+            """),
+                {
+                    "id": str(uuid.uuid4()),
+                    "alert_code": alert_code,
+                    "state_code": district["state_code"],
+                    "state_name": district["state_name"],
+                    "district_code": district["district_code"],
+                    "district_name": district["district_name"],
+                    "block_code": block["block_code"],
+                    "block_name": block["block_name"],
+                    "fpi_score": round(block_fpi, 4),
+                    "fpi_ci_lower": round(max(0, block_fpi - 0.10), 4),
+                    "fpi_ci_upper": round(min(1, block_fpi + 0.10), 4),
+                    "fpi_24h": round(min(0.99, block_fpi * 1.05), 4),
+                    "cell_count_total": 24,
+                    "cell_count_breached": int(24 * 0.4),
+                    "breach_fraction": 0.40,
+                    "tier": block_tier,
+                    "is_suppressed": fpi_data["is_suppressed"],
+                    "dominant_signals": json.dumps(
+                        [
+                            {
+                                "signal": fpi_data["dominant_signal"],
+                                "value": round(block_fpi, 3),
+                            }
+                        ]
+                    ),
+                    "rainfall_3d_mm": fpi_data["rainfall_3d_mm"],
+                    "soil_moisture_percentile": fpi_data["soil_moisture_pct"],
+                    "centroid_lat": block["lat"],
+                    "centroid_lon": block["lon"],
+                    "issued_at": now,
+                },
+            )
             inserted += 1
 
     await session.commit()
@@ -464,7 +510,9 @@ async def main():
     logger.info(f"Database: {db_url}")
 
     engine = create_async_engine(db_url, echo=False)
-    AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    AsyncSessionLocal = sessionmaker(
+        engine, class_=AsyncSession, expire_on_commit=False
+    )
 
     # 1. Create tables
     await create_tables(engine)

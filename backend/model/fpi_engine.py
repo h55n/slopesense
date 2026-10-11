@@ -25,8 +25,8 @@ logger = logging.getLogger(__name__)
 
 # Alert tier thresholds
 THRESHOLDS = {
-    "WATCH":     0.40,
-    "WARNING":   0.65,
+    "WATCH": 0.40,
+    "WARNING": 0.65,
     "EMERGENCY": 0.80,
 }
 
@@ -34,21 +34,21 @@ THRESHOLDS = {
 # These are the prior weights before LightGBM training.
 # In production these come from the trained model's feature_importances_.
 FEATURE_WEIGHTS = {
-    "rainfall_3d_mm":          0.35,  # strongest single predictor
-    "soil_moisture_pct":       0.25,  # priming variable
-    "slope_degrees":           0.15,  # static terrain
-    "susceptibility_class":    0.12,  # NDMA prior
-    "forecast_24h_mm":         0.08,  # forward-looking
-    "ndvi_delta":              0.05,  # vegetation change (lagging)
+    "rainfall_3d_mm": 0.35,  # strongest single predictor
+    "soil_moisture_pct": 0.25,  # priming variable
+    "slope_degrees": 0.15,  # static terrain
+    "susceptibility_class": 0.12,  # NDMA prior
+    "forecast_24h_mm": 0.08,  # forward-looking
+    "ndvi_delta": 0.05,  # vegetation change (lagging)
 }
 
 # Rainfall thresholds for India (mm / 3 days)
 # Tuned against NDMA event inventory 2000–2024
 RAINFALL_THRESHOLDS_MM = {
-    "western_ghats":  {"watch": 100, "warning": 180, "emergency": 280},
-    "himalayan":      {"watch":  80, "warning": 140, "emergency": 220},
-    "northeast":      {"watch": 120, "warning": 200, "emergency": 300},
-    "default":        {"watch":  90, "warning": 160, "emergency": 250},
+    "western_ghats": {"watch": 100, "warning": 180, "emergency": 280},
+    "himalayan": {"watch": 80, "warning": 140, "emergency": 220},
+    "northeast": {"watch": 120, "warning": 200, "emergency": 300},
+    "default": {"watch": 90, "warning": 160, "emergency": 250},
 }
 
 # ── Human-readable Risk Labels ────────────────────────────────────────────────
@@ -62,7 +62,7 @@ RISK_LEVELS = [
         "short": "Landslide Imminent",
         "description": "Landslide is imminent or already occurring. Immediate evacuation required. All emergency channels activated.",
         "action": "Evacuate all households on or below slopes immediately. Do not wait.",
-        "color": "#dc2626",   # red-600
+        "color": "#dc2626",  # red-600
         "bg_color": "#fef2f2",
         "emoji": "🆘",
     },
@@ -72,7 +72,7 @@ RISK_LEVELS = [
         "short": "Very High Risk",
         "description": "Very high probability of landslide within 24–48 hours. Conditions are dangerous.",
         "action": "Pre-position NDRF/SDRF. Issue public advisory. Pre-evacuate highest-risk households near slopes.",
-        "color": "#ea580c",   # orange-600
+        "color": "#ea580c",  # orange-600
         "bg_color": "#fff7ed",
         "emoji": "🔴",
     },
@@ -82,7 +82,7 @@ RISK_LEVELS = [
         "short": "Elevated Risk",
         "description": "Elevated landslide risk. Soil is saturated and terrain is primed. Conditions could deteriorate rapidly.",
         "action": "Alert DDMA. Monitor slopes closely. Warn communities on steep terrain.",
-        "color": "#d97706",   # amber-600
+        "color": "#d97706",  # amber-600
         "bg_color": "#fffbeb",
         "emoji": "⚠️",
     },
@@ -92,7 +92,7 @@ RISK_LEVELS = [
         "short": "Moderate Risk",
         "description": "Some risk factors are present but conditions are not yet dangerous. Continue monitoring.",
         "action": "Stay informed. Review evacuation routes. No immediate action needed.",
-        "color": "#65a30d",   # lime-600
+        "color": "#65a30d",  # lime-600
         "bg_color": "#f7fee7",
         "emoji": "🟡",
     },
@@ -102,7 +102,7 @@ RISK_LEVELS = [
         "short": "Low Risk",
         "description": "No significant landslide risk indicators at this time.",
         "action": "Normal monitoring. No action required.",
-        "color": "#16a34a",   # green-600
+        "color": "#16a34a",  # green-600
         "bg_color": "#f0fdf4",
         "emoji": "✅",
     },
@@ -145,6 +145,7 @@ def get_risk_short(fpi_score: float) -> str:
 @dataclass
 class CellFPI:
     """FPI score and metadata for a single 1km² grid cell."""
+
     cell_id: str
     lat: float
     lon: float
@@ -177,6 +178,7 @@ class CellFPI:
 @dataclass
 class BlockFPI:
     """Block-level aggregated FPI (spatial cluster of cells)."""
+
     block_code: str
     block_name: str
     district_code: str
@@ -186,7 +188,7 @@ class BlockFPI:
     lat: float
     lon: float
 
-    fpi_score: float          # 95th percentile of cell FPIs in block
+    fpi_score: float  # 95th percentile of cell FPIs in block
     fpi_ci_lower: float
     fpi_ci_upper: float
     fpi_24h: float
@@ -292,7 +294,11 @@ class FPIEngine:
             f"FPI: computing {len(lats) * len(lons):,} cells "
             f"({'LightGBM' if self.lgbm_model else 'physics-based'})"
         )
-        vectorized_fpi = self.compute_grid_vectorized(feature_grid) if self.lgbm_model is None else None
+        vectorized_fpi = (
+            self.compute_grid_vectorized(feature_grid)
+            if self.lgbm_model is None
+            else None
+        )
 
         for i, lat in enumerate(lats):
             for j, lon in enumerate(lons):
@@ -304,7 +310,11 @@ class FPIEngine:
                     key = (round(lat, 1), round(lon, 1))
                     district_code, block_code = district_lookup.get(key, (None, None))
 
-                fpi = float(vectorized_fpi[i, j]) if vectorized_fpi is not None else self._score_cell(features)
+                fpi = (
+                    float(vectorized_fpi[i, j])
+                    if vectorized_fpi is not None
+                    else self._score_cell(features)
+                )
                 fpi_24h = self._score_cell_forecast(features, horizon_h=24)
                 fpi_48h = self._score_cell_forecast(features, horizon_h=48)
                 ci_lower, ci_upper = self._compute_confidence_interval(fpi, features)
@@ -312,29 +322,33 @@ class FPIEngine:
                 tier = self._classify_tier(fpi, is_suppressed)
                 dominant, breakdown = self._identify_dominant_signal(features)
 
-                results.append(CellFPI(
-                    cell_id=cell_id,
-                    lat=lat,
-                    lon=lon,
-                    district_code=district_code,
-                    block_code=block_code,
-                    fpi_score=round(fpi, 4),
-                    fpi_ci_lower=round(ci_lower, 4),
-                    fpi_ci_upper=round(ci_upper, 4),
-                    fpi_24h=round(fpi_24h, 4),
-                    fpi_48h=round(fpi_48h, 4),
-                    alert_tier=tier,
-                    is_suppressed=is_suppressed,
-                    dominant_signal=dominant,
-                    signal_breakdown=breakdown,
-                    rainfall_3d_mm=round(float(features["rainfall_3d_mm"]), 1),
-                    rainfall_24h_mm=round(float(features["rainfall_24h_mm"]), 1),
-                    forecast_24h_mm=round(float(features["forecast_24h_mm"]), 1),
-                    soil_moisture_pct=round(float(features["soil_moisture_pct"]), 1),
-                    slope_degrees=round(float(features["slope_degrees"]), 1),
-                    susceptibility_class=int(features["susceptibility_class"]),
-                    run_timestamp=feature_grid.run_timestamp,
-                ))
+                results.append(
+                    CellFPI(
+                        cell_id=cell_id,
+                        lat=lat,
+                        lon=lon,
+                        district_code=district_code,
+                        block_code=block_code,
+                        fpi_score=round(fpi, 4),
+                        fpi_ci_lower=round(ci_lower, 4),
+                        fpi_ci_upper=round(ci_upper, 4),
+                        fpi_24h=round(fpi_24h, 4),
+                        fpi_48h=round(fpi_48h, 4),
+                        alert_tier=tier,
+                        is_suppressed=is_suppressed,
+                        dominant_signal=dominant,
+                        signal_breakdown=breakdown,
+                        rainfall_3d_mm=round(float(features["rainfall_3d_mm"]), 1),
+                        rainfall_24h_mm=round(float(features["rainfall_24h_mm"]), 1),
+                        forecast_24h_mm=round(float(features["forecast_24h_mm"]), 1),
+                        soil_moisture_pct=round(
+                            float(features["soil_moisture_pct"]), 1
+                        ),
+                        slope_degrees=round(float(features["slope_degrees"]), 1),
+                        susceptibility_class=int(features["susceptibility_class"]),
+                        run_timestamp=feature_grid.run_timestamp,
+                    )
+                )
 
         logger.info(f"FPI: computed {len(results)} cells")
         return results
@@ -392,7 +406,11 @@ class FPIEngine:
 
             # Alert tier
             is_suppressed = (ci_upper - ci_lower) > 0.30 or not spatially_valid
-            tier = self._classify_tier(fpi_block, is_suppressed) if spatially_valid else "MONITORING"
+            tier = (
+                self._classify_tier(fpi_block, is_suppressed)
+                if spatially_valid
+                else "MONITORING"
+            )
 
             # Representative signals (from 95th pct cell)
             rep_idx = int(np.argmax(scores))
@@ -400,33 +418,45 @@ class FPIEngine:
 
             meta = block_map.get(block_code, {})
 
-            block_results.append(BlockFPI(
-                block_code=block_code,
-                block_name=meta.get("block_name", block_code),
-                district_code=meta.get("district_code", cells[0].district_code or ""),
-                district_name=meta.get("district_name", ""),
-                state_code=meta.get("state_code", ""),
-                state_name=meta.get("state_name", ""),
-                lat=rep_cell.lat,
-                lon=rep_cell.lon,
-                fpi_score=round(fpi_block, 4),
-                fpi_ci_lower=round(ci_lower, 4),
-                fpi_ci_upper=round(ci_upper, 4),
-                fpi_24h=round(fpi_24h, 4),
-                fpi_48h=round(fpi_48h, 4),
-                alert_tier=tier,
-                is_suppressed=is_suppressed,
-                cell_count_total=len(cells),
-                cell_count_breached=breached,
-                breach_fraction=round(breach_fraction, 3),
-                dominant_signals=[
-                    {"signal": rep_cell.dominant_signal,
-                     "value": rep_cell.signal_breakdown.get(rep_cell.dominant_signal, 0)}
-                ],
-                rainfall_3d_mm=round(float(np.mean([c.rainfall_3d_mm for c in cells])), 1),
-                soil_moisture_pct=round(float(np.mean([c.soil_moisture_pct for c in cells])), 1),
-                run_timestamp=cells[0].run_timestamp,
-            ))
+            block_results.append(
+                BlockFPI(
+                    block_code=block_code,
+                    block_name=meta.get("block_name", block_code),
+                    district_code=meta.get(
+                        "district_code", cells[0].district_code or ""
+                    ),
+                    district_name=meta.get("district_name", ""),
+                    state_code=meta.get("state_code", ""),
+                    state_name=meta.get("state_name", ""),
+                    lat=rep_cell.lat,
+                    lon=rep_cell.lon,
+                    fpi_score=round(fpi_block, 4),
+                    fpi_ci_lower=round(ci_lower, 4),
+                    fpi_ci_upper=round(ci_upper, 4),
+                    fpi_24h=round(fpi_24h, 4),
+                    fpi_48h=round(fpi_48h, 4),
+                    alert_tier=tier,
+                    is_suppressed=is_suppressed,
+                    cell_count_total=len(cells),
+                    cell_count_breached=breached,
+                    breach_fraction=round(breach_fraction, 3),
+                    dominant_signals=[
+                        {
+                            "signal": rep_cell.dominant_signal,
+                            "value": rep_cell.signal_breakdown.get(
+                                rep_cell.dominant_signal, 0
+                            ),
+                        }
+                    ],
+                    rainfall_3d_mm=round(
+                        float(np.mean([c.rainfall_3d_mm for c in cells])), 1
+                    ),
+                    soil_moisture_pct=round(
+                        float(np.mean([c.soil_moisture_pct for c in cells])), 1
+                    ),
+                    run_timestamp=cells[0].run_timestamp,
+                )
+            )
 
         logger.info(f"FPI: aggregated to {len(block_results)} blocks")
         return block_results
@@ -440,29 +470,30 @@ class FPIEngine:
         or when archive data is missing) are replaced with safe physical defaults
         so the physics computation never produces NaN outputs.
         """
+
         def _safe(arr: np.ndarray, default: float) -> float:
             """Return float, replacing NaN/inf with a physical default."""
             val = float(arr[i, j])
             return default if not np.isfinite(val) else val
 
         return {
-            "rainfall_3d_mm":       _safe(grid.rainfall_3d_mm,       0.0),
-            "rainfall_24h_mm":      _safe(grid.rainfall_24h_mm,      0.0),
-            "forecast_24h_mm":      _safe(grid.forecast_24h_mm,      0.0),
-            "forecast_48h_mm":      _safe(grid.forecast_48h_mm,      0.0),
-            "soil_moisture_pct":    _safe(grid.soil_moisture_pct,   50.0),
-            "soil_moisture_abs":    _safe(grid.soil_moisture_abs,    0.1),
-            "slope_degrees":        _safe(grid.slope_degrees,        15.0),
-            "aspect_degrees":       _safe(grid.aspect_degrees,      180.0),
-            "elevation_m":          _safe(grid.elevation_m,        500.0),
-            "ndvi_delta":           _safe(grid.ndvi_delta,           0.0),
+            "rainfall_3d_mm": _safe(grid.rainfall_3d_mm, 0.0),
+            "rainfall_24h_mm": _safe(grid.rainfall_24h_mm, 0.0),
+            "forecast_24h_mm": _safe(grid.forecast_24h_mm, 0.0),
+            "forecast_48h_mm": _safe(grid.forecast_48h_mm, 0.0),
+            "soil_moisture_pct": _safe(grid.soil_moisture_pct, 50.0),
+            "soil_moisture_abs": _safe(grid.soil_moisture_abs, 0.1),
+            "slope_degrees": _safe(grid.slope_degrees, 15.0),
+            "aspect_degrees": _safe(grid.aspect_degrees, 180.0),
+            "elevation_m": _safe(grid.elevation_m, 500.0),
+            "ndvi_delta": _safe(grid.ndvi_delta, 0.0),
             "susceptibility_class": _safe(grid.susceptibility_class, 2.0),
         }
 
     def _score_cell(self, features: Dict[str, float]) -> float:
         """
         Compute FPI score for a single cell.
-        
+
         Uses LightGBM if trained model available, else physics-based.
         """
         if self.lgbm_model is not None:
@@ -473,6 +504,7 @@ class FPIEngine:
         """Score using trained LightGBM model."""
         try:
             import pandas as pd
+
             feature_order = list(FEATURE_WEIGHTS.keys())
             X = pd.DataFrame([{k: features.get(k, 0.0) for k in feature_order}])
             prob = self.lgbm_model.predict_proba(X)[0][1]
@@ -501,12 +533,12 @@ class FPIEngine:
         # ── Rainfall component (non-linear) ──────────────────────────────────
         # 3-day accumulation is the primary trigger
         rain_norm = np.clip(rain_3d / 250.0, 0, 1)  # 250mm = near-emergency threshold
-        rain_score = rain_norm ** 0.7   # concave: accelerates quickly at high values
+        rain_score = rain_norm**0.7  # concave: accelerates quickly at high values
 
         # ── Soil moisture component ───────────────────────────────────────────
         # Near-saturated soil (>85th pct) multiplies rainfall risk significantly
         sm_norm = np.clip(sm_pct / 100.0, 0, 1)
-        sm_score = sm_norm ** 1.5   # convex: risk rises sharply near saturation
+        sm_score = sm_norm**1.5  # convex: risk rises sharply near saturation
 
         # ── Slope component ───────────────────────────────────────────────────
         # Risk peaks at 25–40° then levels off (very steep = often bedrock)
@@ -525,12 +557,12 @@ class FPIEngine:
 
         # ── Weighted combination ──────────────────────────────────────────────
         fpi = (
-            FEATURE_WEIGHTS["rainfall_3d_mm"]       * rain_score +
-            FEATURE_WEIGHTS["soil_moisture_pct"]    * sm_score +
-            FEATURE_WEIGHTS["slope_degrees"]         * slope_score +
-            FEATURE_WEIGHTS["susceptibility_class"]  * susc_score +
-            FEATURE_WEIGHTS["forecast_24h_mm"]       * fc_score +
-            FEATURE_WEIGHTS["ndvi_delta"]            * ndvi_score
+            FEATURE_WEIGHTS["rainfall_3d_mm"] * rain_score
+            + FEATURE_WEIGHTS["soil_moisture_pct"] * sm_score
+            + FEATURE_WEIGHTS["slope_degrees"] * slope_score
+            + FEATURE_WEIGHTS["susceptibility_class"] * susc_score
+            + FEATURE_WEIGHTS["forecast_24h_mm"] * fc_score
+            + FEATURE_WEIGHTS["ndvi_delta"] * ndvi_score
         )
 
         # Interaction term: rainfall × soil moisture (key LHASA v2 insight)
@@ -542,7 +574,7 @@ class FPIEngine:
     def _score_cell_forecast(self, features: Dict[str, float], horizon_h: int) -> float:
         """
         Forecast FPI at +24h or +48h by substituting forecast rainfall.
-        
+
         Replaces observed 3-day rainfall with:
           observed_1d + 2d_trend + forecast_Nh
         """
@@ -563,8 +595,7 @@ class FPIEngine:
 
         # Soil moisture also increases with continued rain
         forecast_features["soil_moisture_pct"] = min(
-            99.0,
-            features["soil_moisture_pct"] + features["forecast_24h_mm"] * 0.08
+            99.0, features["soil_moisture_pct"] + features["forecast_24h_mm"] * 0.08
         )
 
         return self._score_cell(forecast_features)
@@ -631,10 +662,10 @@ class FPIEngine:
         susc_contrib = (features["susceptibility_class"] - 1) / 4.0
 
         contributions = {
-            "rainfall_accumulation":  float(np.clip(rain_contrib, 0, 1)),
-            "soil_moisture":          float(np.clip(sm_contrib, 0, 1)),
-            "slope_angle":            float(np.clip(slope_contrib, 0, 1)),
-            "forecast_rainfall":      float(np.clip(fc_contrib, 0, 1)),
+            "rainfall_accumulation": float(np.clip(rain_contrib, 0, 1)),
+            "soil_moisture": float(np.clip(sm_contrib, 0, 1)),
+            "slope_angle": float(np.clip(slope_contrib, 0, 1)),
+            "forecast_rainfall": float(np.clip(fc_contrib, 0, 1)),
             "geological_susceptibility": float(np.clip(susc_contrib, 0, 1)),
         }
 
@@ -685,7 +716,8 @@ class FPIEngine:
             )
 
             model.fit(
-                X_train, y_train,
+                X_train,
+                y_train,
                 eval_set=[(X_val, y_val)],
                 callbacks=[lgb.early_stopping(50, verbose=False)],
             )

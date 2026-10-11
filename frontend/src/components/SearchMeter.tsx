@@ -51,26 +51,25 @@ export default function SearchMeter() {
   };
 
   return (
-    <div className="glass-panel p-6 relative overflow-hidden">
-      <div className="text-tiny font-bold uppercase tracking-[0.24em] text-slope-accent mb-3 flex items-center gap-2">
-        <span className="w-1.5 h-1.5 rounded-full bg-slope-accent animate-pulse" />
-        Live FPI Search
-      </div>
+    <div className="glass-panel relative overflow-hidden p-6 sm:p-8">
+      <div className="eyebrow mb-1">Live FPI search</div>
+      <h3 className="font-serif text-[28px] leading-tight text-ink">Check any coordinate</h3>
+      <p className="mb-5 mt-1 text-[14px] text-ink/55">Enter latitude and longitude to read the current Failure Probability Index for that point.</p>
       
-      <form onSubmit={handleSearch} className="flex gap-2 mb-6">
+      <form onSubmit={handleSearch} className="flex gap-2">
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="e.g. 11.58, 76.08"
-          className="flex-1 bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-base-sm text-white placeholder-white/30 focus:outline-none focus:border-slope-accent/50 transition-colors"
+          aria-label="Latitude, longitude" className="h-11 min-w-0 flex-1 rounded-full border border-ink/15 bg-paper px-5 text-[14px] text-ink placeholder-ink/35 outline-none transition-colors focus:border-forest"
         />
         <button
           type="submit"
           disabled={loading}
-          className="bg-slope-accent text-slope-bg px-5 py-2 rounded-lg text-small font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-50"
+          className="btn btn-primary h-11 disabled:opacity-50"
         >
-          {loading ? '...' : 'Scan'}
+          {loading ? 'Scanning…' : 'Check risk'}
         </button>
       </form>
 
@@ -93,7 +92,7 @@ export default function SearchMeter() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="flex items-center gap-6 p-4 rounded-xl bg-white/5 border border-white/10"
+            className="flex items-center gap-6 p-4 rounded-2xl bg-paper border border-ink/10"
           >
             <ArcGauge pct={result.fpi_score * 100} color={fpiColor(result.fpi_score)} />
             <div>
@@ -138,7 +137,7 @@ function ArcGauge({ pct, color }: { pct: number; color: string }) {
 
   return (
     <svg width="80" height="80" viewBox="0 0 80 80" className="shrink-0">
-      <path d={trackPath} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6" strokeLinecap="round" />
+      <path d={trackPath} fill="none" stroke="rgba(29,42,33,0.10)" strokeWidth="6" strokeLinecap="round" />
       {fillPath && (
         <motion.path
           d={fillPath}

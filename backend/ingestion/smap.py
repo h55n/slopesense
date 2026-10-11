@@ -42,7 +42,7 @@ SATURATION_THRESHOLDS = {
 # Percentile breakpoints for FPI contribution
 # 90th+ percentile = near-saturated = high risk multiplier
 PERCENTILE_RISK_MAPPING = {
-    50: 0.0,   # no contribution
+    50: 0.0,  # no contribution
     70: 0.15,  # moderate
     80: 0.30,  # elevated
     90: 0.55,  # high
@@ -54,17 +54,17 @@ PERCENTILE_RISK_MAPPING = {
 class SMAPIngestion:
     """
     Handles fetching and processing NASA SMAP L3 soil moisture data.
-    
+
     Key insight: soil moisture is the "priming" variable. A slope can
     sustain significant rainfall without failing if soil is dry. Once
     soil moisture reaches the 85–90th percentile of seasonal distribution,
     even moderate additional rainfall can trigger failure.
-    
+
     We use SMAP as an antecedent state indicator, not a real-time trigger
     (its 24–48h latency makes it unsuitable for real-time use).
     """
 
-    PRODUCT_SHORT_NAME = "SPL3SMP"   # SMAP L3 Radiometer Global Daily
+    PRODUCT_SHORT_NAME = "SPL3SMP"  # SMAP L3 Radiometer Global Daily
     VERSION = "008"
     DATA_DIR = Path("data/smap")
 
@@ -81,16 +81,16 @@ class SMAPIngestion:
     ) -> Optional[xr.DataArray]:
         """
         Fetch SMAP daily soil moisture for a given date.
-        
+
         SMAP has AM and PM overpasses (~6am and ~6pm local solar time).
         PM overpass is generally preferred for monsoon applications
         (captures daytime moisture redistribution).
-        
+
         Args:
             date: UTC date
             bbox: geographic bounding box
             use_pm_overpass: use PM overpass (recommended) or AM
-            
+
         Returns:
             DataArray with soil_moisture values (m³/m³), or None on failure
         """
@@ -131,7 +131,11 @@ class SMAPIngestion:
             files = earthaccess.open(results[:1])
 
             ds = xr.open_dataset(files[0])
-            group = "Soil_Moisture_Retrieval_Data_PM" if use_pm_overpass else "Soil_Moisture_Retrieval_Data_AM"
+            group = (
+                "Soil_Moisture_Retrieval_Data_PM"
+                if use_pm_overpass
+                else "Soil_Moisture_Retrieval_Data_AM"
+            )
 
             try:
                 soil_moisture = ds[f"{group}/soil_moisture"]
@@ -164,7 +168,7 @@ class SMAPIngestion:
     ) -> xr.DataArray:
         """
         Compute 3-day rolling average soil moisture.
-        
+
         Averaging over 3 days smooths the 36km resolution noise and
         accounts for the 24–48h latency in SMAP retrievals.
         """
@@ -197,12 +201,12 @@ class SMAPIngestion:
         """
         Convert absolute soil moisture values (m³/m³) to percentile rank
         relative to a seasonal climatological baseline.
-        
+
         Percentile is the key FPI input:
         - 90th percentile → soil near field capacity → high failure risk
         - 50th percentile → typical monsoon moisture → moderate risk
         - <40th percentile → dry soil → low risk even with heavy rainfall
-        
+
         In production, this uses a multi-year SMAP climatology.
         For hackathon: uses parameterized seasonal distributions.
         """
@@ -225,6 +229,7 @@ class SMAPIngestion:
             seasonal_std = 0.05
 
         from scipy import stats
+
         z_scores = (soil_moisture - seasonal_mean) / seasonal_std
         percentiles = xr.apply_ufunc(
             lambda z: stats.norm.cdf(z) * 100,
@@ -234,7 +239,9 @@ class SMAPIngestion:
 
         percentiles = percentiles.clip(0, 100)
         percentiles.name = "soil_moisture_percentile"
-        percentiles.attrs["description"] = "Soil moisture as seasonal percentile (0–100)"
+        percentiles.attrs["description"] = (
+            "Soil moisture as seasonal percentile (0–100)"
+        )
         percentiles.attrs["source"] = "NASA SMAP L3 + SlopeSense climatology"
 
         return percentiles
@@ -242,12 +249,12 @@ class SMAPIngestion:
     def get_fpi_contribution(self, percentile: float) -> float:
         """
         Map soil moisture percentile to FPI contribution weight (0.0–1.0).
-        
+
         This is the lookup table used inside the FPI model.
         Non-linear: risk accelerates rapidly above 85th percentile.
         """
         sorted_thresholds = sorted(PERCENTILE_RISK_MAPPING.keys())
-        
+
         if percentile <= sorted_thresholds[0]:
             return 0.0
         if percentile >= sorted_thresholds[-1]:
@@ -272,8 +279,12 @@ class SMAPIngestion:
         Uses bilinear interpolation via scipy.
         """
         try:
-            target_lats = np.arange(bbox["min_lat"], bbox["max_lat"] + resolution, resolution)
-            target_lons = np.arange(bbox["min_lon"], bbox["max_lon"] + resolution, resolution)
+            target_lats = np.arange(
+                bbox["min_lat"], bbox["max_lat"] + resolution, resolution
+            )
+            target_lons = np.arange(
+                bbox["min_lon"], bbox["max_lon"] + resolution, resolution
+            )
 
             # If already on lat/lon grid (some SMAP products)
             if "lat" in da.dims and "lon" in da.dims:
@@ -286,17 +297,21 @@ class SMAPIngestion:
             logger.warning(f"SMAP regrid failed: {e}, using synthetic")
             return self._generate_synthetic_array(bbox, resolution)
 
-    def _generate_synthetic(self, date: datetime, bbox: dict, resolution: float = 0.25) -> xr.DataArray:
+    def _generate_synthetic(
+        self, date: datetime, bbox: dict, resolution: float = 0.25
+    ) -> xr.DataArray:
         """
         Synthetic SMAP data for development.
-        
+
         Mimics realistic soil moisture patterns:
         - Western Ghats: higher (0.30–0.45 during monsoon)
         - Deccan plateau: lower (0.15–0.25)
         - Himalayan foothills: moderate (0.20–0.35)
         """
         logger.info(f"SMAP: generating synthetic data for {date.date()}")
-        return self._generate_synthetic_array(bbox, resolution, seed=int(date.timestamp()) % 10000)
+        return self._generate_synthetic_array(
+            bbox, resolution, seed=int(date.timestamp()) % 10000
+        )
 
     def _generate_synthetic_array(
         self, bbox: dict, resolution: float = 0.25, seed: int = 42
@@ -315,9 +330,7 @@ class SMAPIngestion:
 
         data = np.clip(data, 0.05, 0.55)
 
-        da = xr.DataArray(
-            data, dims=["lat", "lon"], coords={"lat": lats, "lon": lons}
-        )
+        da = xr.DataArray(data, dims=["lat", "lon"], coords={"lat": lats, "lon": lons})
         da.name = "soil_moisture"
         da.attrs["units"] = "m³/m³"
         da.attrs["synthetic"] = "true"

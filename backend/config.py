@@ -66,7 +66,11 @@ class Settings(BaseSettings):
     model_run_interval_hours: int = 6
     sentinel2_fetch_interval_days: int = 5
 
-    model_config = {"env_file": ".env", "case_sensitive": False, "protected_namespaces": ()}
+    model_config = {
+        "env_file": ".env",
+        "case_sensitive": False,
+        "protected_namespaces": (),
+    }
 
     @property
     def is_production(self) -> bool:
@@ -77,7 +81,9 @@ class Settings(BaseSettings):
         if self.database_url.startswith("postgresql+asyncpg://"):
             return self.database_url
         if self.database_url.startswith("postgresql://"):
-            return self.database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+            return self.database_url.replace(
+                "postgresql://", "postgresql+asyncpg://", 1
+            )
         if self.database_url.startswith("sqlite+aiosqlite://"):
             return self.database_url
         if self.database_url.startswith("sqlite://"):
@@ -86,7 +92,11 @@ class Settings(BaseSettings):
 
     @property
     def allowed_origin_list(self) -> List[str]:
-        return [origin.strip() for origin in self.allowed_origins.split(",") if origin.strip()]
+        return [
+            origin.strip()
+            for origin in self.allowed_origins.split(",")
+            if origin.strip()
+        ]
 
     @property
     def allowed_host_list(self) -> List[str]:

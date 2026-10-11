@@ -9,7 +9,9 @@ async def test_whatsapp_webhook_verification_accepts_valid_token():
     from backend.api.main import app
     from backend.config import settings
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
         resp = await client.get(
             "/v1/webhooks/whatsapp",
             params={
@@ -27,10 +29,16 @@ async def test_whatsapp_webhook_verification_accepts_valid_token():
 async def test_whatsapp_webhook_verification_rejects_bad_token():
     from backend.api.main import app
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
         resp = await client.get(
             "/v1/webhooks/whatsapp",
-            params={"hub.mode": "subscribe", "hub.challenge": "abc123", "hub.verify_token": "bad"},
+            params={
+                "hub.mode": "subscribe",
+                "hub.challenge": "abc123",
+                "hub.verify_token": "bad",
+            },
         )
 
     assert resp.status_code == 403
@@ -47,7 +55,11 @@ async def test_no_event_feedback_processed():
                     {
                         "value": {
                             "messages": [
-                                {"id": "wamid.1", "from": "919876543210", "text": {"body": "NO EVENT"}}
+                                {
+                                    "id": "wamid.1",
+                                    "from": "919876543210",
+                                    "text": {"body": "NO EVENT"},
+                                }
                             ]
                         }
                     }
@@ -55,7 +67,9 @@ async def test_no_event_feedback_processed():
             }
         ]
     }
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
         resp = await client.post("/v1/webhooks/whatsapp", json=payload)
 
     assert resp.status_code == 200
