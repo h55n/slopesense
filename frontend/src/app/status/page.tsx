@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const API_BASE = '/api';
 
 interface SystemStatus {
-  api:           'ok' | 'error' | 'loading';
+  api:           'ok' | 'error' | 'loading' | 'unknown';
   lastModelRun:  string | null;
   activeAlerts:  number;
   dataMode:      string;
@@ -16,12 +16,12 @@ interface SystemStatus {
 }
 
 const DATA_SOURCES = [
-  { name: 'NASA GPM IMERG',      detail: 'Rainfall · 30-min · 0.1°',      status: 'active'   },
-  { name: 'NASA SMAP L3',        detail: 'Soil moisture · daily · 36km',   status: 'active'   },
-  { name: 'Copernicus DEM GLO',  detail: 'Elevation · 30m · static',       status: 'active'   },
-  { name: 'Sentinel-2 NDVI',     detail: 'Vegetation change · 5-day',      status: 'active'   },
-  { name: 'NOAA GFS',            detail: '24h/48h rainfall forecast',       status: 'active'   },
-  { name: 'NDMA Susceptibility', detail: 'Geological prior · static',       status: 'active'   },
+  { name: 'NASA GPM IMERG',      detail: 'Rainfall · 30-min · 0.1°',      status: 'unverified'   },
+  { name: 'NASA SMAP L3',        detail: 'Soil moisture · daily · 36km',   status: 'unverified'   },
+  { name: 'Copernicus DEM GLO',  detail: 'Elevation · 30m · static',       status: 'unverified'   },
+  { name: 'Sentinel-2 NDVI',     detail: 'Vegetation change · 5-day',      status: 'unverified'   },
+  { name: 'NOAA GFS',            detail: '24h/48h rainfall forecast',       status: 'unverified'   },
+  { name: 'NDMA Susceptibility', detail: 'Geological prior · static',       status: 'unverified'   },
   { name: 'IMD QPF *',             detail: 'Official QPF forecast',           status: 'optional' },
 ];
 
@@ -62,9 +62,9 @@ export default function StatusPage() {
           api:           'ok',
           lastModelRun:  health.last_model_run,
           activeAlerts:  health.active_alerts ?? 0,
-          dataMode:      health.data_mode ?? 'idle',
-          retrospective: retro
-            ? { total: retro.total_events ?? 6, flagged: retro.flagged_at_t24 ?? 4, passed: retro.passed ?? true }
+          dataMode:      health.data_mode ?? 'unknown',
+          retrospective: retro && Array.isArray(retro.results)
+            ? { total: retro.total_events ?? 0, flagged: retro.flagged_at_t24 ?? 0, passed: false }
             : null,
         });
       } catch {
@@ -80,10 +80,10 @@ export default function StatusPage() {
 
   const services = [
     { id: 'status-api',       name: 'REST API',          status: status.api,                        detail: 'FastAPI + Uvicorn'                              },
-    { id: 'status-model',     name: 'FPI Model Engine',  status: apiIsOk ? 'ok' : 'error' as const, detail: 'Physics-based v0.1 + LightGBM slot'            },
-    { id: 'status-ingestion', name: 'Data Ingestion',    status: apiIsOk ? 'ok' : 'error' as const, detail: 'GPM, SMAP, Copernicus DEM (synthetic fallback)' },
-    { id: 'status-alerts',    name: 'Alert Dispatch',    status: apiIsOk ? 'ok' : 'error' as const, detail: 'WhatsApp Business API (dry-run mode)'           },
-    { id: 'status-ws',        name: 'WebSocket Live',    status: apiIsOk ? 'ok' : 'error' as const, detail: '/ws/live push updates'                          },
+    { id: 'status-model',     name: 'FPI Model Engine',  status: 'unknown' as const, detail: 'Model service not independently checked'            },
+    { id: 'status-ingestion', name: 'Data Ingestion',    status: 'unknown' as const, detail: 'Feed provenance and freshness not checked here' },
+    { id: 'status-alerts',    name: 'Alert Dispatch',    status: 'unknown' as const, detail: 'Delivery not independently checked'           },
+    { id: 'status-ws',        name: 'WebSocket Live',    status: 'unknown' as const, detail: 'Connection not independently checked'                          },
   ];
 
   return (
@@ -120,7 +120,7 @@ export default function StatusPage() {
                 status.api === 'loading' ? 'bg-amber-400   animate-pulse' :
                                            'bg-red-400'
               }`} />
-              {status.api === 'ok'      ? (status.dataMode === 'sample' ? 'API online · sample data' : 'All systems operational') :
+              {status.api === 'ok'      ? (status.dataMode === 'sample' ? 'API online · sample data' : 'API reachable · services unverified') :
                status.api === 'loading' ? 'Checking…'              :
                                           'API Unreachable'}
             </motion.div>
@@ -138,10 +138,10 @@ export default function StatusPage() {
           className="glass-panel px-6 py-5"
         >
           <p className="text-micro font-bold uppercase tracking-[0.28em] text-white/30 mb-4">Signal pipeline</p>
-          <div className="flex items-center gap-0">
+          <div className="grid grid-cols-5 gap-1">
             {PIPELINE_MINI.map((step, i) => (
-              <div key={step.label} className="flex flex-1 items-center">
-                <div className="flex flex-1 flex-col items-center gap-1.5">
+              <div key={step.label} className="flex min-w-0 items-center">
+                <div className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
                   <div
                     className="h-9 w-9 rounded-xl flex items-center justify-center text-lg border transition-all"
                     style={{
@@ -151,7 +151,7 @@ export default function StatusPage() {
                   >
                     {step.icon}
                   </div>
-                  <span className="text-micro font-semibold uppercase tracking-[0.18em]" style={{ color: step.color }}>
+                  <span className="text-[8px] sm:text-micro font-semibold uppercase tracking-normal sm:tracking-[0.18em]" style={{ color: step.color }}>
                     {step.label}
                   </span>
                 </div>
@@ -191,7 +191,7 @@ export default function StatusPage() {
                   <div className="text-base-sm font-semibold text-white/90">{svc.name}</div>
                   <div className="text-small text-white/35 mt-0.5">{svc.detail}</div>
                 </div>
-                <StatusBadge status={svc.status as 'ok' | 'error' | 'loading'} />
+                <StatusBadge status={svc.status as 'ok' | 'error' | 'loading' | 'unknown'} />
               </motion.div>
             ))}
           </div>
@@ -213,7 +213,7 @@ export default function StatusPage() {
               sub={status.lastModelRun ? new Date(status.lastModelRun).toLocaleDateString('en-IN') : 'Not yet run'}
             />
             <InfoCard label="Active Alerts"   value={String(status.activeAlerts)} sub={status.dataMode === 'sample' ? 'Bundled sample alerts' : 'Current model run'} />
-            <InfoCard label="Run Interval"    value="6 hours" sub="Scheduled via APScheduler" />
+            <InfoCard label="Run Interval"    value="6 hours" sub="Intended cadence, not confirmed" />
           </div>
         </motion.section>
 
@@ -225,7 +225,7 @@ export default function StatusPage() {
             transition={{ delay: 0.3 }}
             className="glass-panel p-7"
           >
-            <SectionLabel>Retrospective Validation</SectionLabel>
+            <SectionLabel>Retrospective examples, not validation</SectionLabel>
 
             <div className="mb-5 flex flex-wrap items-center gap-4">
               <span className={`rounded-full border px-4 py-1.5 text-tiny font-bold uppercase tracking-[0.2em] ${
@@ -233,7 +233,7 @@ export default function StatusPage() {
                   ? 'border-emerald-500/25 bg-emerald-500/8 text-emerald-400'
                   : 'border-red-500/25 bg-red-500/8 text-red-400'
               }`}>
-                {status.retrospective.passed ? '✓ PASSED' : '✗ FAILED'}
+                {'Unvalidated replay'}
               </span>
               <div className="flex items-baseline gap-2">
                 <span className="font-serif text-4xl font-bold text-white">
@@ -266,10 +266,10 @@ export default function StatusPage() {
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <p className="text-small text-white/35">
-                Pass criterion: ≥4/6 events flagged at T-24h with FPI ≥ target
+                Illustrative replay results do not establish forecast accuracy.
               </p>
               <Link
-                href="/"
+                href="/?view=audit#console"
                 className="inline-flex items-center gap-1 text-small font-bold uppercase tracking-[0.14em] text-slope-accent hover:text-white transition-colors"
               >
                 View full audit →
@@ -309,13 +309,13 @@ export default function StatusPage() {
                 <span className={`text-micro font-bold uppercase tracking-[0.2em] ${
                   src.status === 'active' ? 'text-emerald-400' : 'text-white/25'
                 }`}>
-                  {src.status === 'active' ? 'Configured' : 'Optional'}
+                  {src.status === 'optional' ? 'Optional' : 'Unverified'}
                 </span>
               </motion.div>
             ))}
           </div>
           <div className="mt-5 text-small text-white/40 leading-relaxed max-w-2xl">
-            * IMD QPF requires a MoU with MoES. NOAA GFS is active as fallback. Forecast window: 24h (vs 48h with IMD).
+            Listed inputs describe the intended pipeline. This page does not verify feed freshness or ingestion success.
           </div>
         </motion.section>
         {/* ── Security ── */}
@@ -325,7 +325,7 @@ export default function StatusPage() {
           transition={{ delay: 0.5 }}
           className="glass-panel p-7"
         >
-          <SectionLabel>Security &amp; Architecture</SectionLabel>
+          <SectionLabel>Security design (not a runtime audit)</SectionLabel>
           <div className="grid gap-x-8 gap-y-2.5 sm:grid-cols-2">
             {SECURITY_ITEMS.map((item, i) => (
               <motion.div
@@ -336,7 +336,7 @@ export default function StatusPage() {
                 className="flex items-center gap-3 text-base-sm font-medium text-white/60"
               >
                 <span className="shrink-0 h-4 w-4 rounded-full bg-slope-accent/15 border border-slope-accent/25 flex items-center justify-center">
-                  <span className="text-slope-accent text-[8px] font-black">✓</span>
+                  <span className="text-slope-accent text-[8px] font-black">·</span>
                 </span>
                 {item}
               </motion.div>
@@ -358,10 +358,11 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function StatusBadge({ status }: { status: 'ok' | 'error' | 'loading' }) {
+function StatusBadge({ status }: { status: 'ok' | 'error' | 'loading' | 'unknown' }) {
   const cfg = {
-    ok:      { label: 'Operational', cls: 'bg-emerald-500/8 border-emerald-500/25 text-emerald-400', dot: 'bg-emerald-400 animate-pulse' },
+    ok:      { label: 'Reachable', cls: 'bg-emerald-500/8 border-emerald-500/25 text-emerald-400', dot: 'bg-emerald-400 animate-pulse' },
     error:   { label: 'Degraded',    cls: 'bg-red-500/8    border-red-500/25    text-red-400',    dot: 'bg-red-400'                    },
+    unknown: { label: 'Unverified', cls: 'border-ink/20 bg-ink/5 text-ink/60', dot: 'bg-ink/40' },
     loading: { label: 'Checking',    cls: 'bg-amber-500/8  border-amber-500/25  text-amber-400',  dot: 'bg-amber-400 animate-pulse'    },
   }[status];
 

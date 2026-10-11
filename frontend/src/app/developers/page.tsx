@@ -23,11 +23,12 @@ export default function DevelopersPage() {
         body: JSON.stringify(formData),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => { throw new Error('API key service unavailable. No key has been confirmed created.'); });
       if (!res.ok) {
-        throw new Error(data.detail || 'Failed to generate API key');
+        throw new Error(typeof data.detail === 'string' ? data.detail : Array.isArray(data.detail) ? data.detail.map((d: any) => d.msg || 'Invalid input').join('; ') : 'Failed to generate API key');
       }
 
+      if (typeof data.key !== 'string' || !data.key) throw new Error('No API key was returned.');
       setApiKey(data.key);
     } catch (err: any) {
       setError(err.message);
@@ -36,10 +37,14 @@ export default function DevelopersPage() {
     }
   };
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     if (apiKey) {
-      navigator.clipboard.writeText(apiKey);
-      setCopied(true);
+      try {
+        await navigator.clipboard.writeText(apiKey);
+        setCopied(true);
+      } catch {
+        setError('Copy failed. Select the key and copy it manually.');
+      }
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -63,36 +68,39 @@ export default function DevelopersPage() {
           {!apiKey ? (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Full Name</label>
+                <label htmlFor="developer-name" className="block text-sm font-medium text-slate-300 mb-2">Full Name</label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                  id="developer-name"
                   placeholder="Jane Doe"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
+                <label htmlFor="developer-email" className="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
                 <input
                   type="email"
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                  id="developer-email"
                   placeholder="jane@university.edu"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Organization (Optional)</label>
+                <label htmlFor="developer-organization" className="block text-sm font-medium text-slate-300 mb-2">Organization (Optional)</label>
                 <input
                   type="text"
                   value={formData.organization}
                   onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
                   className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                  id="developer-organization"
                   placeholder="Research Institute"
                 />
               </div>

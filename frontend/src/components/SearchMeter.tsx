@@ -26,7 +26,7 @@ export default function SearchMeter() {
 
     // Parse lat, lon from string like "11.58, 76.08"
     const parts = query.split(',').map(s => s.trim());
-    if (parts.length !== 2 || isNaN(Number(parts[0])) || isNaN(Number(parts[1]))) {
+    if (parts.length !== 2 || parts.some(p => !p || !Number.isFinite(Number(p))) || Math.abs(Number(parts[0])) > 90 || Math.abs(Number(parts[1])) > 180) {
       setError('Please enter valid coordinates, e.g. "11.58, 76.08"');
       return;
     }
@@ -40,7 +40,7 @@ export default function SearchMeter() {
 
     try {
       const res = await fetch(apiUrl(`/v1/risk?lat=${lat}&lon=${lon}`));
-      if (!res.ok) throw new Error('Failed to fetch risk data');
+      if (!res.ok) throw new Error(res.status === 503 ? 'Risk score unavailable: real inputs or a model run are not available.' : 'Risk request failed. No score is confirmed.');
       const data = await res.json();
       setResult(data);
     } catch (err: any) {
@@ -52,9 +52,9 @@ export default function SearchMeter() {
 
   return (
     <div className="glass-panel relative overflow-hidden p-6 sm:p-8">
-      <div className="eyebrow mb-1">Live FPI search</div>
+      <div className="eyebrow mb-1">Model FPI search</div>
       <h3 className="font-serif text-[28px] leading-tight text-ink">Check any coordinate</h3>
-      <p className="mb-5 mt-1 text-[14px] text-ink/55">Enter latitude and longitude to read the current Failure Probability Index for that point.</p>
+      <p className="mb-5 mt-1 text-[14px] text-ink/55">Request the model index for a coordinate. Unavailable real inputs may return no score. FPI is not a calibrated probability.</p>
       
       <form onSubmit={handleSearch} className="flex gap-2">
         <input
@@ -99,7 +99,7 @@ export default function SearchMeter() {
               <div className="font-serif text-4xl font-bold leading-none" style={{ color: fpiColor(result.fpi_score) }}>
                 {Math.round(result.fpi_score * 100)}%
               </div>
-              <div className="mt-1 text-small font-medium text-white/50">Current Risk Index</div>
+              <div className="mt-1 text-small font-medium text-ink/60">Current Risk Index</div>
               <div className="mt-2 text-tiny uppercase tracking-widest font-bold" style={{ color: tierColor(result.alert_tier) }}>
                 {result.alert_tier}
               </div>

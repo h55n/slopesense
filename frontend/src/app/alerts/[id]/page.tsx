@@ -23,7 +23,7 @@ const WA_TEMPLATES: Record<string, (a: Alert) => string> = {
   mr: (a) => `⚠️ भूस्खलन इशारा — ${a.district_name}\n\nFPI: ${formatFPI(a.fpi_score)}\n\nत्वरित कारवाई करा.`,
   bn: (a) => `⚠️ ভূমিধস সতর্কতা — ${a.district_name}\n\nFPI: ${formatFPI(a.fpi_score)}\n\nতাৎক্ষণিক পদক্ষেপ নিন।`,
   ta: (a) => `⚠️ நிலச்சரிவு எச்சரிக்கை — ${a.district_name}\n\nFPI: ${formatFPI(a.fpi_score)}\n\nஉடனடியாக நடவடிக்கை எடுங்கள்.`,
-  en: (a) => `⚠️ LANDSLIDE ${a.tier} — ${a.district_name}, ${a.state_name}\n\nBlock: ${a.block_name}\nFPI Score: ${formatFPI(a.fpi_score)} (95% CI: ${formatFPI(a.fpi_ci_lower)}–${formatFPI(a.fpi_ci_upper)})\n24h Forecast: ${formatFPI(a.fpi_24h || 0)}\n3-day Rainfall: ${a.rainfall_3d_mm} mm | Soil Moisture: ${a.soil_moisture_percentile}th percentile\n\nReply NO EVENT if no hazard observed.`,
+  en: (a) => `⚠️ LANDSLIDE ${a.tier} — ${a.district_name}, ${a.state_name}\n\nBlock: ${a.block_name}\nFPI Score: ${formatFPI(a.fpi_score)} (95% CI: ${formatFPI(a.fpi_ci_lower)}–${formatFPI(a.fpi_ci_upper)})\n24h Forecast: ${formatFPI(a.fpi_24h || 0)}\n3-day Rainfall: ${a.rainfall_3d_mm} mm | Soil Moisture: P${a.soil_moisture_percentile}\n\nTemplate preview only. Not sent. Follow official local guidance.`,
 };
 
 // ── Tier header gradients ─────────────────────────────────────────────────────
@@ -50,16 +50,18 @@ export default function AlertDetailPage() {
   const [showXml,      setShowXml]      = useState(false);
 
   useEffect(() => {
-    if (!alertId) return;
+    if (!alertId) { setLoading(false); return; }
+    setLoading(true);
+    setAlert(null);
     api.alertDetail(alertId)
       .then(a => { setAlert(a); setLoading(false); })
-      .catch(() => { setAlert(DEMO_ALERT); setLoading(false); });
+      .catch(() => { setAlert(null); setLoading(false); });
   }, [alertId]);
 
   useEffect(() => {
     if (!alert) return;
     fetch(apiUrl("/v1/cap/feed?min_fpi=0.0"))
-      .then(r => r.text())
+      .then(r => { if (!r.ok) throw new Error('CAP feed unavailable'); return r.text(); })
       .then(xml => setCapXml(xml))
       .catch(() => setCapXml(null));
   }, [alert]);
@@ -67,7 +69,7 @@ export default function AlertDetailPage() {
   if (loading) return <AlertDetailSkeleton />;
   if (!alert)  return (
     <div className="flex min-h-screen items-center justify-center bg-slope-bg text-white/40 text-sm">
-      Alert not found
+      Alert unavailable or not found. No substitute data is shown.
     </div>
   );
 
@@ -94,7 +96,7 @@ export default function AlertDetailPage() {
           <nav className="mb-5 flex items-center gap-2 text-tiny font-bold uppercase tracking-[0.22em] text-white/30">
             <Link href="/" className="hover:text-slope-accent transition-colors">SlopeSense</Link>
             <span className="text-white/15">/</span>
-            <Link href={`/districts/${alert.state_code}`} className="hover:text-white/70 transition-colors">
+            <Link href="/districts" className="hover:text-white/70 transition-colors">
               {alert.state_name}
             </Link>
             <span className="text-white/15">/</span>
@@ -142,6 +144,7 @@ export default function AlertDetailPage() {
 
       {/* ── Main content ── */}
       <main className="mx-auto max-w-6xl px-6 py-10">
+        <p className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-ink">{alert.id.startsWith('demo-') || (alert as any).is_sample ? 'Sample data. Not a live warning.' : 'Model-generated score. Input provenance and accuracy must be checked.'} Not an official alert or an evacuation instruction.</p>
         <motion.div
           initial="hidden"
           animate="visible"
@@ -200,7 +203,7 @@ export default function AlertDetailPage() {
               <DetailCard label="24h Forecast"       value={`${fpi24Pct}%`}                        color={fpiColor(alert.fpi_24h || 0)} />
               <DetailCard label="Consecutive Cycles" value={`${alert.consecutive_cycles}`}          unit="× 6h" />
               <DetailCard label="3-day Rainfall"     value={`${alert.rainfall_3d_mm}`}              unit="mm" />
-              <DetailCard label="Soil Moisture"      value={`${alert.soil_moisture_percentile}th`}    unit="percentile" />
+              <DetailCard label="Soil Moisture"      value={`P${alert.soil_moisture_percentile}`}    unit="percentile" />
             </div>
           </motion.section>
 
@@ -308,11 +311,11 @@ export default function AlertDetailPage() {
                 </div>
                 <div>
                   <div className="text-base-sm font-bold text-white">SlopeSense Alert</div>
-                  <div className="text-micro text-white/40">via WhatsApp Business API</div>
+                  <div className="text-micro text-white/40">Template preview only</div>
                 </div>
                 <div className="ml-auto flex items-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#25D366]" />
-                  <span className="text-micro text-white/30">online</span>
+                  <span className="text-micro text-white/30">not sent</span>
                 </div>
               </div>
               {/* Message bubble */}
@@ -352,9 +355,9 @@ export default function AlertDetailPage() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="overflow-x-auto overflow-hidden rounded-xl bg-black/60 border border-white/5 p-4 text-tiny leading-relaxed text-emerald-400 max-h-60"
+                  className="overflow-auto rounded-xl bg-black/60 border border-white/5 p-4 text-tiny leading-relaxed text-emerald-400 max-h-60"
                 >
-                  {capXml || 'Loading CAP XML…'}
+                  {capXml || 'CAP XML unavailable or still loading.'}
                 </motion.pre>
               ) : (
                 <motion.div
@@ -364,7 +367,7 @@ export default function AlertDetailPage() {
                   className="rounded-xl bg-white/2 border border-white/5 p-5 space-y-3"
                 >
                   <p className="text-base-sm text-white/50 leading-relaxed">
-                    CAP v1.2 compliant XML alert feed, compatible with NDMA Sachet and national emergency broadcast systems.
+                    CAP-format XML feed. Compatibility and official integration are not verified. Sample entries must not be used as actual alerts.
                   </p>
                   <div className="font-mono text-small text-slope-accent/60 bg-black/40 rounded-lg px-4 py-3 border border-white/5">
                     GET /v1/cap/feed?state={alert.state_code}&amp;min_fpi=0.65
@@ -374,7 +377,7 @@ export default function AlertDetailPage() {
             </AnimatePresence>
 
             <a
-              href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/v1/cap/feed`}
+              href={apiUrl('/v1/cap/feed')}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-4 inline-flex items-center gap-1.5 text-small font-semibold text-white/35 hover:text-slope-accent transition-colors"

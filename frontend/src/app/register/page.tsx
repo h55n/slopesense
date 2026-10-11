@@ -38,7 +38,7 @@ const STATES: Array<{ code: string; name: string }> = [
   { code: 'AR', name: 'Arunachal Pradesh' }, { code: 'NL', name: 'Nagaland' },
   { code: 'ML', name: 'Meghalaya' }, { code: 'MN', name: 'Manipur' },
   { code: 'TR', name: 'Tripura' }, { code: 'WB', name: 'West Bengal' },
-  { code: 'OR', name: 'Odisha' }, { code: 'GA', name: 'Goa' },
+  { code: 'KA', name: 'Karnataka' }, { code: 'OR', name: 'Odisha' }, { code: 'GA', name: 'Goa' },
 ];
 
 interface FormData {
@@ -90,17 +90,14 @@ export default function RegisterPage() {
         language: form.language,
         min_tier: form.min_tier,
       });
-      setRegisteredId((result as any).id || 'unknown');
+      if (!(result as any).id || (result as any).is_sample || String((result as any).id).startsWith('demo-')) {
+        throw new Error('Registration was not saved. Please try again when storage is available.');
+      }
+      setRegisteredId((result as any).id);
       setSubmitStatus('success');
     } catch (err: any) {
-      // API unavailable — show success with mock ID (hackathon demo mode)
-      if (err.message?.includes('API error') || err.message?.includes('fetch')) {
-        setRegisteredId('demo-' + Math.random().toString(36).slice(2, 8));
-        setSubmitStatus('success');
-      } else {
-        setErrorMsg(err.message || 'Registration failed. Please try again.');
-        setSubmitStatus('error');
-      }
+      setErrorMsg(err.message || 'Registration failed. Nothing has been confirmed saved.');
+      setSubmitStatus('error');
     }
   };
 
@@ -117,13 +114,13 @@ export default function RegisterPage() {
             <span>/</span>
             <span className="text-white">Register for Alerts</span>
           </nav>
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
           >
             <h1 className="text-4xl font-serif font-bold text-white drop-shadow-md">Register for WhatsApp Alerts</h1>
             <p className="mt-3 text-base-sm font-medium tracking-wide text-white/50">
-              Receive block-level landslide risk alerts in your language. For DDMA officers, Aapda Mitra, and Gram Pradhans.
+              Save preferences for model-generated alerts. Automatic WhatsApp delivery is not enabled or verified. This is not an official warning service.
             </p>
           </motion.div>
         </div>
@@ -132,7 +129,7 @@ export default function RegisterPage() {
       <main className="mx-auto max-w-2xl px-6 py-10 relative z-10">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Personal info */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -169,22 +166,15 @@ export default function RegisterPage() {
               </select>
             </FormField>
 
-            <FormField label="Organization" id="reg-org">
-              <input
-                id="reg-org"
-                type="text"
-                placeholder="DDMA Wayanad"
-                value={form.organization}
-                onChange={e => update('organization', e.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base-sm font-medium text-white placeholder-white/50 outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner"
-              />
-            </FormField>
+
 
             <div className="grid gap-4 sm:grid-cols-2">
               <FormField label="WhatsApp Number *" id="reg-whatsapp">
                 <input
                   id="reg-whatsapp"
                   type="tel"
+                  pattern="\+[1-9][0-9]{7,14}"
+                  title="Use E.164 format, such as +919876543210"
                   required
                   placeholder="+91 98765 43210"
                   value={form.whatsapp_number}
@@ -194,21 +184,12 @@ export default function RegisterPage() {
                 <p className="mt-2 text-tiny uppercase tracking-wider text-white/30">E.164 format: +91XXXXXXXXXX</p>
               </FormField>
 
-              <FormField label="Email (optional)" id="reg-email">
-                <input
-                  id="reg-email"
-                  type="email"
-                  placeholder="dc@kerala.gov.in"
-                  value={form.email}
-                  onChange={e => update('email', e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base-sm font-medium text-white placeholder-white/50 outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner"
-                />
-              </FormField>
+
             </div>
           </motion.div>
 
           {/* Location */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -238,30 +219,20 @@ export default function RegisterPage() {
                 <input
                   id="reg-district"
                   type="text"
-                  placeholder="WYD (district code)"
+                  placeholder="WAY (district code)"
                   value={form.district_code}
                   onChange={e => update('district_code', e.target.value)}
                   className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base-sm font-medium text-white placeholder-white/50 outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner"
                 />
-                <p className="mt-2 text-tiny uppercase tracking-wider text-white/30">Enter district code e.g. WYD for Wayanad. Leave blank for state-wide.</p>
+                <p className="mt-2 text-tiny uppercase tracking-wider text-white/30">Enter district code e.g. WAY for Wayanad. Leave blank for state-wide.</p>
               </FormField>
 
-              <FormField label="Block (optional)" id="reg-block">
-                <input
-                  id="reg-block"
-                  type="text"
-                  placeholder="MEP (block code)"
-                  value={form.block_code}
-                  onChange={e => update('block_code', e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base-sm font-medium text-white placeholder-white/50 outline-none focus:border-slope-accent/50 focus:bg-white/10 transition-all shadow-inner"
-                />
-                <p className="mt-2 text-tiny uppercase tracking-wider text-white/30">Enter block code e.g. MEP for Meppadi</p>
-              </FormField>
+
             </div>
           </motion.div>
 
           {/* Preferences */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
@@ -344,7 +315,7 @@ export default function RegisterPage() {
           </motion.button>
 
           <p className="text-center text-tiny font-bold uppercase tracking-wider text-white/30 mt-4">
-            By registering you consent to receive WhatsApp messages from SlopeSense. Reply STOP to unsubscribe.
+            Registration saves preferences only. Automatic alert delivery is not enabled. No unsubscribe-by-reply service is confirmed.
           </p>
         </form>
       </main>
@@ -367,7 +338,7 @@ function SuccessScreen({ form, id, onReset }: { form: FormData; id: string; onRe
   const lang = LANGUAGES.find(l => l.code === form.language)?.label || form.language;
   return (
     <div className="editorial-shell flex min-h-screen items-center justify-center bg-slope-bg px-6">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ type: "spring", duration: 0.6 }}
@@ -375,7 +346,7 @@ function SuccessScreen({ form, id, onReset }: { form: FormData; id: string; onRe
       >
         <div className="absolute inset-0 bg-glass-gradient pointer-events-none opacity-50"></div>
         <div className="relative z-10">
-          <motion.div 
+          <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", delay: 0.2 }}
@@ -385,8 +356,8 @@ function SuccessScreen({ form, id, onReset }: { form: FormData; id: string; onRe
           </motion.div>
           <h1 className="text-4xl font-serif font-bold text-white drop-shadow-md">Registered!</h1>
           <p className="mt-4 text-[14px] leading-relaxed text-white/70">
-            <strong className="text-white font-medium">{form.name}</strong> will receive <strong className="text-slope-accent">{form.min_tier}+</strong> alerts
-            for {form.district_code || form.state_code} in {lang}.
+            <strong className="text-white font-medium">{form.name}</strong> has saved a preference for <strong className="text-slope-accent">{form.min_tier}+</strong> alerts
+            for {form.district_code || form.state_code} in {lang}. WhatsApp delivery is not confirmed by registration.
           </p>
           <div className="mt-6 rounded-xl border border-white/10 bg-black/40 px-5 py-4 text-left shadow-inner">
             <div className="text-tiny font-bold uppercase tracking-[0.2em] text-white/30 mb-2">Registration ID</div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Radio, Cpu, Target, BellRing, MessageCircle, ArrowRight, ArrowUpRight } from 'lucide-react';
@@ -52,6 +52,9 @@ export default function DashboardPage() {
   const [mode, setMode] = useState<ViewMode>('live');
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
   const [step, setStep] = useState(0);
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('view') === 'audit') setMode('audit');
+  }, []);
 
   const sorted = useMemo(() => [...alerts].sort((a, b) => b.fpi_score - a.fpi_score), [alerts]);
   const selectedAlert = useMemo(
@@ -75,10 +78,10 @@ export default function DashboardPage() {
               SlopeSense reads <em className="whitespace-nowrap">the slope</em> before it breaks.
             </h1>
             <p className="mx-auto mt-5 max-w-[560px] text-[17px] leading-relaxed text-ink/60">
-              Live Failure Probability scoring for every block, CAP-compliant alerts, and a transparent retrospective evidence trail, built from free public satellite data.
+              A prototype for model-generated landslide risk scores and CAP-format feeds. Sample data is labeled. Scores are not calibrated probabilities or official government warnings.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <a href="#console" onClick={() => setMode('live')} className="btn btn-primary">Open live console</a>
+              <a href="#console" onClick={() => setMode('live')} className="btn btn-primary">Open risk console</a>
               <a href="#console" onClick={() => setMode('audit')} className="btn btn-ghost">Read the audit</a>
             </div>
           </motion.div>
@@ -115,7 +118,7 @@ export default function DashboardPage() {
                     onClick={() => setMode(m)}
                     className={`focus-ring rounded-full px-4 py-1.5 font-medium capitalize transition-colors ${mode === m ? 'bg-forest text-paper' : 'text-ink/60 hover:text-ink'}`}
                   >
-                    {m}
+                    {m === 'live' && isSample ? 'Sample' : m}
                   </button>
                 ))}
               </div>
@@ -134,7 +137,7 @@ export default function DashboardPage() {
                   {/* feed */}
                   <div className="order-2 flex min-h-0 flex-col border-ink/10 lg:order-1 lg:border-r">
                     <div className="px-5 pb-2 pt-5">
-                      <div className="eyebrow">Live feed</div>
+                      <div className="eyebrow">{isSample ? 'Sample feed' : 'Model feed'}</div>
                       <div className="mt-1 font-serif text-[24px] leading-tight">Active blocks</div>
                     </div>
                     <div className="custom-scrollbar min-h-0 flex-1 space-y-2 overflow-y-auto px-3 pb-3">
@@ -185,9 +188,9 @@ export default function DashboardPage() {
           {/* metric strip */}
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Metric label="Active blocks" value={`${stats.total}`} detail="High-risk zones monitored" />
-            <Metric label="High risk" value={`${stats.warning}`} detail="Landslide very likely in 24-48 h" tone="#ea580c" />
-            <Metric label="Critical" value={`${stats.emergency}`} detail="Landslide imminent, act now" tone="#dc2626" />
-            <Metric label="Retrospective" value={summary ? `${summary.flagged_at_t24}/${summary.total_events}` : '-'} detail="Historic events flagged at T-24 h" tone="#2f7a4d" />
+            <Metric label="High risk" value={`${stats.warning}`} detail="Model score in the warning band" tone="#ea580c" />
+            <Metric label="Critical" value={`${stats.emergency}`} detail="Model score in the highest band" tone="#dc2626" />
+            <Metric label="Retrospective" value={summary ? `${summary.flagged_at_t24}/${summary.total_events}` : '-'} detail="Illustrative replay, not validated lead time" tone="#2f7a4d" />
           </div>
         </div>
       </section>
@@ -200,7 +203,7 @@ export default function DashboardPage() {
             <h2 className="display mt-4 text-[38px] sm:text-[56px]">
               From a satellite pass to <em>a phone in a village</em>
             </h2>
-            <p className="mx-auto mt-4 max-w-[540px] text-[16px] text-ink/60">Five steps, every six hours. Pick a step to see what happens inside it.</p>
+            <p className="mx-auto mt-4 max-w-[540px] text-[16px] text-ink/60">The intended six-hour pipeline has five steps. Pick a step to see what happens inside it.</p>
           </Reveal>
 
           <Reveal className="mt-12 grid items-center gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-14">
@@ -259,19 +262,19 @@ export default function DashboardPage() {
       <section className="sky-band mt-28 py-24 sm:mt-36 sm:py-28">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-8">
           <Reveal className="mx-auto max-w-[720px] text-center">
-            <p className="eyebrow">Ground truth from orbit</p>
+            <p className="eyebrow">Proposed public data inputs</p>
             <h2 className="display mt-4 text-[38px] sm:text-[56px]">
               No new hardware <em>on the hill</em>
             </h2>
             <p className="mx-auto mt-4 max-w-[560px] text-[16px] text-ink/60">
-              Rainfall, soil moisture, slope and forecast signals already exist in public data. SlopeSense fuses them into one score per block and sends it where the decision gets made.
+              Rainfall, soil moisture, slope and forecast signals already exist in public data. The design fuses them into a model score. The prototype may show synthetic inputs when labeled sample.
             </p>
           </Reveal>
 
           <Reveal className="mt-14 grid gap-5 md:grid-cols-3">
             <GroundCard big="6" unit="feeds" title="Free satellite and model feeds" body="Fused per cell: GPM, SMAP, Copernicus DEM, Sentinel-2, GFS and static terrain layers." art="/art2/p1.webp" />
             <GroundCard big="1" unit="km²" title="Grid resolution" body="Scored cell by cell, then rolled up to blocks so the answer matches an administrative unit." art="/art2/p2.webp" />
-            <GroundCard big="6" unit="h" title="Refresh cycle" body="A new score every six hours through the monsoon season, with the 24 h forecast alongside." art="/art2/p3.webp" />
+            <GroundCard big="6" unit="h" title="Refresh cycle" body="The design targets six-hour runs. Check system status for the last confirmed run." art="/art2/p3.webp" />
           </Reveal>
         </div>
       </section>
@@ -282,14 +285,14 @@ export default function DashboardPage() {
           <img src="/art2/dragonfly.webp" alt="" className="mx-auto mb-6 h-16 w-16 object-contain" />
           <p className="eyebrow">Evidence, not claims</p>
           <h2 className="display mx-auto mt-4 max-w-[760px] text-[38px] sm:text-[56px]">
-            Tested against <em className="whitespace-nowrap">real events</em>, in the open
+            Illustrative <em className="whitespace-nowrap">event replays</em>, in the open
           </h2>
         </Reveal>
         <Reveal className="mt-14 grid items-stretch gap-5 lg:grid-cols-[1fr_1.1fr_1fr]">
           <EvidenceCard
             eyebrow="Retrospective · Wayanad 2024"
-            title="The warning arrived first"
-            body="Replaying the days before the 30 July 2024 event, the model scored Meppadi at 73% FPI with an 81% 24-hour forecast, ahead of the 2:17 am slide."
+            title="Synthetic replay, not a real warning"
+            body="The bundled Wayanad example uses synthetic inputs and illustrative scores. It does not establish predictive accuracy or a warning delivered before the event."
             action={{ label: 'Open the audit', onClick: () => { setMode('audit'); document.getElementById('console')?.scrollIntoView({ behavior: 'smooth' }); } }}
           />
           <div className="relative min-h-[300px] overflow-hidden rounded-[26px] border border-ink/10 bg-paper-2 shadow-glass">
@@ -393,8 +396,8 @@ function Detail({ alert }: { alert: Alert }) {
           <span className="h-2 w-2 rounded-full" style={{ background: rl.color }} />
           {rl.short}
         </div>
-        <p className="mt-1.5 text-[13px] leading-relaxed text-ink/70">{alert.risk_description || rl.description}</p>
-        <p className="mt-2 text-[12px] font-medium leading-relaxed" style={{ color: rl.color }}>Action: {alert.risk_action || rl.action}</p>
+        <p className="mt-1.5 text-[13px] leading-relaxed text-ink/70">{rl.description}</p>
+        <p className="mt-2 text-[12px] font-medium leading-relaxed" style={{ color: rl.color }}>Action: {rl.action}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-2.5">
@@ -444,13 +447,13 @@ function Bar({ label, value, pct, color }: { label: string; value: string; pct: 
 }
 
 function Audit({ summary }: { summary: ReturnType<typeof useRetrospective>['summary'] }) {
-  if (!summary) return <p className="col-span-full py-10 text-center text-[14px] text-ink/50">Loading retrospective results…</p>;
+  if (!summary) return <p className="col-span-full py-10 text-center text-[14px] text-ink/50">Retrospective results unavailable. No substitute validation is shown.</p>;
   return (
     <>
       <div className="space-y-4">
         <div>
-          <div className="eyebrow">Retrospective audit</div>
-          <h3 className="mt-1 font-serif text-[30px] leading-tight">Did it flag the event in time?</h3>
+          <div className="eyebrow">Retrospective examples, not validation</div>
+          <h3 className="mt-1 font-serif text-[30px] leading-tight">Illustrative event replay</h3>
         </div>
         <div className="grid grid-cols-2 gap-2.5">
           <Stat label="Total events" value={`${summary.total_events}`} />
@@ -463,12 +466,12 @@ function Audit({ summary }: { summary: ReturnType<typeof useRetrospective>['summ
         <div className="rounded-2xl border border-saffron-deep/20 bg-saffron-soft/60 p-5">
           <div className="eyebrow !text-saffron-deep">Key finding</div>
           <p className="mt-2 text-[14px] leading-relaxed text-ink/80">
-            On 29 July 2024 the model reached <strong>73% FPI</strong> for Meppadi block and an <strong>81% 24 h forecast</strong>. The Wayanad slide occurred at 2:17 am on 30 July.
+            Bundled replay scores are synthetic examples. They do not show a real pre-event model run, a delivered warning, or validated forecast skill.
           </p>
         </div>
       </div>
       <div>
-        <div className="eyebrow mb-3">Event validation</div>
+        <div className="eyebrow mb-3">Event examples</div>
         <ul className="grid gap-2.5 sm:grid-cols-2">
           {summary.results.map((r, i) => (
             <motion.li
@@ -481,7 +484,7 @@ function Audit({ summary }: { summary: ReturnType<typeof useRetrospective>['summ
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="font-serif text-[20px] leading-tight">{r.event_name}</div>
-                  <div className="mt-0.5 text-[11px] uppercase tracking-[0.1em] text-ink/45">{r.state} · {r.district}</div>
+                  <div className="mt-0.5 text-[11px] uppercase tracking-[0.1em] text-ink/45">{r.state} · {r.district} · Source: {r.data_source || 'unverified'}</div>
                 </div>
                 <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] ${r.flagged_at_t24 ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : 'border-red-500/30 bg-red-500/10 text-red-400'}`}>
                   {r.flagged_at_t24 ? 'Flagged' : 'Missed'}

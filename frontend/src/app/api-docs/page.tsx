@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = '/api';
 interface EndpointParam {
   name: string;
   type: string;
@@ -41,7 +41,7 @@ export default function ApiDocsPage() {
                 SlopeSense API Documentation
               </h1>
               <p className="text-slate-400 text-lg max-w-3xl">
-                Integrate real-time landslide risk intelligence, historical data, and CAP-compliant alerts into your own systems.
+                Explore model-generated landslide risk scores and CAP-format feeds. Check data provenance: sample outputs are not live warnings or official government alerts.
               </p>
             </div>
             <Link
@@ -113,7 +113,7 @@ export default function ApiDocsPage() {
               <div className="rounded-xl border border-white/10 bg-white/3 p-6 space-y-4">
                 <p className="text-sm text-white/70">
                   Public endpoints are rate-limited to <strong className="text-white">100 requests/hour</strong> per IP.
-                  Research and paid tiers require an <code className="text-forest font-semibold">X-API-Key</code> header.
+                  API keys use the public tier. Research and paid tiers are not available. Send keys using an <code className="text-forest font-semibold">X-API-Key</code> header.
                 </p>
                 <div className="rounded-lg bg-[#1f3326] p-4 overflow-x-auto">
                   <code className="text-sm text-[#e8efe3] whitespace-pre">
@@ -133,8 +133,8 @@ export default function ApiDocsPage() {
                 <div className="grid gap-3 sm:grid-cols-3 text-sm">
                   {[
                     { tier: 'Public', limit: '100/hour', key: 'No key required' },
-                    { tier: 'Research', limit: '1,000/hour', key: 'X-API-Key required' },
-                    { tier: 'Paid', limit: '10,000/hour', key: 'X-API-Key required' },
+                    { tier: 'Research (planned)', limit: 'Not available', key: 'No active research tier' },
+                    { tier: 'Paid (planned)', limit: 'Not available', key: 'No paid plan offered' },
                   ].map(t => (
                     <div key={t.tier} className="rounded-lg border border-white/10 p-3 bg-black/20">
                       <div className="font-semibold">{t.tier}</div>

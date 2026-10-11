@@ -33,7 +33,7 @@ export default function DistrictsPage() {
     api.activeAlerts({ min_fpi: 0.1 })
       .then(d => {
         setAlerts(d.alerts || []);
-        setError(null);
+        setError((d as any).data_mode === 'live' && !d.alerts?.some((a: any) => a.is_sample || a.id.startsWith('demo-')) ? null : 'Sample or unverified data. Model-generated scores, not official warnings.');
       })
       .catch(() => {
         // Fallback to all demo alerts across states if API is down
@@ -91,7 +91,7 @@ export default function DistrictsPage() {
             >
               <h1 className="text-4xl font-serif font-bold text-white drop-shadow-md">India-Wide Districts</h1>
               <p className="mt-2 text-base-sm font-medium tracking-wide text-white/50">
-                {sorted.length} high-risk monitored block{sorted.length !== 1 ? 's' : ''} across all states
+                {sorted.length} model-scored block{sorted.length !== 1 ? 's' : ''} across all states
               </p>
             </motion.div>
             <motion.div 
@@ -211,6 +211,9 @@ export default function DistrictsPage() {
                             </div>
                           );
                         })()}
+                      </td>
+                      <td className="px-5 py-5">
+                        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${tierBadgeClass(alert.tier)}`}>{alert.tier}</span>
                       </td>
                       <td className="px-5 py-5">
                         <div className="flex items-center gap-4">

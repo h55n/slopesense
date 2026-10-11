@@ -18,7 +18,7 @@ export function useAlerts() {
     try {
       const data = await api.activeAlerts({ min_fpi: 0.0 });
       setAlerts(data.alerts || []);
-      setDataMode((data as any).data_mode ?? (data.alerts?.some((a: any) => a.is_sample) ? 'sample' : 'live'));
+      setDataMode((data as any).data_mode ?? 'unknown');
       setLastRun(data.run_timestamp || null);
       setStats({
         total: data.count || 0,
@@ -49,7 +49,7 @@ export function useAlerts() {
     return () => clearInterval(interval);
   }, [fetchAlerts]);
 
-  const isSample = dataMode === 'sample' || !!error;
+  const isSample = dataMode !== 'live' || !!error;
   return { alerts, stats, lastRun, loading, error, isSample, refetch: fetchAlerts };
 }
 
@@ -61,7 +61,7 @@ export function useRetrospective() {
   useEffect(() => {
     api.retrospectiveSummary()
       .then(setSummary)
-      .catch(() => setSummary(DEMO_RETROSPECTIVE))
+      .catch(() => setSummary(null))
       .finally(() => setLoading(false));
   }, []);
 
