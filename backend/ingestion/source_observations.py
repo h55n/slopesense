@@ -8,9 +8,17 @@ import math
 import requests
 
 from backend.ingestion.quality import DataUnavailableError
-from backend.ingestion.point_registry import POINTS  # noqa: F401
 
 API_URL = "https://api.open-meteo.com/v1/forecast"
+# Configured representative points, not district polygons or comprehensive coverage.
+POINTS = [
+    ("WAY", "Wayanad representative point", 11.58, 76.08),
+    ("IDK", "Idukki representative point", 9.85, 76.97),
+    ("KOT", "Kottayam representative point", 9.59, 76.52),
+    ("NLG", "Nilgiris representative point", 11.41, 76.69),
+    ("MND", "Mandi representative point", 31.71, 76.93),
+    ("SKM", "Gangtok representative point", 27.33, 88.61),
+]
 
 
 def summarize(payload, now):

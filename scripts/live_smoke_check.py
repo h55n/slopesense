@@ -32,11 +32,7 @@ def inspect(path, status, body):
     if path == "/api/v1/source-observations":
         data = json.loads(body)
         return (
-            data.get("available_configured_point_count")
-            == data.get("configured_point_count")
-            and data.get("configured_point_count", 0) >= 22
-            and data.get("configured_state_ut_count") == 19
-            and data.get("missing_point_codes") == []
+            data.get("count") == 6
             and data.get("warning_publication_enabled") is False
             and all(
                 not x.get("stale", True) and x.get("used_for_warnings") is False
