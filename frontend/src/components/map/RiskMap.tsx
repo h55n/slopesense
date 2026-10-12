@@ -138,12 +138,24 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
   const fitAll = () => {
     const map = mapRef.current?.getMap();
     if (!map) return;
-    if (bounds) map.fitBounds(bounds, { padding: { top: 70, bottom: 110, left: 50, right: 50 }, maxZoom: 6, duration: 900, pitch: 0, bearing: 0 });
+    map.resize();
+    const narrow = map.getContainer().clientWidth < 600;
+    const padding = narrow ? { top: 90, bottom: 150, left: 40, right: 40 } : { top: 80, bottom: 120, left: 70, right: 70 };
+    if (bounds) map.fitBounds(bounds, { padding, maxZoom: 6, minZoom: 2, duration: 0, pitch: 0, bearing: 0 });
     else map.easeTo({ center: INDIA_CENTER, zoom: 4, duration: 900 });
   };
 
   useEffect(() => {
     if (ready) fitAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, bounds?.[0]?.[0], bounds?.[0]?.[1], bounds?.[1]?.[0], bounds?.[1]?.[1]]);
+
+  useEffect(() => {
+    if (!ready) return;
+    const t = setTimeout(() => { if (!userSelected) fitAll(); }, 400);
+    const onResize = () => { if (!userSelected) fitAll(); };
+    window.addEventListener('resize', onResize);
+    return () => { clearTimeout(t); window.removeEventListener('resize', onResize); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, bounds?.[0]?.[0], bounds?.[1]?.[1]]);
 
@@ -163,7 +175,7 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
         mapStyle={style as any}
         attributionControl={true}
         onLoad={() => setReady(true)}
-        minZoom={3}
+        minZoom={2}
         maxPitch={0}
         dragRotate={false}
         touchPitch={false}

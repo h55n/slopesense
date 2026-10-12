@@ -42,7 +42,7 @@ export default function Footer() {
             A day&apos;s notice for <em>every slope.</em>
           </h2>
           <p className="mx-auto mt-4 max-w-md text-[16px] text-ink/60">
-            Free satellite data fused into a block-level Failure Probability Index, built to reach districts 24 to 48 hours before the slope moves.
+            Research prototype exploring free satellite and weather data for block-level landslide risk. No validated risk scores or warnings are issued.
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Link href="/register" className="btn btn-primary">Register for alerts</Link>

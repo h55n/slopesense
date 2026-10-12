@@ -30,11 +30,11 @@ const PIPELINE_STEPS = [
   },
   {
     icon: Cpu, label: 'FPI model', sublabel: 'Physics-based', art: '/art2/p2.webp',
-    detail: 'Weighted multi-signal fusion into a Failure Probability Index (0-100%), with Monte Carlo heuristic score bounds per cell.',
+    detail: 'Planned design: weighted multi-signal fusion into a Failure Probability Index (0-100%). Not yet validated or running on this site.',
   },
   {
     icon: Target, label: 'Tier classification', sublabel: 'Block-level', art: '/art2/p3.webp',
-    detail: 'Watch at 40%, Warning at 65%, Emergency at 80%, with spatial clustering across 1 km² grid cells rolled up to blocks.',
+    detail: 'Planned design: Watch, Warning and Emergency tiers, with 1 km² grid cells rolled up to blocks. No tiers are issued today.',
   },
   {
     icon: BellRing, label: 'Alert dispatch', sublabel: 'CAP v1.2', art: '/art2/p4.webp',
@@ -290,8 +290,8 @@ export default function DashboardPage() {
           </Reveal>
 
           <Reveal className="mt-14 grid gap-5 md:grid-cols-3">
-            <GroundCard big="6" unit="feeds" title="Free satellite and model feeds" body="Fused per cell: GPM, SMAP, Copernicus DEM, Sentinel-2, GFS and static terrain layers." art="/art2/p1.webp" />
-            <GroundCard big="1" unit="km²" title="Grid resolution" body="Scored cell by cell, then rolled up to blocks so the answer matches an administrative unit." art="/art2/p2.webp" />
+            <GroundCard big="6" unit="feeds" title="Free satellite and model feeds" body="Planned inputs: GPM, SMAP, Copernicus DEM, Sentinel-2, GFS and static terrain layers. Today the site shows only Open-Meteo model values." art="/art2/p1.webp" />
+            <GroundCard big="1" unit="km²" title="Planned grid resolution" body="Design target: score cell by cell, then roll up to blocks so the answer matches an administrative unit. Not running yet." art="/art2/p2.webp" />
             <GroundCard big="1" unit="h" title="Snapshot cycle" body="Provider snapshots are fetched about hourly and shown with their fetch time. Check system status for freshness." art="/art2/p3.webp" />
           </Reveal>
         </div>

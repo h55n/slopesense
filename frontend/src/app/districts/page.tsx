@@ -91,7 +91,7 @@ export default function DistrictsPage() {
             >
               <h1 className="text-4xl font-serif font-bold text-white drop-shadow-md">India-Wide Districts</h1>
               <p className="mt-2 text-base-sm font-medium tracking-wide text-white/50">
-                {sorted.length} model-scored block{sorted.length !== 1 ? 's' : ''}. Real provider weather snapshots are listed by point below.
+                {sorted.length} block{sorted.length !== 1 ? 's' : ''} with a risk score. Real provider weather snapshots are listed by point below.
               </p>
             </motion.div>
             <motion.div 
@@ -330,6 +330,7 @@ function PointsTable() {
       </div>
       {observations.length > 0 && (
         <div className="overflow-x-auto">
+          <p className="px-4 pt-2 text-[11px] text-white/40 md:hidden">Swipe sideways for more columns &rarr;</p>
           <table className="w-full text-sm">
             <thead className="bg-white/5 text-left text-tiny uppercase tracking-[0.14em] text-white/40">
               <tr>
