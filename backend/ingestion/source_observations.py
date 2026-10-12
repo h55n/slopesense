@@ -6,19 +6,13 @@ No synthetic fallback, percentile conversion, FPI scoring or alert dispatch occu
 from datetime import datetime, timedelta, timezone
 import math
 import requests
+import random
+import time
 
 from backend.ingestion.quality import DataUnavailableError
+from backend.ingestion.point_registry import POINTS  # noqa: F401
 
 API_URL = "https://api.open-meteo.com/v1/forecast"
-# Configured representative points, not district polygons or comprehensive coverage.
-POINTS = [
-    ("WAY", "Wayanad representative point", 11.58, 76.08),
-    ("IDK", "Idukki representative point", 9.85, 76.97),
-    ("KOT", "Kottayam representative point", 9.59, 76.52),
-    ("NLG", "Nilgiris representative point", 11.41, 76.69),
-    ("MND", "Mandi representative point", 31.71, 76.93),
-    ("SKM", "Gangtok representative point", 27.33, 88.61),
-]
 
 
 def summarize(payload, now):
@@ -76,21 +70,49 @@ def summarize(payload, now):
     }
 
 
-def fetch_point(lat, lon, now=None):
+def fetch_point(
+    lat, lon, now=None, max_attempts=3, sleep=time.sleep, jitter=random.uniform
+):
+    """Bounded retries for rate limits/transient failures. Never invent a value.
+
+    Retry-After is honored up to120seconds; larger limits stop this batch. Missing
+    or invalid data and permanent4xx responses are not retried.
+    """
     now = now or datetime.now(timezone.utc)
-    response = requests.get(
-        API_URL,
-        params={
-            "latitude": lat,
-            "longitude": lon,
-            "hourly": "rain,soil_moisture_0_to_1cm",
-            "past_days": 3,
-            "forecast_days": 3,
-            "timezone": "UTC",
-        },
-        timeout=30,
-    )
-    response.raise_for_status()
-    payload = response.json()
-    summary = summarize(payload, now)
-    return response.url, {"summary": summary, "provider_response": payload}
+    for attempt in range(max_attempts):
+        try:
+            response = requests.get(
+                API_URL,
+                params={
+                    "latitude": lat,
+                    "longitude": lon,
+                    "hourly": "rain,soil_moisture_0_to_1cm",
+                    "past_days": 3,
+                    "forecast_days": 3,
+                    "timezone": "UTC",
+                },
+                timeout=30,
+            )
+            if response.status_code == 429 or response.status_code >= 500:
+                if attempt == max_attempts - 1:
+                    response.raise_for_status()
+                retry_after = response.headers.get("Retry-After", "")
+                try:
+                    delay = float(retry_after) if retry_after else 15 * 2**attempt
+                except ValueError:
+                    delay = 15 * 2**attempt
+                if delay > 120:
+                    raise DataUnavailableError(
+                        "Provider requested long retry delay; batch aborted"
+                    )
+                sleep(max(0, delay) + jitter(1, 3))
+                continue
+            response.raise_for_status()
+            payload = response.json()
+            summary = summarize(payload, now)
+            return response.url, {"summary": summary, "provider_response": payload}
+        except (requests.Timeout, requests.ConnectionError):
+            if attempt == max_attempts - 1:
+                raise
+            sleep(15 * 2**attempt + jitter(1, 3))
+    raise DataUnavailableError("Provider retry budget exhausted")

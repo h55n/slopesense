@@ -26,7 +26,7 @@ type ViewMode = 'live' | 'audit';
 const PIPELINE_STEPS = [
   {
     icon: Radio, label: 'Data ingestion', sublabel: 'Raw signals', art: '/art2/p1.webp',
-    detail: 'Live now: Open-Meteo weather model rain and soil moisture for six representative points, stored hourly with a fetch time. Planned: NASA GPM, SMAP, Copernicus DEM, Sentinel-2 NDVI and NOAA GFS.',
+    detail: 'Live now: Open-Meteo weather model rain and soil moisture for representative points across 19 states/UTs, stored hourly with a fetch time. Planned: NASA GPM, SMAP, Copernicus DEM, Sentinel-2 NDVI and NOAA GFS.',
   },
   {
     icon: Cpu, label: 'FPI model', sublabel: 'Physics-based', art: '/art2/p2.webp',
@@ -143,15 +143,15 @@ export default function DashboardPage() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.25 }}
-                  className="grid lg:h-[680px] lg:grid-cols-[300px_minmax(0,1fr)_340px]"
+                  className="grid grid-cols-[minmax(0,1fr)] lg:h-[680px] lg:grid-cols-[300px_minmax(0,1fr)_340px]"
                 >
                   {/* feed */}
-                  <div className="order-2 flex min-h-0 flex-col border-ink/10 lg:order-1 lg:border-r">
+                  <div className="order-2 flex min-h-0 min-w-0 flex-col border-ink/10 lg:order-1 lg:border-r">
                     <div className="px-5 pb-2 pt-5">
                       <div className="eyebrow">Real provider values</div>
                       <div className="mt-1 font-serif text-[24px] leading-tight">Weather snapshots</div>
                     </div>
-                    <div className="custom-scrollbar min-h-0 flex-1 space-y-2 overflow-y-auto px-3 pb-3">
+                    <div className="custom-scrollbar max-h-[320px] min-h-0 flex-1 space-y-2 overflow-y-auto px-3 pb-3 lg:max-h-none">
                       {obsLoading || loading ? (
                         <div className="space-y-2 px-2">{[0, 1, 2, 3].map((i) => <div key={i} className="h-[68px] animate-pulse rounded-2xl bg-ink/5" />)}</div>
                       ) : (
@@ -182,7 +182,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* detail */}
-                  <div className="custom-scrollbar order-3 overflow-y-auto border-t border-ink/10 p-5 lg:border-l lg:border-t-0">
+                  <div className="custom-scrollbar order-3 min-w-0 overflow-y-auto border-t border-ink/10 p-5 lg:border-l lg:border-t-0">
                     <AnimatePresence mode="wait">
                       {selectedObs ? <ObsDetail key={selectedObs.point_code} obs={selectedObs} now={now} note={obsData?.note} /> : selectedAlert && selectedAlertId ? <Detail key={selectedAlert.id} alert={selectedAlert} /> : <p className="py-10 text-center text-[14px] text-ink/50">Select a point from the map or the feed.</p>}
                     </AnimatePresence>
@@ -423,6 +423,8 @@ function ObsDetail({ obs, now, note }: { obs: SourceObservation; now: number; no
         <Stat label="Rain, prev 72 h" value={fmt(obs.modeled_large_scale_rain_previous_72h_mm, 'mm')} strong />
         <Stat label="Forecast, next 24 h" value={fmt(obs.forecast_large_scale_rain_next_24h_mm, 'mm')} />
         <Stat label="Soil moisture 0-1 cm" value={fmt(obs.modeled_soil_moisture_0_to_1cm_m3_m3, 'm³/m³', 3)} />
+        <Stat label="Native terrain slope" value={fmt(obs.terrain?.native_slope_degrees, '°')} />
+        <Stat label="Provider elevation" value={fmt(obs.provider_elevation_m, 'm')} />
       </div>
       <div>
         <div className="eyebrow mb-2">Stored snapshots, last 48 h</div>
@@ -446,6 +448,7 @@ function ObsDetail({ obs, now, note }: { obs: SourceObservation; now: number; no
       <div className="space-y-1.5 text-[12px] leading-relaxed text-ink/60">
         <p>{obs.rain_semantics ?? 'Large-scale rain only.'}</p>
         <p>Model grid cell {obs.provider_grid_latitude?.toFixed(2)}°, {obs.provider_grid_longitude?.toFixed(2)}° at {obs.provider_elevation_m ?? 'n/a'} m elevation.</p>
+        {obs.terrain && <p>Static NASA terrain grid, nearest native cell (about 1 km). Not a site survey or stability score. <a href={obs.terrain.source_url} target="_blank" rel="noopener noreferrer" className="text-forest underline">Terrain source</a>. Soil depth and strength are not measured here; no factor of safety is computed.</p>}
         <p>{note ?? 'Weather model values, not measurements. Not used for landslide warnings.'}</p>
         <p>
           <a href={obs.source_url} target="_blank" rel="noopener noreferrer" className="text-forest underline">Provider request</a>

@@ -161,6 +161,14 @@ export interface SourceObservation {
   provider_grid_latitude?: number;
   provider_grid_longitude?: number;
   provider_elevation_m?: number;
+  state?: string;
+  terrain?: {
+    native_slope_degrees: number;
+    resolution_degrees: number;
+    source_url: string;
+    sampling: string;
+    used_for_warnings: boolean;
+  } | null;
   rain_semantics?: string;
   attribution?: string;
   used_for_warnings: boolean;
@@ -172,6 +180,9 @@ export interface SourceObservationsResponse {
   note: string;
   count: number;
   observations: SourceObservation[];
+  configured_point_count?: number;
+  configured_state_ut_count?: number;
+  missing_point_codes?: string[];
 }
 
 export interface SourceHistoryResponse {

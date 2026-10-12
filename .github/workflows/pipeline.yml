@@ -11,7 +11,7 @@ concurrency:
 jobs:
   fetch-observations:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
@@ -26,5 +26,5 @@ jobs:
         run: pip install -r backend/requirements.txt
       - name: Initialize non-spatial persistence
         run: python -m scripts.init_persistence
-      - name: Fetch actual provider values (no FPI scoring or dispatch)
+      - name: Fetch paced provider values with bounded retry (no FPI scoring or dispatch)
         run: python -m scripts.fetch_source_observations

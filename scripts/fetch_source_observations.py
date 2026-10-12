@@ -3,6 +3,7 @@
 import asyncio
 from datetime import datetime, timezone, timedelta
 import logging
+import random
 from sqlalchemy import delete
 from backend.api.database import AsyncSessionLocal, engine
 from backend.models import SourceObservation
@@ -15,7 +16,11 @@ async def run():
     now = datetime.now(timezone.utc)
     rows = []
     # Fetch every point before opening a transaction. Any failed point aborts the run.
-    for code, name, lat, lon in POINTS:
+    for index, (code, name, lat, lon) in enumerate(POINTS):
+        if index:
+            # Shared runner IPs can hit provider limits. Hourly22pointbatch stays
+            # below10requests/minute; jitter avoids repeatedburstalignment.
+            await asyncio.sleep(7 + random.uniform(0, 2))
         url, payload = await asyncio.to_thread(fetch_point, lat, lon, now)
         rows.append(
             SourceObservation(
