@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSourceObservations } from '@/lib/hooks';
+import { ageLabel } from '@/lib/api';
 import { api, Alert, apiUrl, formatFPI, tierBadgeClass, fpiColor, tierColor, getRiskLevel } from '@/lib/api';
 
 const STATE_NAMES: Record<string, string> = {
@@ -33,13 +35,11 @@ export default function DistrictsPage() {
     api.activeAlerts({ min_fpi: 0.1 })
       .then(d => {
         setAlerts(d.alerts || []);
-        setError((d as any).data_mode === 'live' && !d.alerts?.some((a: any) => a.is_sample || a.id.startsWith('demo-')) ? null : 'Sample or unverified data. Model-generated scores, not official warnings.');
+        setError(d.alerts?.length ? 'Model-generated scores, unvalidated and not official warnings.' : null);
       })
       .catch(() => {
-        // Fallback to all demo alerts across states if API is down
-        const allDemos = Object.values(DEMO_DISTRICTS).flat();
-        setAlerts(allDemos);
-        setError('Live feed offline. Showing sample data.');
+        setAlerts([]);
+        setError('Alert feed unreachable. Nothing is substituted.');
       })
       .finally(() => setLoading(false));
   }, []);
@@ -91,7 +91,7 @@ export default function DistrictsPage() {
             >
               <h1 className="text-4xl font-serif font-bold text-white drop-shadow-md">India-Wide Districts</h1>
               <p className="mt-2 text-base-sm font-medium tracking-wide text-white/50">
-                {sorted.length} model-scored block{sorted.length !== 1 ? 's' : ''} across all states
+                {sorted.length} model-scored block{sorted.length !== 1 ? 's' : ''}. Real provider weather snapshots are listed by point below.
               </p>
             </motion.div>
             <motion.div 
@@ -147,11 +147,13 @@ export default function DistrictsPage() {
           </motion.div>
         )}
 
+        <PointsTable />
+
         {loading ? (
           <SkeletonTable />
         ) : sorted.length === 0 ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-panel py-20 text-center text-base-sm font-medium text-white/50">
-            No districts found for {tierFilter !== 'ALL' ? `tier ${tierFilter}` : 'your search'}.
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-panel py-12 text-center text-base-sm font-medium text-white/50">
+            {alerts.length === 0 ? 'No validated block risk scores exist, so no block is scored or alerted.' : `No districts found for ${tierFilter !== 'ALL' ? `tier ${tierFilter}` : 'your search'}.`}
           </motion.div>
         ) : (
           <motion.div 
@@ -315,40 +317,46 @@ function SkeletonTable() {
 }
 
 // Demo data for when API is unavailable
-const DEMO_DISTRICTS: Record<string, Alert[]> = {
-  KL: [
-    {
-      id: 'demo-kl-1', alert_code: 'KL_WYD_DEMO', state_code: 'KL', state_name: 'Kerala',
-      district_code: 'WYD', district_name: 'Wayanad', block_code: '', block_name: '',
-      lat: 11.55, lon: 76.10,
-      fpi_score: 0.73, fpi_ci_lower: 0.61, fpi_ci_upper: 0.84, fpi_24h: 0.81,
-      tier: 'WARNING', is_active: true, is_suppressed: false, consecutive_cycles: 2,
-      dominant_signals: [{ signal: 'rainfall_accumulation', value: 0.82 }],
-      rainfall_3d_mm: 183, soil_moisture_percentile: 91,
-      cell_count_total: 48, cell_count_breached: 22, breach_fraction: 0.46,
-      issued_at: new Date().toISOString(),
-    },
-    {
-      id: 'demo-kl-2', alert_code: 'KL_IDK_DEMO', state_code: 'KL', state_name: 'Kerala',
-      district_code: 'IDK', district_name: 'Idukki', block_code: '', block_name: '',
-      lat: 9.85, lon: 76.97,
-      fpi_score: 0.55, fpi_ci_lower: 0.43, fpi_ci_upper: 0.67, fpi_24h: 0.61,
-      tier: 'WATCH', is_active: true, is_suppressed: false, consecutive_cycles: 1,
-      dominant_signals: [{ signal: 'soil_moisture', value: 0.61 }],
-      rainfall_3d_mm: 112, soil_moisture_percentile: 82,
-      cell_count_total: 38, cell_count_breached: 14, breach_fraction: 0.37,
-      issued_at: new Date().toISOString(),
-    },
-    {
-      id: 'demo-kl-3', alert_code: 'KL_MLP_DEMO', state_code: 'KL', state_name: 'Kerala',
-      district_code: 'MLP', district_name: 'Malappuram', block_code: '', block_name: '',
-      lat: 11.07, lon: 76.07,
-      fpi_score: 0.41, fpi_ci_lower: 0.29, fpi_ci_upper: 0.53, fpi_24h: 0.45,
-      tier: 'WATCH', is_active: true, is_suppressed: false, consecutive_cycles: 1,
-      dominant_signals: [{ signal: 'slope_angle', value: 0.55 }],
-      rainfall_3d_mm: 88, soil_moisture_percentile: 73,
-      cell_count_total: 28, cell_count_breached: 9, breach_fraction: 0.32,
-      issued_at: new Date().toISOString(),
-    },
-  ],
-};
+function PointsTable() {
+  const { observations, data, loading, error, now } = useSourceObservations();
+  if (loading) return null;
+  return (
+    <section className="glass-panel mb-8 overflow-hidden" aria-label="Provider weather snapshots">
+      <div className="border-b border-white/10 px-5 py-4">
+        <h2 className="font-serif text-xl text-white">Provider weather snapshots</h2>
+        <p className="mt-1 text-small text-white/50">
+          {error || !observations.length ? 'Snapshots unavailable right now.' : data?.note}
+        </p>
+      </div>
+      {observations.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-white/5 text-left text-tiny uppercase tracking-[0.14em] text-white/40">
+              <tr>
+                <th className="px-5 py-3">Point</th>
+                <th className="px-3 py-3 text-right">Rain 24 h (mm)</th>
+                <th className="px-3 py-3 text-right">Rain 72 h (mm)</th>
+                <th className="px-3 py-3 text-right">Next 24 h (mm)</th>
+                <th className="px-3 py-3 text-right">Soil moisture (m³/m³)</th>
+                <th className="px-5 py-3">Source, fetched</th>
+              </tr>
+            </thead>
+            <tbody>
+              {observations.map((o) => (
+                <tr key={o.point_code} className="border-t border-white/5 text-white/80">
+                  <td className="px-5 py-3 font-medium">{o.point_name}</td>
+                  <td className="px-3 py-3 text-right tabular-nums">{o.modeled_large_scale_rain_previous_24h_mm ?? 'n/a'}</td>
+                  <td className="px-3 py-3 text-right tabular-nums">{o.modeled_large_scale_rain_previous_72h_mm ?? 'n/a'}</td>
+                  <td className="px-3 py-3 text-right tabular-nums">{o.forecast_large_scale_rain_next_24h_mm ?? 'n/a'}</td>
+                  <td className="px-3 py-3 text-right tabular-nums">{o.modeled_soil_moisture_0_to_1cm_m3_m3 ?? 'n/a'}</td>
+                  <td className="px-5 py-3 text-white/60">{o.source}, {ageLabel(o.fetched_at, now)}{o.stale ? ' (stale)' : ''}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}
+

@@ -143,7 +143,69 @@ async function fetchJSON<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json();
 }
 
+export interface SourceObservation {
+  point_code: string;
+  point_name: string;
+  latitude: number;
+  longitude: number;
+  source: string;
+  source_url: string;
+  fetched_at: string;
+  stale: boolean;
+  window_end_utc: string;
+  modeled_large_scale_rain_previous_72h_mm: number | null;
+  modeled_large_scale_rain_previous_24h_mm: number | null;
+  forecast_large_scale_rain_next_24h_mm: number | null;
+  forecast_large_scale_rain_hours_24_to_48_mm: number | null;
+  modeled_soil_moisture_0_to_1cm_m3_m3: number | null;
+  provider_grid_latitude?: number;
+  provider_grid_longitude?: number;
+  provider_elevation_m?: number;
+  rain_semantics?: string;
+  attribution?: string;
+  used_for_warnings: boolean;
+}
+
+export interface SourceObservationsResponse {
+  data_mode: string;
+  warning_publication_enabled: boolean;
+  note: string;
+  count: number;
+  observations: SourceObservation[];
+}
+
+export interface SourceHistoryResponse {
+  point_code: string;
+  point_name: string;
+  source: string;
+  window_hours: number;
+  count: number;
+  snapshots: {
+    fetched_at: string;
+    modeled_large_scale_rain_previous_24h_mm: number | null;
+    modeled_large_scale_rain_previous_72h_mm: number | null;
+    forecast_large_scale_rain_next_24h_mm: number | null;
+    modeled_soil_moisture_0_to_1cm_m3_m3: number | null;
+  }[];
+  note: string;
+}
+
+/** Human age such as "12 min ago" or "3 h 5 min ago". */
+export function ageLabel(iso: string, now: number = Date.now()): string {
+  const mins = Math.max(0, Math.round((now - new Date(iso).getTime()) / 60000));
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} min ago`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h < 48) return m ? `${h} h ${m} min ago` : `${h} h ago`;
+  return `${Math.floor(h / 24)} d ago`;
+}
+
 export const api = {
+  sourceObservations: () => fetchJSON<SourceObservationsResponse>('/v1/source-observations'),
+  sourceHistory: (code: string, hours = 48) =>
+    fetchJSON<SourceHistoryResponse>(`/v1/source-observations/${encodeURIComponent(code)}/history?hours=${hours}`),
+
   health: () => fetchJSON<{ status: string; active_alerts: number; last_model_run: string | null; data_mode?: string }>('/health'),
 
   activeAlerts: (params?: { min_fpi?: number; tier?: string; state?: string }) => {

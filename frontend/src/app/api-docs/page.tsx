@@ -297,6 +297,22 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
     ],
   },
   {
+    group: 'Source observations',
+    endpoints: [
+      {
+        id: 'ep-source-obs', method: 'GET', path: '/v1/source-observations', auth: 'Public', tryPath: '/v1/source-observations',
+        description: 'Latest stored weather-model snapshot per representative point, with source, fetch time and stale flag. Open-Meteo model values, not measurements, not risk scores, not warnings.',
+      },
+      {
+        id: 'ep-source-obs-history', method: 'GET', path: '/v1/source-observations/{point_code}/history', auth: 'Public', tryPath: '/v1/source-observations/WAY/history?hours=48',
+        description: 'Stored snapshots for one point, newest first, as fetched. No interpolation.',
+        params: [
+          { name: 'hours', type: 'int', desc: 'Window in hours, 1-168 (default 48)' },
+        ],
+      },
+    ],
+  },
+  {
     group: 'Alerts',
     endpoints: [
       {
@@ -311,7 +327,6 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
       {
         id: 'ep-alert-detail', method: 'GET', path: '/v1/alerts/{alert_id}', auth: 'Public',
         description: 'Full detail for a specific alert including signal breakdown.',
-        tryPath: '/v1/alerts/demo-1',
       },
     ],
   },

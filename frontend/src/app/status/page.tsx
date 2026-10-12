@@ -13,6 +13,7 @@ interface SystemStatus {
   activeAlerts:  number;
   dataMode:      string;
   retrospective: { total: number; flagged: number; passed: boolean } | null;
+  obs: { data_mode: string; count: number; provider?: string; newest_age_minutes?: number; oldest_age_minutes?: number; newest_fetched_at?: string; stale?: boolean } | null;
 }
 
 const DATA_SOURCES = [
@@ -48,21 +49,23 @@ const PIPELINE_MINI = [
 
 export default function StatusPage() {
   const [status, setStatus] = useState<SystemStatus>({
-    api: 'loading', lastModelRun: null, activeAlerts: 0, dataMode: 'idle', retrospective: null,
+    api: 'loading', lastModelRun: null, activeAlerts: 0, dataMode: 'idle', retrospective: null, obs: null,
   });
 
   useEffect(() => {
     async function checkStatus() {
       try {
-        const [health, retro] = await Promise.all([
+        const [health, retro, full] = await Promise.all([
           fetch(`${API_BASE}/health`).then(r => { if (!r.ok) throw new Error('health'); return r.json(); }),
           fetch(`${API_BASE}/v1/retrospective`).then(r => r.json()),
+          fetch(`${API_BASE}/v1/status`).then(r => (r.ok ? r.json() : null)).catch(() => null),
         ]);
         setStatus({
           api:           'ok',
           lastModelRun:  health.last_model_run,
           activeAlerts:  health.active_alerts ?? 0,
           dataMode:      health.data_mode ?? 'unknown',
+          obs:           full?.source_observations ?? null,
           retrospective: retro && Array.isArray(retro.results)
             ? { total: retro.total_events ?? 0, flagged: retro.flagged_at_t24 ?? 0, passed: false }
             : null,
@@ -81,7 +84,10 @@ export default function StatusPage() {
   const services = [
     { id: 'status-api',       name: 'REST API',          status: status.api,                        detail: 'FastAPI + Uvicorn'                              },
     { id: 'status-model',     name: 'FPI Model Engine',  status: 'unknown' as const, detail: 'Model service not independently checked'            },
-    { id: 'status-ingestion', name: 'Data Ingestion',    status: 'unknown' as const, detail: 'Feed provenance and freshness not checked here' },
+    { id: 'status-ingestion', name: 'Data Ingestion',    status: (status.obs?.data_mode === 'real_provider_values' ? (status.obs.stale ? 'error' : 'ok') : 'unknown') as 'ok' | 'error' | 'unknown',
+      detail: status.obs?.data_mode === 'real_provider_values'
+        ? `Open-Meteo weather snapshots: ${status.obs.count} points, newest ${status.obs.newest_age_minutes} min old, oldest ${status.obs.oldest_age_minutes} min old${status.obs.stale ? ' (stale, over 3 h)' : ''}`
+        : 'Provider snapshots unavailable' },
     { id: 'status-alerts',    name: 'Alert Dispatch',    status: 'unknown' as const, detail: 'Delivery not independently checked'           },
     { id: 'status-ws',        name: 'WebSocket Live',    status: 'unknown' as const, detail: 'Connection not independently checked'                          },
   ];
@@ -121,7 +127,7 @@ export default function StatusPage() {
                 status.api === 'loading' ? 'bg-amber-400   animate-pulse' :
                                            'bg-red-400'
               }`} />
-              {status.api === 'ok'      ? (status.dataMode === 'sample' ? 'API online · sample data' : 'API reachable · services unverified') :
+              {status.api === 'ok'      ? (status.obs?.data_mode === 'real_provider_values' ? 'API online · real provider snapshots' : 'API reachable · services unverified') :
                status.api === 'loading' ? 'Checking…'              :
                                           'API Unreachable'}
             </motion.div>
@@ -213,8 +219,8 @@ export default function StatusPage() {
               value={status.lastModelRun ? new Date(status.lastModelRun).toLocaleTimeString('en-IN') : '—'}
               sub={status.lastModelRun ? new Date(status.lastModelRun).toLocaleDateString('en-IN') : 'Not yet run'}
             />
-            <InfoCard label="Active Alerts"   value={String(status.activeAlerts)} sub={status.dataMode === 'sample' ? 'Bundled sample alerts' : 'Current model run'} />
-            <InfoCard label="Run Interval"    value="6 hours" sub="Intended cadence, not confirmed" />
+            <InfoCard label="Active Alerts"   value={String(status.activeAlerts)} sub={status.activeAlerts === 0 ? 'No validated risk model, so no alerts are issued' : 'Current model run'} />
+            <InfoCard label="Snapshot interval" value="About 1 hour" sub={status.obs?.newest_fetched_at ? `Newest fetch ${new Date(status.obs.newest_fetched_at).toLocaleString('en-IN')}` : 'No snapshot stored'} />
           </div>
         </motion.section>
 

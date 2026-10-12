@@ -5,8 +5,8 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Radio, Cpu, Target, BellRing, MessageCircle, ArrowRight, ArrowUpRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Alert, formatFPI, tierBadgeClass, tierColor, getRiskLevel } from '@/lib/api';
-import { useAlerts, useRetrospective } from '@/lib/hooks';
+import { Alert, SourceObservation, SourceHistoryResponse, api, ageLabel, formatFPI, tierBadgeClass, tierColor, getRiskLevel } from '@/lib/api';
+import { useAlerts, useRetrospective, useSourceObservations } from '@/lib/hooks';
 import SearchMeter from '@/components/SearchMeter';
 
 const RiskMap = dynamic(() => import('@/components/map/RiskMap'), {
@@ -26,7 +26,7 @@ type ViewMode = 'live' | 'audit';
 const PIPELINE_STEPS = [
   {
     icon: Radio, label: 'Data ingestion', sublabel: 'Raw signals', art: '/art2/p1.webp',
-    detail: 'NASA GPM rainfall, SMAP soil moisture, Copernicus DEM, Sentinel-2 NDVI and the NOAA GFS forecast, pulled on a 6-hour cycle.',
+    detail: 'Live now: Open-Meteo weather model rain and soil moisture for six representative points, stored hourly with a fetch time. Planned: NASA GPM, SMAP, Copernicus DEM, Sentinel-2 NDVI and NOAA GFS.',
   },
   {
     icon: Cpu, label: 'FPI model', sublabel: 'Physics-based', art: '/art2/p2.webp',
@@ -48,6 +48,8 @@ const PIPELINE_STEPS = [
 
 export default function DashboardPage() {
   const { alerts, stats, lastRun, loading, isSample } = useAlerts();
+  const { observations, data: obsData, loading: obsLoading, error: obsError, now } = useSourceObservations();
+  const [selectedObsCode, setSelectedObsCode] = useState<string | null>(null);
   const { summary } = useRetrospective();
   const [mode, setMode] = useState<ViewMode>('live');
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
@@ -61,6 +63,13 @@ export default function DashboardPage() {
     () => alerts.find((a) => a.id === selectedAlertId) ?? sorted[0] ?? null,
     [alerts, sorted, selectedAlertId],
   );
+
+  const selectedObs = useMemo(
+    () => (selectedAlertId ? null : observations.find((o) => o.point_code === selectedObsCode) ?? (alerts.length ? null : observations[0] ?? null)),
+    [observations, selectedObsCode, selectedAlertId, alerts.length],
+  );
+  const newestObs = useMemo(() => observations.reduce<string | null>((n, o) => (!n || o.fetched_at > n ? o.fetched_at : n), null), [observations]);
+  const peakRain = useMemo(() => observations.reduce<SourceObservation | null>((m, o) => ((o.modeled_large_scale_rain_previous_72h_mm ?? -1) > (m?.modeled_large_scale_rain_previous_72h_mm ?? -1) ? o : m), null), [observations]);
 
   return (
     <main className="min-h-screen overflow-x-clip">
@@ -78,7 +87,7 @@ export default function DashboardPage() {
               SlopeSense reads <em className="whitespace-nowrap">the slope</em> before it breaks.
             </h1>
             <p className="mx-auto mt-5 max-w-[560px] text-[17px] leading-relaxed text-ink/60">
-              A prototype for model-generated landslide risk scores and CAP-format feeds. Sample data is labeled. Scores are not calibrated probabilities or official government warnings.
+              A research prototype. The console shows timestamped weather-model snapshots from a public provider, labeled with source and age. There are no validated landslide risk scores and no official warnings.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <a href="#console" onClick={() => setMode('live')} className="btn btn-primary">Open risk console</a>
@@ -105,7 +114,9 @@ export default function DashboardPage() {
                 <div>
                   <div className="text-[13px] font-medium text-ink">Risk console</div>
                   <div className="text-[11px] text-ink/50">
-                    {isSample ? 'Sample data · no live model run yet' : lastRun ? `Last model run ${new Date(lastRun).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}` : 'Waiting for first run'}
+                    {observations.length && newestObs
+                      ? `Open-Meteo weather model snapshots · newest fetched ${ageLabel(newestObs, now)} · no validated risk model`
+                      : obsLoading ? 'Loading provider snapshots' : 'Provider snapshots unavailable · no validated risk model'}
                   </div>
                 </div>
               </div>
@@ -118,7 +129,7 @@ export default function DashboardPage() {
                     onClick={() => setMode(m)}
                     className={`focus-ring rounded-full px-4 py-1.5 font-medium capitalize transition-colors ${mode === m ? 'bg-forest text-paper' : 'text-ink/60 hover:text-ink'}`}
                   >
-                    {m === 'live' && isSample ? 'Sample' : m}
+                    {m === 'live' ? 'Live data' : m}
                   </button>
                 ))}
               </div>
@@ -137,18 +148,25 @@ export default function DashboardPage() {
                   {/* feed */}
                   <div className="order-2 flex min-h-0 flex-col border-ink/10 lg:order-1 lg:border-r">
                     <div className="px-5 pb-2 pt-5">
-                      <div className="eyebrow">{isSample ? 'Sample feed' : 'Model feed'}</div>
-                      <div className="mt-1 font-serif text-[24px] leading-tight">Active blocks</div>
+                      <div className="eyebrow">Real provider values</div>
+                      <div className="mt-1 font-serif text-[24px] leading-tight">Weather snapshots</div>
                     </div>
                     <div className="custom-scrollbar min-h-0 flex-1 space-y-2 overflow-y-auto px-3 pb-3">
-                      {loading ? (
+                      {obsLoading || loading ? (
                         <div className="space-y-2 px-2">{[0, 1, 2, 3].map((i) => <div key={i} className="h-[68px] animate-pulse rounded-2xl bg-ink/5" />)}</div>
-                      ) : sorted.length ? (
-                        sorted.map((alert) => (
-                          <AlertLine key={alert.id} alert={alert} active={selectedAlert?.id === alert.id} onClick={() => setSelectedAlertId(alert.id)} />
-                        ))
                       ) : (
-                        <p className="px-3 py-8 text-center text-[14px] text-ink/50">No active alerts above the watch threshold.</p>
+                        <>
+                          {observations.length ? (
+                            observations.map((o) => (
+                              <ObsLine key={o.point_code} obs={o} now={now} active={selectedObs?.point_code === o.point_code} onClick={() => { setSelectedAlertId(null); setSelectedObsCode(o.point_code); }} />
+                            ))
+                          ) : (
+                            <p className="px-3 py-8 text-center text-[14px] text-ink/50">{obsError ? 'Provider snapshots are unavailable right now. Nothing is substituted.' : 'No provider snapshots stored yet.'}</p>
+                          )}
+                          {sorted.map((alert) => (
+                            <AlertLine key={alert.id} alert={alert} active={selectedAlert?.id === alert.id} onClick={() => setSelectedAlertId(alert.id)} />
+                          ))}
+                        </>
                       )}
                     </div>
                     <div className="border-t border-ink/10 px-5 py-3">
@@ -160,13 +178,13 @@ export default function DashboardPage() {
 
                   {/* map */}
                   <div className="order-1 h-[440px] border-b border-ink/10 lg:order-2 lg:h-auto lg:border-b-0">
-                    <RiskMap userSelected={selectedAlertId !== null} alerts={alerts} selectedAlert={selectedAlert} onAlertClick={(a: Alert) => setSelectedAlertId(a.id)} isSample={isSample} />
+                    <RiskMap userSelected={selectedAlertId !== null} alerts={alerts} selectedAlert={selectedAlertId ? selectedAlert : null} onAlertClick={(a: Alert) => { setSelectedAlertId(a.id); }} isSample={isSample} observations={observations} selectedObsCode={selectedObs?.point_code ?? null} onObsClick={(o: SourceObservation) => { setSelectedAlertId(null); setSelectedObsCode(o.point_code); }} />
                   </div>
 
                   {/* detail */}
                   <div className="custom-scrollbar order-3 overflow-y-auto border-t border-ink/10 p-5 lg:border-l lg:border-t-0">
                     <AnimatePresence mode="wait">
-                      {selectedAlert ? <Detail key={selectedAlert.id} alert={selectedAlert} /> : <p className="py-10 text-center text-[14px] text-ink/50">Select a block from the map or the feed.</p>}
+                      {selectedObs ? <ObsDetail key={selectedObs.point_code} obs={selectedObs} now={now} note={obsData?.note} /> : selectedAlert && selectedAlertId ? <Detail key={selectedAlert.id} alert={selectedAlert} /> : <p className="py-10 text-center text-[14px] text-ink/50">Select a point from the map or the feed.</p>}
                     </AnimatePresence>
                   </div>
                 </motion.div>
@@ -187,10 +205,10 @@ export default function DashboardPage() {
 
           {/* metric strip */}
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Metric label="Active blocks" value={`${stats.total}`} detail="High-risk zones monitored" />
-            <Metric label="High risk" value={`${stats.warning}`} detail="Model score in the warning band" tone="#ea580c" />
-            <Metric label="Critical" value={`${stats.emergency}`} detail="Model score in the highest band" tone="#dc2626" />
-            <Metric label="Retrospective" value={summary ? `${summary.flagged_at_t24}/${summary.total_events}` : '-'} detail="No audited validation available" tone="#2f7a4d" />
+            <Metric label="Points reporting" value={`${obsData?.count ?? 0}`} detail="Representative points, not full district coverage" tone="#3b7aa3" />
+            <Metric label="Newest snapshot" value={newestObs ? ageLabel(newestObs, now).replace(' ago', '') : '-'} detail="Time since the latest provider fetch" tone="#2f7a4d" />
+            <Metric label="Highest 72 h rain" value={peakRain?.modeled_large_scale_rain_previous_72h_mm != null ? `${peakRain.modeled_large_scale_rain_previous_72h_mm.toFixed(1)} mm` : '-'} detail={peakRain ? `${peakRain.point_name} · modeled large-scale rain` : 'No data'} tone="#b8730f" />
+            <Metric label="Validated warnings" value={`${stats.total}`} detail="No validated risk model, no official warnings" tone="#4a574d" />
           </div>
         </div>
       </section>
@@ -267,14 +285,14 @@ export default function DashboardPage() {
               No new hardware <em>on the hill</em>
             </h2>
             <p className="mx-auto mt-4 max-w-[560px] text-[16px] text-ink/60">
-              Rainfall, soil moisture, slope and forecast signals already exist in public data. The design fuses them into a model score. The prototype may show synthetic inputs when labeled sample.
+              Rainfall, soil moisture, slope and forecast signals already exist in public data. Today the site stores and shows one provider's weather model values. Fusing the satellite feeds into a validated score is planned, not done.
             </p>
           </Reveal>
 
           <Reveal className="mt-14 grid gap-5 md:grid-cols-3">
             <GroundCard big="6" unit="feeds" title="Free satellite and model feeds" body="Fused per cell: GPM, SMAP, Copernicus DEM, Sentinel-2, GFS and static terrain layers." art="/art2/p1.webp" />
             <GroundCard big="1" unit="km²" title="Grid resolution" body="Scored cell by cell, then rolled up to blocks so the answer matches an administrative unit." art="/art2/p2.webp" />
-            <GroundCard big="6" unit="h" title="Refresh cycle" body="The design targets six-hour runs. Check system status for the last confirmed run." art="/art2/p3.webp" />
+            <GroundCard big="1" unit="h" title="Snapshot cycle" body="Provider snapshots are fetched about hourly and shown with their fetch time. Check system status for freshness." art="/art2/p3.webp" />
           </Reveal>
         </div>
       </section>
@@ -352,6 +370,89 @@ function Metric({ label, value, detail, tone }: { label: string; value: string; 
       <div className="mt-2 font-serif text-[44px] leading-none tracking-tight text-ink">{value}</div>
       <p className="mt-2 text-[13px] text-ink/55">{detail}</p>
     </div>
+  );
+}
+
+function ObsLine({ obs, now, active, onClick }: { obs: SourceObservation; now: number; active: boolean; onClick: () => void }) {
+  const rain = obs.modeled_large_scale_rain_previous_72h_mm;
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={active}
+      className={`focus-ring flex w-full items-center gap-3 rounded-2xl border p-3.5 text-left transition-all ${active ? 'border-ink/15 bg-paper shadow-glass' : 'border-transparent hover:bg-paper'}`}
+    >
+      <span className="flex h-11 min-w-[44px] flex-shrink-0 items-center justify-center rounded-full border-2 px-1 text-[12px] font-semibold tabular-nums text-ink" style={{ borderColor: obs.stale ? '#b8730f' : '#3b7aa3' }}>
+        {rain == null ? 'n/a' : rain.toFixed(1)}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate font-serif text-[18px] leading-tight text-ink">{obs.point_name}</span>
+        <span className="block truncate text-[12px] text-ink/55">72 h modeled rain, mm · {ageLabel(obs.fetched_at, now)}</span>
+      </span>
+      {obs.stale && <span className="flex-shrink-0 text-[11px] font-medium text-saffron-deep">Stale</span>}
+    </button>
+  );
+}
+
+function fmt(v: number | null | undefined, unit: string, digits = 1) {
+  return v == null ? 'n/a' : `${v.toFixed(digits)} ${unit}`;
+}
+
+function ObsDetail({ obs, now, note }: { obs: SourceObservation; now: number; note?: string }) {
+  const [hist, setHist] = useState<SourceHistoryResponse | null>(null);
+  const [histErr, setHistErr] = useState(false);
+  useEffect(() => {
+    let off = false;
+    api.sourceHistory(obs.point_code, 48).then((h) => !off && setHist(h)).catch(() => !off && setHistErr(true));
+    return () => { off = true; };
+  }, [obs.point_code]);
+  const series = hist ? [...hist.snapshots].reverse().map((s) => s.modeled_large_scale_rain_previous_24h_mm ?? 0) : [];
+  const max = Math.max(1, ...series);
+  return (
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }} className="space-y-5">
+      <div>
+        <div className="eyebrow">Provider snapshot</div>
+        <div className="mt-1 font-serif text-[28px] leading-tight text-ink">{obs.point_name}</div>
+        <div className="text-[13px] text-ink/55">{obs.latitude.toFixed(2)}°N, {obs.longitude.toFixed(2)}°E</div>
+      </div>
+      <div className={`rounded-2xl border p-4 text-[13px] leading-relaxed ${obs.stale ? 'border-saffron-deep/30 bg-saffron-soft text-saffron-deep' : 'border-ink/10 bg-paper text-ink/70'}`}>
+        <div className="font-medium text-ink">{obs.source}</div>
+        Fetched {ageLabel(obs.fetched_at, now)} ({new Date(obs.fetched_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}). {obs.stale ? 'This snapshot is more than 3 hours old.' : 'Within the 3 hour freshness window.'}
+      </div>
+      <div className="grid grid-cols-2 gap-2.5">
+        <Stat label="Rain, prev 24 h" value={fmt(obs.modeled_large_scale_rain_previous_24h_mm, 'mm')} />
+        <Stat label="Rain, prev 72 h" value={fmt(obs.modeled_large_scale_rain_previous_72h_mm, 'mm')} strong />
+        <Stat label="Forecast, next 24 h" value={fmt(obs.forecast_large_scale_rain_next_24h_mm, 'mm')} />
+        <Stat label="Soil moisture 0-1 cm" value={fmt(obs.modeled_soil_moisture_0_to_1cm_m3_m3, 'm³/m³', 3)} />
+      </div>
+      <div>
+        <div className="eyebrow mb-2">Stored snapshots, last 48 h</div>
+        {hist && series.length > 1 ? (
+          <div>
+            <svg viewBox={`0 0 ${series.length * 6} 40`} className="h-16 w-full" role="img" aria-label="Previous 24 hour modeled rain per stored snapshot">
+              {series.map((v, i) => (
+                <rect key={i} x={i * 6 + 1} y={40 - (v / max) * 38} width={4} height={(v / max) * 38 + 0.5} fill="#3b7aa3" />
+              ))}
+            </svg>
+            <p className="mt-1 text-[11px] text-ink/50">{hist.count} snapshots, bar = modeled rain in the 24 h before each fetch (max {max.toFixed(1)} mm). Not interpolated.</p>
+          </div>
+        ) : histErr ? (
+          <p className="text-[12px] text-ink/50">History unavailable.</p>
+        ) : hist ? (
+          <p className="text-[12px] text-ink/50">Only one stored snapshot so far.</p>
+        ) : (
+          <p className="text-[12px] text-ink/50">Loading history.</p>
+        )}
+      </div>
+      <div className="space-y-1.5 text-[12px] leading-relaxed text-ink/60">
+        <p>{obs.rain_semantics ?? 'Large-scale rain only.'}</p>
+        <p>Model grid cell {obs.provider_grid_latitude?.toFixed(2)}°, {obs.provider_grid_longitude?.toFixed(2)}° at {obs.provider_elevation_m ?? 'n/a'} m elevation.</p>
+        <p>{note ?? 'Weather model values, not measurements. Not used for landslide warnings.'}</p>
+        <p>
+          <a href={obs.source_url} target="_blank" rel="noopener noreferrer" className="text-forest underline">Provider request</a>
+          {' · '}{obs.attribution ?? 'Open-Meteo, CC BY 4.0'}
+        </p>
+      </div>
+    </motion.div>
   );
 }
 

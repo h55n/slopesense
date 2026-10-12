@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Map, { Marker, Popup, NavigationControl, MapRef } from 'react-map-gl/maplibre';
 import type { StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Alert, tierColor } from '@/lib/api';
+import { Alert, tierColor, SourceObservation, ageLabel } from '@/lib/api';
 
 interface RiskMapProps {
   alerts: Alert[];
@@ -14,6 +14,10 @@ interface RiskMapProps {
   isSample?: boolean;
   /** Fly to the selected alert only after the visitor has chosen one. */
   userSelected?: boolean;
+  /** Real provider snapshots shown as separate markers (not risk scores). */
+  observations?: SourceObservation[];
+  selectedObsCode?: string | null;
+  onObsClick?: (o: SourceObservation) => void;
 }
 
 const BLOCK_COORDS: Record<string, [number, number]> = {
@@ -101,7 +105,7 @@ const LEGEND = [
   { tier: 'NORMAL', label: 'Normal', range: '<40%' },
 ];
 
-export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample, userSelected }: RiskMapProps) {
+export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample, userSelected, observations = [], selectedObsCode = null, onObsClick }: RiskMapProps) {
   const mapRef = useRef<MapRef>(null);
   const [style, setStyle] = useState<StyleSpecification | string>(POSITRON);
   const [ready, setReady] = useState(false);
@@ -118,7 +122,10 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
   }, []);
 
   const bounds = useMemo(() => {
-    const pts = alerts.map(coordsFor).filter(Boolean) as [number, number][];
+    const pts = [
+      ...(alerts.map(coordsFor).filter(Boolean) as [number, number][]),
+      ...observations.map((o) => [o.longitude, o.latitude] as [number, number]),
+    ];
     if (!pts.length) return null;
     const lons = pts.map((p) => p[0]);
     const lats = pts.map((p) => p[1]);
@@ -126,7 +133,7 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
       [Math.min(...lons), Math.min(...lats)],
       [Math.max(...lons), Math.max(...lats)],
     ] as [[number, number], [number, number]];
-  }, [alerts]);
+  }, [alerts, observations]);
 
   const fitAll = () => {
     const map = mapRef.current?.getMap();
@@ -163,6 +170,39 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
         cooperativeGestures={false}
       >
         <NavigationControl position="top-right" showCompass={false} />
+
+        {observations.map((o) => {
+          const sel = selectedObsCode === o.point_code;
+          const rain = o.modeled_large_scale_rain_previous_72h_mm;
+          return (
+            <Marker
+              key={o.point_code}
+              longitude={o.longitude}
+              latitude={o.latitude}
+              anchor="center"
+              onClick={(e) => {
+                e.originalEvent.stopPropagation();
+                onObsClick?.(o);
+              }}
+              style={{ cursor: 'pointer', zIndex: sel ? 10 : 1 }}
+            >
+              <div role="button" aria-label={`${o.point_name}, provider weather values fetched ${ageLabel(o.fetched_at)}`} className="flex flex-col items-center">
+                <span
+                  className="flex h-8 min-w-[32px] items-center justify-center rounded-full px-2 text-[11px] font-semibold tabular-nums"
+                  style={{
+                    background: o.stale ? '#e8e2cf' : '#fbf9f3',
+                    color: '#1d2a21',
+                    border: `${sel ? 3 : 2}px solid ${o.stale ? '#b8730f' : '#3b7aa3'}`,
+                    boxShadow: sel ? '0 0 0 2px #3b7aa3, 0 6px 16px rgba(29,42,33,0.3)' : '0 3px 10px rgba(29,42,33,0.28)',
+                  }}
+                >
+                  {rain == null ? 'n/a' : `${rain.toFixed(1)}`}
+                </span>
+                <span className="mt-0.5 rounded bg-paper-card/90 px-1 text-[10px] font-medium text-ink/70">{o.point_code}</span>
+              </div>
+            </Marker>
+          );
+        })}
 
         {alerts.map((alert) => {
           const coords = coordsFor(alert);
@@ -223,7 +263,13 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
       </Map>
 
       {/* legend */}
-      <div className="hidden sm:block absolute bottom-8 left-3 z-10 rounded-2xl border border-ink/10 bg-paper-card/95 px-4 py-3 shadow-glass backdrop-blur sm:bottom-9">
+      {observations.length > 0 && alerts.length === 0 ? (
+        <div className="hidden sm:block absolute bottom-8 left-3 z-10 max-w-[260px] rounded-2xl border border-ink/10 bg-paper-card/95 px-4 py-3 shadow-glass backdrop-blur sm:bottom-9">
+          <div className="eyebrow mb-1.5">Provider weather values</div>
+          <p className="text-[12px] leading-snug text-ink/70">Marker number: modeled large-scale rain over the previous 72 h (mm). Amber outline means the snapshot is more than 3 h old. These are not risk scores or warnings.</p>
+        </div>
+      ) : null}
+      <div className={`hidden ${alerts.length ? 'sm:block' : ''} absolute bottom-8 left-3 z-10 rounded-2xl border border-ink/10 bg-paper-card/95 px-4 py-3 shadow-glass backdrop-blur sm:bottom-9`}>
         <div className="eyebrow mb-2">Model FPI score</div>
         <ul className="space-y-1.5">
           {LEGEND.map(({ tier, label, range }) => (
@@ -239,9 +285,9 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
       {/* source chip */}
       <div className="absolute left-3 top-3 z-10 flex max-w-[calc(100%-70px)] flex-wrap gap-2">
         <span className="hidden sm:inline-block rounded-full border border-ink/10 bg-paper-card/95 px-3 py-1.5 text-[11px] font-medium text-ink/70 shadow-glass backdrop-blur">
-          Intended inputs: GPM · SMAP · GFS · DEM
+          {observations.length ? 'Open-Meteo weather model values · not warnings' : 'No validated risk scores'}
         </span>
-        {isSample && (
+        {isSample && alerts.length > 0 && (
           <span className="rounded-full border border-saffron-deep/30 bg-saffron-soft px-3 py-1.5 text-[11px] font-medium text-saffron-deep shadow-glass">
             Sample data · no live model run yet
           </span>

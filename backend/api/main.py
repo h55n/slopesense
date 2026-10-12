@@ -57,7 +57,10 @@ from backend.api.middleware import (
 from backend.api.reports import generate_district_report
 from backend.api.webhooks import router as webhooks_router
 from backend.api.apikeys import router as apikeys_router
-from backend.api.observations import router as observations_router
+from backend.api.observations import (
+    router as observations_router,
+    source_observation_summary,
+)
 from backend.config import settings
 from backend.model.fpi_engine import (
     get_risk_label,
@@ -209,8 +212,9 @@ def _normalise_sample_alert(raw: Dict[str, Any]) -> Dict[str, Any]:
 
 _current_alerts: List[Dict] = []
 try:
+    # Bundled sample alerts are opt-in for local demos only; never served by default.
     demo_path = Path(__file__).parent.parent / "demo_alerts.json"
-    if demo_path.exists():
+    if os.getenv("SLOPESENSE_SAMPLE_ALERTS") == "1" and demo_path.exists():
         with open(demo_path) as f:
             _current_alerts = [_normalise_sample_alert(a) for a in json.load(f)]
 except Exception as exc:  # pragma: no cover - bundled file is optional
@@ -288,7 +292,7 @@ def _data_mode(alerts: List[Dict[str, Any]]) -> str:
     """'sample' when every alert served comes from the bundled sample set."""
     if alerts and all(a.get("is_sample") for a in alerts):
         return "sample"
-    return "live" if alerts else "idle"
+    return "live" if alerts else "no_validated_alerts"
 
 
 @app.get("/", tags=["Health"])
@@ -331,11 +335,12 @@ async def system_status(db: AsyncSession = Depends(get_db)):
         "active_alerts": await _active_alert_count(),
         "data_mode": _data_mode(_current_alerts),
         "data_mode_note": (
-            "Sample alerts bundled with the API are being served because no model "
-            "run has been stored yet."
-            if _data_mode(_current_alerts) == "sample"
+            "No validated risk scores exist. The site shows timestamped provider "
+            "weather snapshots only; they are not warnings."
+            if _data_mode(_current_alerts) == "no_validated_alerts"
             else None
         ),
+        "source_observations": await source_observation_summary(db),
         "services": {
             "rest_api": "operational",
             "cap_feed": "operational",
