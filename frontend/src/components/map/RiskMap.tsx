@@ -358,7 +358,7 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
         )}
       </div>
 
-      <div className="absolute bottom-10 left-3 z-10 flex gap-2">
+      <div className="absolute bottom-16 left-3 z-10 flex gap-2 sm:bottom-10">
         <button
           onClick={fitAll}
           className="focus-ring rounded-xl border border-ink/10 bg-paper-card px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink/70 shadow-glass transition-colors hover:text-ink"
