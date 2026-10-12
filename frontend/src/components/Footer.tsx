@@ -35,7 +35,7 @@ const COLUMNS = [
 export default function Footer() {
   return (
     <footer className="relative mt-24 overflow-hidden">
-      <p className="mx-auto max-w-3xl px-5 text-center text-sm text-ink/70">Research prototype. FPI is a model-generated index, not a calibrated landslide probability or an official government warning. Sample data is illustrative. Follow local authorities for safety decisions.</p>
+      <p className="mx-auto max-w-3xl px-5 text-center text-sm text-ink/70">Research prototype. FPI is a model-generated index, not a calibrated landslide probability or an official government warning. Follow local authorities for safety decisions.</p>
       <div className="relative z-10 mx-auto max-w-[1280px] px-5 pt-4 sm:px-8 sm:pt-8">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="display text-[38px] sm:text-[52px]">
