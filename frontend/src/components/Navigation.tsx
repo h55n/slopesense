@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { useAlerts } from '@/lib/hooks';
-import Logo from '@/components/Logo';
+import Wordmark from '@/components/Wordmark';
 
 const NAV_LINKS = [
   { href: '/',          label: 'Dashboard' },
@@ -30,9 +30,8 @@ export default function Navigation() {
       aria-label="Global navigation"
     >
       <div className="mx-auto grid h-16 max-w-[1280px] grid-cols-[auto_1fr_auto] items-center gap-6 px-5 sm:px-8">
-        <Link href="/" className="focus-ring flex items-center gap-2.5 rounded-lg">
-          <Logo size={28} />
-          <span className="font-serif text-[22px] leading-none tracking-tight text-ink">SlopeSense</span>
+        <Link href="/" className="focus-ring flex min-h-[44px] items-center rounded-lg" aria-label="SlopeSense home">
+          <Wordmark size={26} />
         </Link>
 
         <ul className="hidden items-center justify-center gap-1 md:flex">

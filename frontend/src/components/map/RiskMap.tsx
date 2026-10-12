@@ -251,7 +251,7 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
             >
               <div role="button" aria-label={`${o.point_name}, provider weather values fetched ${ageLabel(o.fetched_at)}`} className="flex flex-col items-center">
                 <span
-                  className={`flex items-center justify-center rounded-full font-semibold tabular-nums ${zoom < 5.5 && !sel ? 'h-6 min-w-[24px] px-1 text-[10px]' : 'h-8 min-w-[32px] px-2 text-[11px]'}`}
+                  className={`flex items-center justify-center rounded-full font-semibold tabular-nums ${zoom < 5.5 && !sel ? 'h-6 min-w-[24px] px-1 text-[12px]' : 'h-8 min-w-[32px] px-2 text-[12px]'}`}
                   style={{
                     background: o.stale ? '#e8e2cf' : '#fbf9f3',
                     color: '#1d2a21',
@@ -261,7 +261,7 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
                 >
                   {rain == null ? 'n/a' : `${rain.toFixed(1)}`}
                 </span>
-                {(zoom >= 5.5 || sel) && <span className="mt-0.5 rounded bg-paper-card/90 px-1 text-[10px] font-medium text-ink/70">{o.point_code}</span>}
+                {(zoom >= 5.5 || sel) && <span className="mt-0.5 rounded bg-paper-card/90 px-1 text-[12px] font-medium text-ink/70">{o.point_code}</span>}
               </div>
             </Marker>
           );
@@ -294,7 +294,7 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
                   />
                 )}
                 <span
-                  className="relative flex h-full w-full items-center justify-center rounded-full text-[11px] font-semibold text-white"
+                  className="relative flex h-full w-full items-center justify-center rounded-full text-[12px] font-semibold text-white"
                   style={{
                     background: color,
                     color: '#fff',
@@ -348,11 +348,11 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
 
       {/* source chip */}
       <div className="absolute left-3 top-3 z-10 flex max-w-[calc(100%-70px)] flex-wrap gap-2">
-        <span className="hidden sm:inline-block rounded-full border border-ink/10 bg-paper-card/95 px-3 py-1.5 text-[11px] font-medium text-ink/70 shadow-glass backdrop-blur">
+        <span className="hidden sm:inline-block rounded-full border border-ink/10 bg-paper-card/95 px-3 py-1.5 text-[12px] font-medium text-ink/70 shadow-glass backdrop-blur">
           {observations.length ? 'Open-Meteo weather model values · not warnings' : 'No validated risk scores'}
         </span>
         {isSample && alerts.length > 0 && (
-          <span className="rounded-full border border-saffron-deep/30 bg-saffron-soft px-3 py-1.5 text-[11px] font-medium text-saffron-deep shadow-glass">
+          <span className="rounded-full border border-saffron-deep/30 bg-saffron-soft px-3 py-1.5 text-[12px] font-medium text-saffron-deep shadow-glass">
             Sample data · no live model run yet
           </span>
         )}
@@ -361,14 +361,14 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
       <div className="absolute bottom-16 left-3 z-10 flex gap-2 sm:bottom-10">
         <button
           onClick={fitAll}
-          className="focus-ring rounded-xl border border-ink/10 bg-paper-card px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink/70 shadow-glass transition-colors hover:text-ink"
+          className="focus-ring rounded-xl border border-ink/10 bg-paper-card px-3 py-1.5 text-[12px] font-semibold uppercase tracking-[0.12em] text-ink/70 shadow-glass transition-colors hover:text-ink"
         >
           Reset view
         </button>
         {observations.length > 0 && alerts.length === 0 ? (
           <button
             onClick={() => setKeyOpen((v) => !v)}
-            className="focus-ring rounded-xl border border-ink/10 bg-paper-card px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink/70 shadow-glass transition-colors hover:text-ink"
+            className="focus-ring rounded-xl border border-ink/10 bg-paper-card px-3 py-1.5 text-[12px] font-semibold uppercase tracking-[0.12em] text-ink/70 shadow-glass transition-colors hover:text-ink"
           >
             Key
           </button>

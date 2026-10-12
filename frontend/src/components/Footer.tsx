@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import Logo from '@/components/Logo';
+import Wordmark from '@/components/Wordmark';
 
 const REPO = 'https://github.com/h55n/slopesense';
 const COLUMNS = [
@@ -65,10 +65,7 @@ export default function Footer() {
       <div className="relative z-10 bg-forest-deep text-paper">
         <div className="mx-auto grid max-w-[1280px] gap-12 px-5 pb-12 pt-14 sm:px-8 lg:grid-cols-[1.2fr_2fr]">
           <div className="max-w-sm">
-            <div className="flex items-center gap-2.5">
-              <Logo size={30} />
-              <span className="font-serif text-[24px] leading-none">SlopeSense</span>
-            </div>
+            <Wordmark size={30} tone="paper" />
             <p className="mt-4 text-[14px] leading-relaxed text-paper/60">
               Landslide risk intelligence for India. Open source under Apache 2.0.
             </p>
@@ -77,16 +74,16 @@ export default function Footer() {
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
             {COLUMNS.map((col) => (
               <div key={col.title}>
-                <h3 className="font-sans text-[11px] font-semibold uppercase tracking-[0.16em] text-paper/45">{col.title}</h3>
+                <h3 className="font-sans text-[12px] font-semibold uppercase tracking-[0.16em] text-paper/45">{col.title}</h3>
                 <ul className="mt-4 space-y-2.5">
                   {col.links.map((l) => (
                     <li key={l.label}>
                       {'external' in l && l.external ? (
-                        <a href={l.href} target="_blank" rel="noopener noreferrer" className="text-[14px] text-paper/75 transition-colors hover:text-paper">
+                        <a href={l.href} target="_blank" rel="noopener noreferrer" className="inline-block py-2 text-[14px] text-paper/80 transition-colors hover:text-paper">
                           {l.label}
                         </a>
                       ) : (
-                        <Link href={l.href} className="text-[14px] text-paper/75 transition-colors hover:text-paper">
+                        <Link href={l.href} className="inline-block py-2 text-[14px] text-paper/80 transition-colors hover:text-paper">
                           {l.label}
                         </Link>
                       )}
@@ -101,9 +98,9 @@ export default function Footer() {
           <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-3 px-5 py-5 text-[13px] text-paper/50 sm:px-8">
             <span>&copy; 2026 SlopeSense. Built to give districts a day&apos;s notice.</span>
             <span className="flex gap-5">
-              <a href={REPO} target="_blank" rel="noopener noreferrer" className="hover:text-paper">Source</a>
-              <Link href="/api-docs" className="hover:text-paper">API</Link>
-              <Link href="/status" className="hover:text-paper">Status</Link>
+              <a href={REPO} target="_blank" rel="noopener noreferrer" className="inline-block py-2 hover:text-paper">Source</a>
+              <Link href="/api-docs" className="inline-block py-2 hover:text-paper">API</Link>
+              <Link href="/status" className="inline-block py-2 hover:text-paper">Status</Link>
             </span>
           </div>
         </div>

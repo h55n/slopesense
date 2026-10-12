@@ -158,7 +158,7 @@ export default function StatusPage() {
                   >
                     {step.icon}
                   </div>
-                  <span className="text-[8px] sm:text-micro font-semibold uppercase tracking-normal sm:tracking-[0.18em]" style={{ color: step.color }}>
+                  <span className="text-[12px] sm:text-micro font-semibold uppercase tracking-normal sm:tracking-[0.18em]" style={{ color: step.color }}>
                     {step.label}
                   </span>
                 </div>
@@ -343,7 +343,7 @@ export default function StatusPage() {
                 className="flex items-center gap-3 text-base-sm font-medium text-white/60"
               >
                 <span className="shrink-0 h-4 w-4 rounded-full bg-slope-accent/15 border border-slope-accent/25 flex items-center justify-center">
-                  <span className="text-slope-accent text-[8px] font-black">·</span>
+                  <span className="text-slope-accent text-[12px] font-black">·</span>
                 </span>
                 {item}
               </motion.div>

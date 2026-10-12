@@ -330,7 +330,7 @@ function PointsTable() {
       </div>
       {observations.length > 0 && (
         <div className="overflow-x-auto">
-          <p className="px-4 pt-2 text-[11px] text-white/40 md:hidden">Swipe sideways for more columns &rarr;</p>
+          <p className="px-4 pt-2 text-[12px] text-white/40 md:hidden">Swipe sideways for more columns &rarr;</p>
           <table className="w-full text-sm">
             <thead className="bg-white/5 text-left text-tiny uppercase tracking-[0.14em] text-white/40">
               <tr>

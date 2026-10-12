@@ -8,9 +8,9 @@ module.exports = {
   theme: {
     extend: {
       fontSize: {
-        'micro': ['9px', { lineHeight: '12px' }],
-        'tiny':  ['10px', { lineHeight: '14px' }],
-        'small': ['11px', { lineHeight: '16px' }],
+        'micro': ['12px', { lineHeight: '16px' }],
+        'tiny':  ['12px', { lineHeight: '16px' }],
+        'small': ['12px', { lineHeight: '16px' }],
         'base-sm': ['13px', { lineHeight: '20px' }],
       },
       letterSpacing: {

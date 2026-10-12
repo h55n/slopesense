@@ -113,7 +113,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <div className="text-[13px] font-medium text-ink">Risk console</div>
-                  <div className="text-[11px] text-ink/50">
+                  <div className="text-[12px] text-ink/50">
                     {observations.length && newestObs
                       ? `Open-Meteo weather model snapshots · newest fetched ${ageLabel(newestObs, now)} · no validated risk model`
                       : obsLoading ? 'Loading provider snapshots' : 'Provider snapshots unavailable · no validated risk model'}
@@ -242,7 +242,7 @@ export default function DashboardPage() {
                       <span className="min-w-0">
                         <span className="flex items-baseline gap-2">
                           <span className="font-serif text-[22px] leading-tight text-ink">{s.label}</span>
-                          <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-ink/40">{s.sublabel}</span>
+                          <span className="text-[12px] font-medium uppercase tracking-[0.12em] text-ink/40">{s.sublabel}</span>
                         </span>
                         {active && <span className="mt-1.5 block text-[14px] leading-relaxed text-ink/60">{s.detail}</span>}
                       </span>
@@ -388,7 +388,7 @@ function ObsLine({ obs, now, active, onClick }: { obs: SourceObservation; now: n
         <span className="block truncate font-serif text-[18px] leading-tight text-ink">{obs.point_name}</span>
         <span className="block truncate text-[12px] text-ink/55">72 h modeled rain, mm · {ageLabel(obs.fetched_at, now)}</span>
       </span>
-      {obs.stale && <span className="flex-shrink-0 text-[11px] font-medium text-saffron-deep">Stale</span>}
+      {obs.stale && <span className="flex-shrink-0 text-[12px] font-medium text-saffron-deep">Stale</span>}
     </button>
   );
 }
@@ -433,7 +433,7 @@ function ObsDetail({ obs, now, note }: { obs: SourceObservation; now: number; no
                 <rect key={i} x={i * 6 + 1} y={40 - (v / max) * 38} width={4} height={(v / max) * 38 + 0.5} fill="#3b7aa3" />
               ))}
             </svg>
-            <p className="mt-1 text-[11px] text-ink/50">{hist.count} snapshots, bar = modeled rain in the 24 h before each fetch (max {max.toFixed(1)} mm). Not interpolated.</p>
+            <p className="mt-1 text-[12px] text-ink/50">{hist.count} snapshots, bar = modeled rain in the 24 h before each fetch (max {max.toFixed(1)} mm). Not interpolated.</p>
           </div>
         ) : histErr ? (
           <p className="text-[12px] text-ink/50">History unavailable.</p>
@@ -472,7 +472,7 @@ function AlertLine({ alert, active, onClick }: { alert: Alert; active: boolean; 
         <span className="block truncate font-serif text-[19px] leading-tight text-ink">{alert.block_name}</span>
         <span className="block truncate text-[12px] text-ink/55">{alert.district_name}, {alert.state_name}</span>
       </span>
-      <span className="flex-shrink-0 text-[11px] font-medium" style={{ color: rl.color }}>{rl.label.charAt(0) + rl.label.slice(1).toLowerCase()}</span>
+      <span className="flex-shrink-0 text-[12px] font-medium" style={{ color: rl.color }}>{rl.label.charAt(0) + rl.label.slice(1).toLowerCase()}</span>
     </button>
   );
 }
@@ -488,7 +488,7 @@ function Detail({ alert }: { alert: Alert }) {
             <div className="font-serif text-[30px] leading-tight text-ink">{alert.block_name}</div>
             <div className="text-[13px] text-ink/55">{alert.district_name}, {alert.state_name}</div>
           </div>
-          <span className={`mt-1 shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] ${tierBadgeClass(alert.tier)}`}>{alert.tier}</span>
+          <span className={`mt-1 shrink-0 rounded-full px-2.5 py-1 text-[12px] font-semibold uppercase tracking-[0.12em] ${tierBadgeClass(alert.tier)}`}>{alert.tier}</span>
         </div>
       </div>
 
@@ -531,7 +531,7 @@ function Detail({ alert }: { alert: Alert }) {
 function Stat({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
     <div className={`rounded-xl border p-3 ${strong ? 'border-forest/25 bg-forest/[0.06]' : 'border-ink/10 bg-paper'}`}>
-      <div className="eyebrow !text-[10px]">{label}</div>
+      <div className="eyebrow !text-[12px]">{label}</div>
       <div className="mt-1 font-serif text-[26px] leading-none text-ink">{value}</div>
     </div>
   );
@@ -586,9 +586,9 @@ function Audit({ summary }: { summary: ReturnType<typeof useRetrospective>['summ
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="font-serif text-[20px] leading-tight">{r.event_name}</div>
-                  <div className="mt-0.5 text-[11px] uppercase tracking-[0.1em] text-ink/45">{r.state} · {r.district} · Source: {r.data_source || 'unverified'}</div>
+                  <div className="mt-0.5 text-[12px] uppercase tracking-[0.1em] text-ink/45">{r.state} · {r.district} · Source: {r.data_source || 'unverified'}</div>
                 </div>
-                <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] ${r.flagged_at_t24 ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : 'border-red-500/30 bg-red-500/10 text-red-400'}`}>
+                <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[12px] font-semibold uppercase tracking-[0.1em] ${r.flagged_at_t24 ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : 'border-red-500/30 bg-red-500/10 text-red-400'}`}>
                   {r.flagged_at_t24 ? 'Flagged' : 'Missed'}
                 </span>
               </div>
