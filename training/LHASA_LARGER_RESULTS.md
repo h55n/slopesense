@@ -31,4 +31,8 @@ hashes, rawSMAPresponses including rejected400attempts, before-prediction manife
 split membership, predictions, calibrator parameters and full metrics. NASAweights
 retain NOSA1.3/NASAattribution, not rebranded as our own trained model.
 
+Publication path: the full study archive is
+[training/artifacts/lhasa-larger-comparison.zip](https://github.com/h55n/slopesense/blob/master/training/artifacts/lhasa-larger-comparison.zip).
+These are retrospective research results only. They are not a real-world failure probability and not an advance warning.
+
 [All studies](INDEX.md)
