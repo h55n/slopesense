@@ -121,6 +121,9 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
     };
   }, []);
 
+  const [zoom, setZoom] = useState(4);
+  const [keyOpen, setKeyOpen] = useState(false);
+
   const bounds = useMemo(() => {
     const pts = [
       ...(alerts.map(coordsFor).filter(Boolean) as [number, number][]),
@@ -175,6 +178,7 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
         mapStyle={style as any}
         attributionControl={true}
         onLoad={() => setReady(true)}
+        onZoom={(e) => setZoom(e.viewState.zoom)}
         minZoom={2}
         maxPitch={0}
         dragRotate={false}
@@ -195,12 +199,14 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
               onClick={(e) => {
                 e.originalEvent.stopPropagation();
                 onObsClick?.(o);
+                const m = mapRef.current?.getMap();
+                if (m) m.flyTo({ center: [o.longitude, o.latitude], zoom: Math.max(m.getZoom(), 6.5), duration: 700, essential: true });
               }}
               style={{ cursor: 'pointer', zIndex: sel ? 10 : 1 }}
             >
               <div role="button" aria-label={`${o.point_name}, provider weather values fetched ${ageLabel(o.fetched_at)}`} className="flex flex-col items-center">
                 <span
-                  className="flex h-8 min-w-[32px] items-center justify-center rounded-full px-2 text-[11px] font-semibold tabular-nums"
+                  className={`flex items-center justify-center rounded-full font-semibold tabular-nums ${zoom < 5.5 && !sel ? 'h-6 min-w-[24px] px-1 text-[10px]' : 'h-8 min-w-[32px] px-2 text-[11px]'}`}
                   style={{
                     background: o.stale ? '#e8e2cf' : '#fbf9f3',
                     color: '#1d2a21',
@@ -210,7 +216,7 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
                 >
                   {rain == null ? 'n/a' : `${rain.toFixed(1)}`}
                 </span>
-                <span className="mt-0.5 rounded bg-paper-card/90 px-1 text-[10px] font-medium text-ink/70">{o.point_code}</span>
+                {(zoom >= 5.5 || sel) && <span className="mt-0.5 rounded bg-paper-card/90 px-1 text-[10px] font-medium text-ink/70">{o.point_code}</span>}
               </div>
             </Marker>
           );
@@ -276,12 +282,13 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
 
       {/* legend */}
       {observations.length > 0 && alerts.length === 0 ? (
-        <div className="hidden sm:block absolute bottom-8 left-3 z-10 max-w-[260px] rounded-2xl border border-ink/10 bg-paper-card/95 px-4 py-3 shadow-glass backdrop-blur sm:bottom-9">
+        <div className={`${keyOpen ? 'block' : 'hidden'} absolute bottom-[72px] left-3 z-20 max-w-[260px] rounded-2xl border border-ink/10 bg-paper-card/95 px-4 py-3 shadow-glass backdrop-blur`}>
+          <button onClick={() => setKeyOpen(false)} aria-label="Close key" className="absolute right-2 top-1 text-ink/50">&times;</button>
           <div className="eyebrow mb-1.5">Provider weather values</div>
           <p className="text-[12px] leading-snug text-ink/70">Marker number: modeled large-scale rain over the previous 72 h (mm). Amber outline means the snapshot is more than 3 h old. These are not risk scores or warnings.</p>
         </div>
       ) : null}
-      <div className={`hidden ${alerts.length ? 'sm:block' : ''} absolute bottom-8 left-3 z-10 rounded-2xl border border-ink/10 bg-paper-card/95 px-4 py-3 shadow-glass backdrop-blur sm:bottom-9`}>
+      <div className={`hidden ${alerts.length ? 'sm:block' : ''} absolute bottom-[72px] left-3 z-10 rounded-2xl border border-ink/10 bg-paper-card/95 px-4 py-3 shadow-glass backdrop-blur`}>
         <div className="eyebrow mb-2">Model FPI score</div>
         <ul className="space-y-1.5">
           {LEGEND.map(({ tier, label, range }) => (
@@ -306,12 +313,22 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
         )}
       </div>
 
-      <button
-        onClick={fitAll}
-        className="focus-ring absolute right-3 top-[88px] z-10 rounded-xl border border-ink/10 bg-paper-card px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink/70 shadow-glass transition-colors hover:text-ink"
-      >
-        Reset view
-      </button>
+      <div className="absolute bottom-8 left-3 z-10 flex gap-2">
+        <button
+          onClick={fitAll}
+          className="focus-ring rounded-xl border border-ink/10 bg-paper-card px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink/70 shadow-glass transition-colors hover:text-ink"
+        >
+          Reset view
+        </button>
+        {observations.length > 0 && alerts.length === 0 ? (
+          <button
+            onClick={() => setKeyOpen((v) => !v)}
+            className="focus-ring rounded-xl border border-ink/10 bg-paper-card px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink/70 shadow-glass transition-colors hover:text-ink"
+          >
+            Key
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }
