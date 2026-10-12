@@ -68,7 +68,7 @@ def test_run_fails_when_most_points_fail(monkeypatch):
 
 
 def test_stops_after_consecutive_failures(monkeypatch):
-    store = _setup(monkeypatch, failing={0, 1, 2, 3, 4, 5})
+    _setup(monkeypatch, failing={0, 1, 2, 3, 4, 5})
     calls = []
     orig = script.fetch_point
 
