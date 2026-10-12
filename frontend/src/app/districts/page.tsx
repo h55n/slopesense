@@ -104,7 +104,7 @@ export default function DistrictsPage() {
                   key={t}
                   id={`tier-filter-${t.toLowerCase()}`}
                   onClick={() => setTierFilter(t)}
-                  className={`rounded-full px-4 py-1.5 text-tiny font-bold uppercase tracking-[0.2em] transition-all ${
+                  className={`min-h-[44px] rounded-full px-4 py-2 text-tiny font-bold uppercase tracking-[0.2em] transition-all ${
                     tierFilter === t
                       ? 'bg-white text-black shadow-md'
                       : 'text-white/60 hover:text-white hover:bg-white/10'

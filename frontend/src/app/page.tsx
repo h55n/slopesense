@@ -170,7 +170,7 @@ export default function DashboardPage() {
                       )}
                     </div>
                     <div className="border-t border-ink/10 px-5 py-3">
-                      <Link href="/districts" className="inline-flex items-center gap-1.5 text-[13px] font-medium text-forest hover:text-ink">
+                      <Link href="/districts" className="inline-flex min-h-[44px] items-center gap-1.5 text-[13px] font-medium text-forest hover:text-ink">
                         View all districts <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
                     </div>
