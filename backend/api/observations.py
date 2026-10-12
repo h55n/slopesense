@@ -2,27 +2,38 @@
 
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
+from sqlalchemy import select, func
 from backend.api.database import get_db
 from backend.models import SourceObservation
+from backend.ingestion.point_registry import POINT_BY_CODE, coverage_metadata
 
 router = APIRouter(prefix="/v1/source-observations", tags=["Source observations"])
+
+
+async def _latest_rows(db):
+    # Rank per point BEFORE limiting. A busy point must not hide other locations.
+    ranked = select(
+        SourceObservation.id,
+        func.row_number()
+        .over(
+            partition_by=SourceObservation.point_code,
+            order_by=(SourceObservation.fetched_at.desc(), SourceObservation.id.desc()),
+        )
+        .label("position"),
+    ).subquery()
+    result = await db.execute(
+        select(SourceObservation)
+        .join(ranked, SourceObservation.id == ranked.c.id)
+        .where(ranked.c.position == 1)
+        .order_by(SourceObservation.point_code)
+    )
+    return result.scalars().all()
 
 
 @router.get("")
 async def latest_source_observations(db=Depends(get_db)):
     try:
-        rows = (
-            (
-                await db.execute(
-                    select(SourceObservation)
-                    .order_by(SourceObservation.fetched_at.desc())
-                    .limit(100)
-                )
-            )
-            .scalars()
-            .all()
-        )
+        rows = await _latest_rows(db)
     except Exception as exc:
         raise HTTPException(503, "Source observation store unavailable") from exc
     latest = {}
@@ -43,11 +54,16 @@ async def latest_source_observations(db=Depends(get_db)):
             "fetched_at": fetched.isoformat(),
             "stale": (now - fetched).total_seconds() > 3 * 3600,
             **row.payload["summary"],
+            "state": POINT_BY_CODE.get(row.point_code, {}).get("state"),
+            "terrain": POINT_BY_CODE.get(row.point_code, {}).get("terrain"),
         }
     return {
         "data_mode": "real_provider_values" if latest else "unavailable",
         "warning_publication_enabled": False,
-        "note": "Open-Meteo weather model values, not NASA/satellite or gauge measurements. Six representative points only, not complete district coverage. Not used for landslide warnings. A retrieved value is not independently verified ground truth.",
+        "note": "Open-Meteo weather model values, not NASA/satellite or gauge measurements. Representative points only, not complete district or unstable-slope coverage. Not used for landslide warnings. A retrieved value is not independently verified ground truth.",
+        **coverage_metadata(),
+        "available_configured_point_count": len(set(latest) & set(POINT_BY_CODE)),
+        "missing_point_codes": sorted(set(POINT_BY_CODE) - set(latest)),
         "count": len(latest),
         "observations": list(latest.values()),
     }
@@ -63,17 +79,7 @@ def _aware(ts):
 async def source_observation_summary(db) -> dict:
     """Compact freshness summary of stored provider snapshots for status pages."""
     try:
-        rows = (
-            (
-                await db.execute(
-                    select(SourceObservation)
-                    .order_by(SourceObservation.fetched_at.desc())
-                    .limit(100)
-                )
-            )
-            .scalars()
-            .all()
-        )
+        rows = await _latest_rows(db)
     except Exception:
         return {"data_mode": "unavailable", "count": 0}
     points = {}
@@ -87,6 +93,9 @@ async def source_observation_summary(db) -> dict:
     return {
         "data_mode": "real_provider_values",
         "provider": "Open-Meteo weather models",
+        **coverage_metadata(),
+        "available_configured_point_count": len(set(points) & set(POINT_BY_CODE)),
+        "missing_point_codes": sorted(set(POINT_BY_CODE) - set(points)),
         "count": len(points),
         "newest_fetched_at": newest.isoformat(),
         "oldest_fetched_at": oldest.isoformat(),
