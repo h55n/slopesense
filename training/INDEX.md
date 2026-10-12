@@ -53,3 +53,8 @@ base rates, real non-events, prospective source compatibility or safety fitness.
 Research screen success, were it to occur, would not clear those independent gates.
 
 [Main README](../README.md) | [Pretrained-model research](PRETRAINED_MODELS.md)
+
+## NASA compatible-input research
+
+[Larger frozen comparison](LHASA_LARGER_PROTOCOL.md) -> [processing](LHASA_LARGER_PROCESSING.md) -> [results](LHASA_LARGER_RESULTS.md).
+[Recent-years inventory feasibility](RECENT_YEARS_FEASIBILITY.md). No safety gate passed.
