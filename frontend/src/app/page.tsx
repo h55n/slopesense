@@ -285,7 +285,7 @@ export default function DashboardPage() {
               No new hardware <em>on the hill</em>
             </h2>
             <p className="mx-auto mt-4 max-w-[560px] text-[16px] text-ink/60">
-              Rainfall, soil moisture, slope and forecast signals already exist in public data. Today the site stores and shows one provider's weather model values. Fusing the satellite feeds into a validated score is planned, not done.
+              Rainfall, soil moisture, slope and forecast signals already exist in public data. Today the site stores and shows one provider&apos;s weather model values. Fusing the satellite feeds into a validated score is planned, not done.
             </p>
           </Reveal>
 
