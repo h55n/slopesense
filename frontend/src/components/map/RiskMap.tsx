@@ -123,6 +123,23 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
 
   const [zoom, setZoom] = useState(4);
   const [keyOpen, setKeyOpen] = useState(false);
+  const [viewTick, setViewTick] = useState(0);
+
+  // group provider points whose markers would overlap on screen at this zoom
+  const groups = useMemo(() => {
+    const map = mapRef.current?.getMap();
+    const out: { members: typeof observations; x: number; y: number }[] = [];
+    if (!map) return observations.map((o) => ({ members: [o], x: 0, y: 0 }));
+    const R = 30;
+    for (const o of observations) {
+      const pt = map.project([o.longitude, o.latitude]);
+      const g = out.find((g) => Math.hypot(g.x - pt.x, g.y - pt.y) < R);
+      if (g) g.members.push(o);
+      else out.push({ members: [o], x: pt.x, y: pt.y });
+    }
+    return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [observations, zoom, viewTick, ready]);
 
   const bounds = useMemo(() => {
     const pts = [
@@ -179,6 +196,7 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
         attributionControl={true}
         onLoad={() => setReady(true)}
         onZoom={(e) => setZoom(e.viewState.zoom)}
+        onMoveEnd={() => setViewTick((t) => t + 1)}
         minZoom={2}
         maxPitch={0}
         dragRotate={false}
@@ -187,7 +205,34 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
       >
         <NavigationControl position="top-right" showCompass={false} />
 
-        {observations.map((o) => {
+        {groups.filter((g) => g.members.length > 1).map((g) => {
+          const lon = g.members.reduce((a, m) => a + m.longitude, 0) / g.members.length;
+          const lat = g.members.reduce((a, m) => a + m.latitude, 0) / g.members.length;
+          return (
+            <Marker
+              key={`cluster-${g.members.map((m) => m.point_code).join('-')}`}
+              longitude={lon}
+              latitude={lat}
+              anchor="center"
+              onClick={(e) => {
+                e.originalEvent.stopPropagation();
+                const m = mapRef.current?.getMap();
+                if (!m) return;
+                const lons = g.members.map((x) => x.longitude);
+                const lats = g.members.map((x) => x.latitude);
+                m.fitBounds([[Math.min(...lons), Math.min(...lats)], [Math.max(...lons), Math.max(...lats)]], { padding: 90, maxZoom: 10, duration: 700 });
+              }}
+              style={{ cursor: 'pointer', zIndex: 5 }}
+            >
+              <div role="button" aria-label={`${g.members.length} provider points: ${g.members.map((x) => x.point_name).join(', ')}. Click to zoom in.`}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#3b7aa3] text-[13px] font-semibold text-white shadow-glass ring-2 ring-white">
+                {g.members.length}
+              </div>
+            </Marker>
+          );
+        })}
+
+        {groups.filter((g) => g.members.length === 1).map((g) => g.members[0]).map((o) => {
           const sel = selectedObsCode === o.point_code;
           const rain = o.modeled_large_scale_rain_previous_72h_mm;
           return (
@@ -313,7 +358,7 @@ export default function RiskMap({ alerts, selectedAlert, onAlertClick, isSample,
         )}
       </div>
 
-      <div className="absolute bottom-8 left-3 z-10 flex gap-2">
+      <div className="absolute bottom-10 left-3 z-10 flex gap-2">
         <button
           onClick={fitAll}
           className="focus-ring rounded-xl border border-ink/10 bg-paper-card px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink/70 shadow-glass transition-colors hover:text-ink"
