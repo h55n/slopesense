@@ -120,17 +120,27 @@ def run(events_path, raw_path, output, limit):
             (d, 0) for d in background_dates(event, reports)
         ]
 
-        def fetch_target(pair):
+        def fetch_target(pair, event=event):
             target, label = pair
             identity = {
                 "event_id": event.event_id,
                 "target_date": str(target.date()),
                 "label": label,
                 "label_meaning": (
-                    "reported_rainfall_landslide"
+                    "reported_rainfall_landslide_case"
                     if label
-                    else "no_nearby_catalog_report_not_confirmed_safe"
+                    else "sampled_no_nearby_catalog_report_not_verified_non_event_or_safe"
                 ),
+                "label_name": "reported_event_case",
+                "label_interpretation": "reported-event case vs sampled background without nearby catalog report",
+                "negative_is_verified_non_event": False,
+                "negative_is_verified_safe": False,
+                "target_is_real_world_failure_probability": False,
+                "event_local_timezone": event.event_local_timezone,
+                "event_local_instant_verified": False,
+                "usable_for_24h_forecast_target": False,
+                "candidate_storm_group": event.candidate_storm_group,
+                "candidate_storm_group_review_only": event.candidate_storm_group_review_only,
                 "latitude": event.latitude,
                 "longitude": event.longitude,
                 "spatial_group": event.spatial_group,
@@ -183,6 +193,17 @@ def run(events_path, raw_path, output, limit):
                 "inventory_sha256": hashlib.sha256(raw_path.read_bytes()).hexdigest(),
                 "purpose": "exploratory_hindcast_not_operational_forecast",
                 "publication_enabled": False,
+                "label_name": "reported_event_case",
+                "label_interpretation": "reported-event case vs sampled background without nearby catalog report",
+                "negative_is_verified_non_event": False,
+                "negative_is_verified_safe": False,
+                "exact_local_event_times_verified": False,
+                "usable_for_24h_forecast_target": False,
+                "candidate_storm_clustering": {
+                    "radius_km": 10,
+                    "max_day_gap": 3,
+                    "review_only": True,
+                },
             },
             indent=2,
         )

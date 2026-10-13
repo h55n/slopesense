@@ -57,6 +57,20 @@ def evaluate(path, out):
         raise ValueError("Missing data: no fill")
     if data.groupby("event_id").split.nunique().max() != 1:
         raise ValueError("Event split leakage")
+    if (
+        "candidate_storm_group" in data
+        and data.groupby("candidate_storm_group").split.nunique().max() != 1
+    ):
+        raise ValueError(
+            "Candidate storm cluster crosses splits; manually review or exclude whole group"
+        )
+    if (
+        "negative_is_verified_non_event" in data
+        and data.negative_is_verified_non_event.astype(bool).any()
+    ):
+        raise ValueError(
+            "No verified non-event labels are allowed in this catalog case-control dataset"
+        )
     frames = {k: v for k, v in data.groupby("split")}
     train = frames["train"]
     cal = frames["calibration"]
@@ -89,6 +103,16 @@ def evaluate(path, out):
         "dataset_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
         "protocol": "training/STAGE3_PROTOCOL.md",
         "features": FEATURES,
+        "label_name": "reported_event_case",
+        "label_interpretation": "reported-event case vs sampled background without nearby catalog report",
+        "background_is_verified_non_event": False,
+        "background_is_verified_safe": False,
+        "real_world_failure_probability_estimated": False,
+        "candidate_storm_clustering": {
+            "radius_km": 10,
+            "max_day_gap": 3,
+            "review_only": True,
+        },
         "validation_selected_threshold": threshold,
         "threshold_dataset": "2014distinct_from2013Platt",
         "research_screen_passed": False,
