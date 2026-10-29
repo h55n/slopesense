@@ -65,11 +65,12 @@ def test_partial_failure_persists_the_successful_points(monkeypatch):
     assert "commit" in store
 
 
-def test_run_fails_when_most_points_fail(monkeypatch):
-    store = _setup(monkeypatch, failing={0, 1, 2, 3})
-    with pytest.raises(SystemExit):
+def test_low_success_run_persists_values_but_still_fails(monkeypatch):
+    store = _setup(monkeypatch, failing={1, 2, 3, 4, 5})
+    with pytest.raises(SystemExit, match="successful snapshots persisted"):
         asyncio.run(script.run())
-    assert store == []
+    assert [r.point_code for r in store if r != "commit"] == ["P0"]
+    assert "commit" in store
 
 
 def test_stops_after_consecutive_failures(monkeypatch):

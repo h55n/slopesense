@@ -76,10 +76,10 @@ async def run():
                 payload=payload,
             )
         )
-    if len(rows) < max(1, len(POINTS) // 2):
-        raise SystemExit(
-            f"Only {len(rows)} of {len(POINTS)} points fetched; nothing persisted"
-        )
+    insufficient = len(rows) < max(1, len(POINTS) // 2)
+    if not rows:
+        await engine.dispose()
+        raise SystemExit(f"Only 0 of {len(POINTS)} points fetched; nothing persisted")
     async with AsyncSessionLocal() as db:
         db.add_all(rows)
         # Bound free-tier storage, preserving the recent audit trail.
@@ -95,6 +95,11 @@ async def run():
     if failed:
         logger.warning("Missing this run (previous values keep their age): %s", failed)
     await engine.dispose()
+    if insufficient:
+        raise SystemExit(
+            f"Only {len(rows)} of {len(POINTS)} points fetched; "
+            "successful snapshots persisted, refresh remains incomplete"
+        )
 
 
 if __name__ == "__main__":
