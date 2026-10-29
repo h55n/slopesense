@@ -33,6 +33,11 @@ class FakeEngine:
 
 def _setup(monkeypatch, failing):
     store = []
+
+    async def registry_order(points):
+        return list(points)
+
+    monkeypatch.setattr(script, "oldest_first", registry_order)
     points = [(f"P{i}", f"Point {i}", 10.0 + i, 70.0) for i in range(6)]
     monkeypatch.setattr(script, "POINTS", points)
     monkeypatch.setattr(script, "AsyncSessionLocal", lambda: FakeSession(store))

@@ -5,7 +5,7 @@ from datetime import datetime, timezone, timedelta
 import logging
 import random
 import time
-from sqlalchemy import delete
+from sqlalchemy import delete, func, select
 from backend.api.database import AsyncSessionLocal, engine
 from backend.models import SourceObservation
 from backend.ingestion.source_observations import POINTS, fetch_point
@@ -16,7 +16,29 @@ MAX_CONSECUTIVE_FAILURES = 3
 TIME_BUDGET_SECONDS = 8 * 60
 
 
+async def oldest_first(points):
+    """Visit never-fetched and oldest points first, retaining registry tie order."""
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(
+            select(SourceObservation.point_code, func.max(SourceObservation.fetched_at))
+            .where(SourceObservation.point_code.in_([point[0] for point in points]))
+            .group_by(SourceObservation.point_code)
+        )
+        latest = dict(result.all())
+    never = datetime.min.replace(tzinfo=timezone.utc)
+
+    def fetched_at(point):
+        value = latest.get(point[0])
+        if value is None:
+            return never
+        # SQLite returns naive UTC datetimes; PostgreSQL returns aware values.
+        return value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value
+
+    return sorted(points, key=fetched_at)
+
+
 async def run():
+    points = await oldest_first(POINTS)
     now = datetime.now(timezone.utc)
     rows = []
     failed = []
@@ -24,7 +46,7 @@ async def run():
     started = time.monotonic()
     # Fetch before opening a transaction. A point that fails is skipped and reported;
     # earlier snapshots for it stay in the store and show as stale by age.
-    for index, (code, name, lat, lon) in enumerate(POINTS):
+    for index, (code, name, lat, lon) in enumerate(points):
         if consecutive >= MAX_CONSECUTIVE_FAILURES or (
             time.monotonic() - started > TIME_BUDGET_SECONDS
         ):
