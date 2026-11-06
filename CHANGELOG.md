@@ -98,3 +98,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Every PR must add an entry under `[Unreleased]`.
 - Use the types: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`.
 - When cutting a release, move all `[Unreleased]` entries to a new version section.
+
+## 2026-11-06
+
+- Source observations: one batched provider request covers every point per run;
+  the paced per-point path remains as fallback. Previously a run could persist
+  only part of the registry, leaving some points old until the next run.
+- Source observations API: reads that find data older than 55 minutes refresh it
+  directly from the provider (stdlib-only, bounded, fail-open). Stored values are
+  served with their honest stale flags when the provider cannot be reached.
+  Warning publication stays disabled; freshness gate semantics unchanged.
+- Fetch workflow scheduled twice hourly as a backstop; hosted schedulers delay
+  or skip most fires, so the inline refresh is what keeps served data fresh.

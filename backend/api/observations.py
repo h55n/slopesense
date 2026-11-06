@@ -1,13 +1,128 @@
 """Separately labeled provider values, not FPI or landslide warnings."""
 
-from datetime import datetime, timezone
+import asyncio
+from datetime import datetime, timedelta, timezone
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select, func
-from backend.api.database import get_db
+from sqlalchemy import delete, select, func
+from backend.api.database import AsyncSessionLocal, get_db
 from backend.models import SourceObservation
 from backend.ingestion.point_registry import POINT_BY_CODE, coverage_metadata
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/v1/source-observations", tags=["Source observations"])
+
+# Scheduled fetches are best-effort (hosted schedulers drop or delay runs), so a
+# read that finds old data refreshes it directly from the provider, once per gap.
+REFRESH_AFTER_SECONDS = 55 * 60
+MIN_REFRESH_GAP_SECONDS = 10 * 60
+REFRESH_TIMEOUT_SECONDS = 25
+
+# Serialize refreshes within one instance; the recent-write gap check below bounds
+# cross-instance repeats, and batched calls keep any residual overlap cheap.
+_refresh_lock = asyncio.Lock()
+
+
+def _points_needing_refresh(latest_fetched, now):
+    """Configured points whose newest stored snapshot is older than refresh age."""
+    return [
+        code
+        for code in POINT_BY_CODE
+        if code not in latest_fetched
+        or (now - latest_fetched[code]).total_seconds() > REFRESH_AFTER_SECONDS
+    ]
+
+
+async def _refresh_points(codes, now):
+    """Batched provider fetch for stale points. Stdlib import stays lazy so the
+    packaged serverless cold start never loads ingestion modules."""
+    from backend.ingestion.source_observations import (
+        fetch_points_batch,
+        point_url,
+    )
+
+    points = [
+        (
+            code,
+            POINT_BY_CODE[code]["point_name"],
+            POINT_BY_CODE[code]["latitude"],
+            POINT_BY_CODE[code]["longitude"],
+        )
+        for code in codes
+    ]
+    _url, results = await asyncio.wait_for(
+        asyncio.to_thread(fetch_points_batch, points, now),
+        timeout=REFRESH_TIMEOUT_SECONDS,
+    )
+    rows = [
+        SourceObservation(
+            point_code=code,
+            point_name=name,
+            lat=lat,
+            lon=lon,
+            source="Open-Meteo weather models",
+            source_url=point_url(lat, lon),
+            fetched_at=now,
+            payload=results[code],
+        )
+        for code, name, lat, lon in points
+        if code in results
+    ]
+    if not rows:
+        return
+    async with AsyncSessionLocal() as session:
+        session.add_all(rows)
+        # Bound free-tier storage, preserving the recent audit trail.
+        await session.execute(
+            delete(SourceObservation).where(
+                SourceObservation.fetched_at < now - timedelta(days=30)
+            )
+        )
+        await session.commit()
+
+
+async def _latest_rows_refreshed(db):
+    rows = await _latest_rows(db)
+    now = datetime.now(timezone.utc)
+    latest_fetched = {}
+    for row in rows:
+        fetched = row.fetched_at
+        if fetched.tzinfo is None:
+            fetched = fetched.replace(tzinfo=timezone.utc)
+        latest_fetched[row.point_code] = fetched
+    codes = _points_needing_refresh(latest_fetched, now)
+    if not codes:
+        return rows
+    # Skip the provider call when a very recent write exists (another instance
+    # just refreshed, or the provider is failing and data cannot get newer).
+    if latest_fetched and (now - max(latest_fetched.values())).total_seconds() < (
+        MIN_REFRESH_GAP_SECONDS
+    ):
+        return rows
+    async with _refresh_lock:
+        # Re-check inside the lock: a queued request may find the data fresh now.
+        rows = await _latest_rows(db)
+        latest_fetched = {}
+        for row in rows:
+            fetched = row.fetched_at
+            if fetched.tzinfo is None:
+                fetched = fetched.replace(tzinfo=timezone.utc)
+            latest_fetched[row.point_code] = fetched
+        if not _points_needing_refresh(latest_fetched, now):
+            return rows
+        try:
+            await _refresh_points(codes, now)
+        except Exception as exc:
+            # Serve the stored values with honest stale flags instead of failing.
+            logger.warning("Inline source refresh failed: %s", type(exc).__name__)
+            return rows
+    return await _latest_rows(db)
+
+
+def _aware(ts):
+    return ts if ts.tzinfo else ts.replace(tzinfo=timezone.utc)
 
 
 async def _latest_rows(db):
@@ -33,7 +148,7 @@ async def _latest_rows(db):
 @router.get("")
 async def latest_source_observations(db=Depends(get_db)):
     try:
-        rows = await _latest_rows(db)
+        rows = await _latest_rows_refreshed(db)
     except Exception as exc:
         raise HTTPException(503, "Source observation store unavailable") from exc
     latest = {}
@@ -41,9 +156,7 @@ async def latest_source_observations(db=Depends(get_db)):
     for row in rows:
         if row.point_code in latest:
             continue
-        fetched = row.fetched_at
-        if fetched.tzinfo is None:
-            fetched = fetched.replace(tzinfo=timezone.utc)
+        fetched = _aware(row.fetched_at)
         latest[row.point_code] = {
             "point_code": row.point_code,
             "point_name": row.point_name,
@@ -70,10 +183,6 @@ async def latest_source_observations(db=Depends(get_db)):
 
 
 STALE_AFTER_SECONDS = 3 * 3600
-
-
-def _aware(ts):
-    return ts if ts.tzinfo else ts.replace(tzinfo=timezone.utc)
 
 
 async def source_observation_summary(db) -> dict:

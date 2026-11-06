@@ -8,7 +8,12 @@ import time
 from sqlalchemy import delete, func, select
 from backend.api.database import AsyncSessionLocal, engine
 from backend.models import SourceObservation
-from backend.ingestion.source_observations import POINTS, fetch_point
+from backend.ingestion.source_observations import (
+    POINTS,
+    fetch_point,
+    fetch_points_batch,
+    point_url,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -44,9 +49,42 @@ async def run():
     failed = []
     consecutive = 0
     started = time.monotonic()
+
+    def row_for(code, name, lat, lon, url, payload):
+        return SourceObservation(
+            point_code=code,
+            point_name=name,
+            lat=lat,
+            lon=lon,
+            source="Open-Meteo weather models",
+            source_url=url,
+            fetched_at=now,
+            payload=payload,
+        )
+
+    # One batched provider request covers every point, so a normal run leaves no
+    # partial batch behind. Any point missing from the batch falls back to the
+    # paced per-point path below.
+    remaining = list(points)
+    try:
+        _batch_url, results = await asyncio.to_thread(fetch_points_batch, points, now)
+        remaining = []
+        for code, name, lat, lon in points:
+            if code in results:
+                rows.append(
+                    row_for(code, name, lat, lon, point_url(lat, lon), results[code])
+                )
+            else:
+                remaining.append((code, name, lat, lon))
+    except Exception as exc:
+        logger.warning(
+            "Batched provider fetch unavailable (%s); falling back per point",
+            type(exc).__name__,
+        )
+
     # Fetch before opening a transaction. A point that fails is skipped and reported;
     # earlier snapshots for it stay in the store and show as stale by age.
-    for index, (code, name, lat, lon) in enumerate(points):
+    for index, (code, name, lat, lon) in enumerate(remaining):
         if consecutive >= MAX_CONSECUTIVE_FAILURES or (
             time.monotonic() - started > TIME_BUDGET_SECONDS
         ):
@@ -64,18 +102,8 @@ async def run():
             consecutive += 1
             continue
         consecutive = 0
-        rows.append(
-            SourceObservation(
-                point_code=code,
-                point_name=name,
-                lat=lat,
-                lon=lon,
-                source="Open-Meteo weather models",
-                source_url=url,
-                fetched_at=now,
-                payload=payload,
-            )
-        )
+        rows.append(row_for(code, name, lat, lon, url, payload))
+
     insufficient = len(rows) < max(1, len(POINTS) // 2)
     if not rows:
         await engine.dispose()

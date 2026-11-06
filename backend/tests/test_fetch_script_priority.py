@@ -6,8 +6,19 @@ import pytest
 from sqlalchemy import select
 
 from backend.api.database import AsyncSessionLocal
+from backend.ingestion.quality import DataUnavailableError
 from backend.models import SourceObservation
 from scripts import fetch_source_observations as script
+
+
+@pytest.fixture(autouse=True)
+def no_batch_fetch(monkeypatch):
+    """These tests exercise the paced per-point path, not the batch fast path."""
+
+    def unavailable(points, now):
+        raise DataUnavailableError("batch unavailable in fallback tests")
+
+    monkeypatch.setattr(script, "fetch_points_batch", unavailable)
 
 
 @pytest.mark.asyncio

@@ -4,10 +4,18 @@ No synthetic fallback, percentile conversion, FPI scoring or alert dispatch occu
 """
 
 from datetime import datetime, timedelta, timezone
+import json
 import math
-import requests
 import random
 import time
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode
+from urllib.request import urlopen
+
+try:
+    import requests
+except ImportError:  # the deployed API image has no requests; batch fetch is stdlib
+    requests = None
 
 from backend.ingestion.quality import DataUnavailableError
 from backend.ingestion.point_registry import POINTS  # noqa: F401
@@ -78,6 +86,8 @@ def fetch_point(
     Retry-After is honored up to120seconds; larger limits stop this batch. Missing
     or invalid data and permanent4xx responses are not retried.
     """
+    if requests is None:
+        raise DataUnavailableError("Per-point fetch needs the pipeline environment")
     now = now or datetime.now(timezone.utc)
     for attempt in range(max_attempts):
         try:
@@ -116,3 +126,72 @@ def fetch_point(
                 raise
             sleep(15 * 2**attempt + jitter(1, 3))
     raise DataUnavailableError("Provider retry budget exhausted")
+
+
+def point_url(lat, lon):
+    """The single-point provider query equivalent to one entry of a batch result."""
+    return f"{API_URL}?" + urlencode(
+        {
+            "latitude": lat,
+            "longitude": lon,
+            "hourly": "rain,soil_moisture_0_to_1cm",
+            "past_days": 3,
+            "forecast_days": 3,
+            "timezone": "UTC",
+        }
+    )
+
+
+def fetch_points_batch(points, now=None, timeout=30):
+    """One provider request for every point (Open-Meteo multi-location response).
+
+    Stdlib only, so the deployed API can call it too. A single attempt: callers
+    own fallback and retry policy. Never invent a value; any transport, shape or
+    count problem raises DataUnavailableError and nothing is returned partially.
+    """
+    now = now or datetime.now(timezone.utc)
+    points = list(points)
+    if not points:
+        raise DataUnavailableError("No points supplied for batch fetch")
+    url = f"{API_URL}?" + urlencode(
+        {
+            "latitude": ",".join(str(point[2]) for point in points),
+            "longitude": ",".join(str(point[3]) for point in points),
+            "hourly": "rain,soil_moisture_0_to_1cm",
+            "past_days": 3,
+            "forecast_days": 3,
+            "timezone": "UTC",
+        }
+    )
+    try:
+        with urlopen(url, timeout=timeout) as response:
+            if response.status != 200:
+                raise DataUnavailableError(f"Provider batch status {response.status}")
+            payload = json.loads(response.read().decode())
+    except HTTPError as exc:
+        raise DataUnavailableError(f"Provider batch HTTP {exc.code}") from exc
+    except (URLError, TimeoutError, json.JSONDecodeError) as exc:
+        raise DataUnavailableError(
+            f"Provider batch unavailable: {type(exc).__name__}"
+        ) from exc
+    # A single coordinate pair returns one object; several return a list.
+    items = payload if isinstance(payload, list) else [payload]
+    if len(items) != len(points):
+        raise DataUnavailableError(
+            f"Provider returned {len(items)} results for {len(points)} points"
+        )
+    results = {}
+    for (code, _name, _lat, _lon), item in zip(points, items):
+        try:
+            summary = summarize(item, now)
+        except DataUnavailableError:
+            # One point's incomplete coverage must not fail the whole batch; the
+            # caller's per-point fallback retries only the missing codes.
+            continue
+        results[code] = {
+            "summary": summary,
+            "provider_response": item,
+        }
+    if not results:
+        raise DataUnavailableError("Provider batch held no usable point data")
+    return url, results

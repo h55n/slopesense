@@ -38,6 +38,11 @@ def _setup(monkeypatch, failing):
         return list(points)
 
     monkeypatch.setattr(script, "oldest_first", registry_order)
+
+    def no_batch(points, now):
+        raise DataUnavailableError("batch unavailable in fallback tests")
+
+    monkeypatch.setattr(script, "fetch_points_batch", no_batch)
     points = [(f"P{i}", f"Point {i}", 10.0 + i, 70.0) for i in range(6)]
     monkeypatch.setattr(script, "POINTS", points)
     monkeypatch.setattr(script, "AsyncSessionLocal", lambda: FakeSession(store))
